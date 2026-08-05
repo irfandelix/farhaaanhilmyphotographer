@@ -57,6 +57,27 @@ export default function InvoicePage({ params }) {
     window.print();
   };
 
+  const handleDownloadPDF = async () => {
+    try {
+      const html2pdf = (await import('html2pdf.js')).default;
+      
+      const element = document.getElementById('invoice-content');
+      
+      const opt = {
+        margin:       10,
+        filename:     `${invoiceNumber}_${project.clientName.replace(/\s+/g, '_')}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(element).save();
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Gagal membuat PDF.');
+    }
+  };
+
   return (
     <>
       <style dangerouslySetInnerHTML={{__html: `
@@ -68,14 +89,17 @@ export default function InvoicePage({ params }) {
         body { background: #f3f4f6; }
       `}} />
       
-      {/* Floating Print Action */}
-      <div className="no-print" style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 100 }}>
-        <button onClick={printInvoice} className="btn-primary" style={{ padding: '12px 24px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
-          🖨️ Cetak / Simpan PDF
+      {/* Floating Action */}
+      <div className="no-print" style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 100, display: 'flex', gap: '10px' }}>
+        <button onClick={printInvoice} className="btn-secondary" style={{ padding: '12px 24px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+          🖨️ Cetak
+        </button>
+        <button onClick={handleDownloadPDF} className="btn-primary" style={{ padding: '12px 24px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
+          📄 Unduh PDF
         </button>
       </div>
 
-      <main className="invoice-container" style={{ 
+      <main id="invoice-content" className="invoice-container" style={{ 
         maxWidth: '800px', 
         margin: '40px auto', 
         background: 'white', 
