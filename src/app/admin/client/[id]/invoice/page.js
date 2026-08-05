@@ -89,12 +89,12 @@ export default function InvoicePage({ params }) {
         body { background: #f3f4f6; }
       `}} />
       
-      {/* Floating Action */}
-      <div className="no-print" style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 100, display: 'flex', gap: '10px' }}>
-        <button onClick={printInvoice} className="btn-secondary" style={{ padding: '12px 24px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+      {/* Action Buttons */}
+      <div className="no-print" style={{ display: 'flex', gap: '12px', justifyContent: 'center', margin: '24px auto 0', maxWidth: '800px', padding: '0 20px' }}>
+        <button onClick={printInvoice} className="btn-secondary" style={{ padding: '12px 24px', flex: 1, maxWidth: '200px' }}>
           🖨️ Cetak
         </button>
-        <button onClick={handleDownloadPDF} className="btn-primary" style={{ padding: '12px 24px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
+        <button onClick={handleDownloadPDF} className="btn-primary" style={{ padding: '12px 24px', flex: 1, maxWidth: '200px' }}>
           📄 Unduh PDF
         </button>
       </div>
