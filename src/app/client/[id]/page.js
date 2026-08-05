@@ -2,6 +2,8 @@
 
 import { useEffect, useState, use } from 'react';
 import { getProjectById, updateSelectedPhotos } from '@/lib/projectService';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 
 export default function ClientGallery({ params }) {
   const resolvedParams = use(params);
@@ -20,6 +22,10 @@ export default function ClientGallery({ params }) {
   
   // State untuk Lightbox Preview
   const [previewPhoto, setPreviewPhoto] = useState(null);
+
+  // State untuk Download ZIP
+  const [downloadingZip, setDownloadingZip] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
 
   useEffect(() => {
     async function loadData() {
@@ -59,6 +65,46 @@ export default function ClientGallery({ params }) {
     }
     loadData();
   }, [id]);
+
+  const handleDownloadZip = async () => {
+    if (!editedPhotos || editedPhotos.length === 0) return;
+    
+    setDownloadingZip(true);
+    setDownloadProgress(0);
+    
+    try {
+      const zip = new JSZip();
+      const total = editedPhotos.length;
+      let successCount = 0;
+      
+      for (let i = 0; i < total; i++) {
+        const photo = editedPhotos[i];
+        if (photo.id) {
+          const res = await fetch(`/api/proxy?url=${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${photo.id}`)}`);
+          
+          if (res.ok) {
+            const blob = await res.blob();
+            zip.file(photo.name, blob);
+            successCount++;
+          }
+          
+          setDownloadProgress(Math.round(((i + 1) / total) * 100));
+        }
+      }
+      
+      if (successCount === 0) throw new Error("Tidak ada foto yang berhasil diunduh.");
+      
+      setDownloadProgress(100); 
+      const content = await zip.generateAsync({ type: 'blob' });
+      saveAs(content, `${project.clientName} - Hasil Edit Final.zip`);
+      
+    } catch (error) {
+      console.error("Download ZIP Error:", error);
+      alert('Terjadi kesalahan saat mengunduh ZIP. Pastikan koneksi internet stabil.');
+    }
+    
+    setDownloadingZip(false);
+  };
 
   const toggleSelect = (photoName) => {
     if (project?.isLocked) {
@@ -209,7 +255,18 @@ export default function ClientGallery({ params }) {
 
       {/* Render Edited Photos (Download Mode) */}
       {activeTab === 'edited' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
+        <>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+            <button 
+              onClick={handleDownloadZip}
+              disabled={downloadingZip}
+              className="btn-primary" 
+              style={{ padding: '10px 20px', fontSize: '0.95rem', backgroundColor: '#059669', display: 'flex', alignItems: 'center', gap: '8px' }}
+            >
+              {downloadingZip ? `⏳ Mengemas ZIP... ${downloadProgress}%` : '📥 Unduh Semua (ZIP)'}
+            </button>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
           {editedPhotos.map((photo) => (
             <div 
               key={photo.id}
@@ -256,6 +313,7 @@ export default function ClientGallery({ params }) {
             </div>
           ))}
         </div>
+        </>
       )}
 
       {activeTab === 'raw' && photos.length === 0 && (
