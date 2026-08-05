@@ -20,6 +20,11 @@ export default function ClientGallery({ params }) {
   const [editedPhotos, setEditedPhotos] = useState([]);
   const [activeTab, setActiveTab] = useState('raw'); // 'raw' or 'edited'
   
+  // Sessions
+  const [sessions, setSessions] = useState([]);
+  const [activeSessionId, setActiveSessionId] = useState(null);
+  const [loadingPhotos, setLoadingPhotos] = useState(false);
+  
   // State untuk Lightbox Preview
   const [previewPhoto, setPreviewPhoto] = useState(null);
 
@@ -38,14 +43,17 @@ export default function ClientGallery({ params }) {
       setProject(proj);
       setSelectedPhotos(proj.selectedPhotos || []);
 
-      if (proj.gdriveFolderId) {
-        try {
-          const res = await fetch(`/api/drive?folderId=${proj.gdriveFolderId}`);
-          const data = await res.json();
-          if (!data.error) setPhotos(data.files || []);
-        } catch (err) {
-          console.error("Gagal mengambil foto dari GDrive:", err);
-        }
+      let loadedSessions = [];
+      if (proj.sessions && proj.sessions.length > 0) {
+        loadedSessions = proj.sessions;
+      } else if (proj.gdriveFolderId) {
+        loadedSessions = [{ id: 'default', name: 'Semua Sesi', folderId: proj.gdriveFolderId }];
+      }
+      setSessions(loadedSessions);
+
+      if (loadedSessions.length > 0) {
+        setActiveSessionId(loadedSessions[0].id);
+        await fetchSessionPhotos(loadedSessions[0].folderId);
       }
 
       if (proj.gdriveEditedFolderId) {
@@ -65,6 +73,27 @@ export default function ClientGallery({ params }) {
     }
     loadData();
   }, [id]);
+
+  const fetchSessionPhotos = async (folderId) => {
+    setLoadingPhotos(true);
+    setPhotos([]);
+    try {
+      const res = await fetch(`/api/drive?folderId=${folderId}`);
+      const data = await res.json();
+      if (!data.error) setPhotos(data.files || []);
+    } catch (err) {
+      console.error("Gagal mengambil foto sesi:", err);
+    }
+    setLoadingPhotos(false);
+  };
+
+  const handleSessionChange = (sessionId) => {
+    setActiveSessionId(sessionId);
+    const session = sessions.find(s => s.id === sessionId);
+    if (session) {
+      fetchSessionPhotos(session.folderId);
+    }
+  };
 
   const handleDownloadRawZip = async () => {
     if (!photos || photos.length === 0) return;
@@ -94,9 +123,12 @@ export default function ClientGallery({ params }) {
       
       if (successCount === 0) throw new Error("Tidak ada foto mentah yang berhasil diunduh.");
       
+      const currentSession = sessions.find(s => s.id === activeSessionId);
+      const sessionName = currentSession ? currentSession.name : 'Semua Sesi';
+      
       setDownloadProgress(100); 
       const content = await zip.generateAsync({ type: 'blob' });
-      saveAs(content, `${project.clientName} - Semua Foto Mentah.zip`);
+      saveAs(content, `${project.clientName} - Foto Mentah (${sessionName}).zip`);
       
     } catch (error) {
       console.error("Download Raw ZIP Error:", error);
@@ -233,8 +265,40 @@ export default function ClientGallery({ params }) {
       {/* Render Raw Photos (Selection Mode) */}
       {activeTab === 'raw' && (
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
-          {photos.map((photo) => {
+          {sessions.length > 1 && (
+            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '16px', marginBottom: '16px', justifyContent: 'center' }}>
+              {sessions.map(session => (
+                <button
+                  key={session.id}
+                  onClick={() => handleSessionChange(session.id)}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '20px',
+                    whiteSpace: 'nowrap',
+                    fontWeight: activeSessionId === session.id ? '600' : '400',
+                    backgroundColor: activeSessionId === session.id ? '#3b82f6' : '#f3f4f6',
+                    color: activeSessionId === session.id ? 'white' : '#374151',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    boxShadow: activeSessionId === session.id ? '0 2px 8px rgba(59,130,246,0.3)' : 'none'
+                  }}
+                >
+                  {session.name}
+                </button>
+              ))}
+            </div>
+          )}
+          
+          {loadingPhotos ? (
+            <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>
+              <div style={{ display: 'inline-block', width: '24px', height: '24px', border: '3px solid #e5e7eb', borderTopColor: '#3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '8px' }}></div>
+              <p>Memuat foto sesi...</p>
+              <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
+              {photos.map((photo) => {
           const isSelected = selectedPhotos.includes(photo.name);
           return (
             <div 
@@ -291,22 +355,25 @@ export default function ClientGallery({ params }) {
             </div>
           )
         })}
-      </div>
-      </>
+            </div>
+          )}
+        </>
       )}
 
       {/* Render Edited Photos (Download Mode) */}
       {activeTab === 'edited' && (
         <>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
-            <button 
-              onClick={handleDownloadRawZip}
-              disabled={downloadingZip}
-              className="btn-secondary" 
-              style={{ padding: '10px 20px', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #9ca3af', backgroundColor: 'white', color: '#4b5563', borderRadius: '8px', cursor: 'pointer' }}
-            >
-              {downloadingZip ? `⏳ Mengemas ZIP... ${downloadProgress}%` : '📥 Unduh Mentahan (ZIP)'}
-            </button>
+            {sessions.length > 0 && (
+              <button 
+                onClick={handleDownloadRawZip}
+                disabled={downloadingZip}
+                className="btn-secondary" 
+                style={{ padding: '10px 20px', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #9ca3af', backgroundColor: 'white', color: '#4b5563', borderRadius: '8px', cursor: 'pointer' }}
+              >
+                {downloadingZip ? `⏳ Mengemas ZIP... ${downloadProgress}%` : `📥 Unduh Mentahan ${sessions.find(s => s.id === activeSessionId)?.name || ''} (ZIP)`}
+              </button>
+            )}
             <button 
               onClick={handleDownloadZip}
               disabled={downloadingZip}

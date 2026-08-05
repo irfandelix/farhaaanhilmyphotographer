@@ -208,3 +208,34 @@ export async function updateGDriveEditedLink(id, link) {
     return false;
   }
 }
+
+// Update GDrive Sessions (Multiple Links)
+export async function updateGDriveSessions(id, sessions) {
+  try {
+    const processedSessions = sessions.map(session => {
+      const folderId = extractFolderId(session.link);
+      if (!folderId) throw new Error(`Link Google Drive tidak valid untuk sesi: ${session.name}`);
+      return {
+        id: session.id || Math.random().toString(36).substring(7),
+        name: session.name,
+        link: session.link,
+        folderId: folderId
+      };
+    });
+
+    const docRef = doc(db, COLLECTION_NAME, id);
+    // Kita tetap simpan gdriveLink pertama sebagai fallback legacy jika dibutuhkan
+    const fallbackData = processedSessions.length > 0 
+      ? { gdriveLink: processedSessions[0].link, gdriveFolderId: processedSessions[0].folderId }
+      : { gdriveLink: '', gdriveFolderId: '' };
+      
+    await updateDoc(docRef, {
+      sessions: processedSessions,
+      ...fallbackData
+    });
+    return true;
+  } catch (error) {
+    console.error("Error updating GDrive sessions: ", error);
+    return false;
+  }
+}

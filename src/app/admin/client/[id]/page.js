@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getProjectById, updatePaymentStatus, updateGDriveLink, updateGDriveEditedLink, unlockClientSelection, updateProjectFinancials } from '@/lib/projectService';
+import { getProjectById, updatePaymentStatus, updateGDriveLink, updateGDriveEditedLink, unlockClientSelection, updateProjectFinancials, updateGDriveSessions } from '@/lib/projectService';
 
 export default function AdminClientDetail({ params }) {
   const router = useRouter();
@@ -26,8 +26,8 @@ export default function AdminClientDetail({ params }) {
   const [editWhatsapp, setEditWhatsapp] = useState('');
   
   // GDrive Link State
-  const [gdriveLink, setGdriveLink] = useState('');
   const [savingLink, setSavingLink] = useState(false);
+  const [sessions, setSessions] = useState([]);
   
   const [gdriveEditedLink, setGdriveEditedLink] = useState('');
   const [savingEditedLink, setSavingEditedLink] = useState(false);
@@ -48,7 +48,16 @@ export default function AdminClientDetail({ params }) {
         setEditWhatsapp(data.whatsapp || '');
         setEditLunasAmount(data.lunasAmount || '');
         setEditLunasDate(data.lunasDate || '');
-        setGdriveLink(data.gdriveLink || '');
+        
+        // Handle sessions (if empty, fallback to legacy gdriveLink)
+        if (data.sessions && data.sessions.length > 0) {
+          setSessions(data.sessions);
+        } else if (data.gdriveLink) {
+          setSessions([{ id: 'default', name: 'Semua Sesi', link: data.gdriveLink }]);
+        } else {
+          setSessions([]);
+        }
+        
         setGdriveEditedLink(data.gdriveEditedLink || '');
         
         if (data.gdriveFolderId) {
@@ -75,16 +84,46 @@ export default function AdminClientDetail({ params }) {
   };
 
   const handleSaveGDriveLink = async () => {
-    if (!gdriveLink) return;
+    if (sessions.length === 0) return;
+    
+    // Validasi basic
+    for (let s of sessions) {
+      if (!s.name || !s.link) {
+        alert("Nama sesi dan Link Google Drive tidak boleh kosong.");
+        return;
+      }
+    }
+
     setSavingLink(true);
-    const success = await updateGDriveLink(id, gdriveLink);
+    const success = await updateGDriveSessions(id, sessions);
     setSavingLink(false);
+    
     if (success) {
-      alert('Link Google Drive (Mentah) berhasil disimpan!');
-      setProject({ ...project, gdriveLink: gdriveLink, gdriveFolderId: 'updated' });
+      alert('Sesi & Link Google Drive (Mentah) berhasil disimpan!');
+      // Force refresh data
+      const updatedData = await getProjectById(id);
+      if (updatedData) {
+        setProject(updatedData);
+        setSessions(updatedData.sessions || []);
+      }
     } else {
       alert('Gagal menyimpan link. Pastikan formatnya benar.');
     }
+  };
+
+  const addSession = () => {
+    setSessions([...sessions, { id: Math.random().toString(36).substring(7), name: `Sesi ${sessions.length + 1}`, link: '' }]);
+  };
+
+  const updateSession = (index, field, value) => {
+    const newSessions = [...sessions];
+    newSessions[index][field] = value;
+    setSessions(newSessions);
+  };
+
+  const removeSession = (index) => {
+    const newSessions = sessions.filter((_, i) => i !== index);
+    setSessions(newSessions);
   };
 
   const handleSaveGDriveEditedLink = async () => {
@@ -197,7 +236,6 @@ export default function AdminClientDetail({ params }) {
         const photoObj = photos.find(p => p.name === photoName);
         
         if (photoObj) {
-          // Fetch full resolution image through proxy
           const driveUrl = `https://drive.google.com/uc?export=download&id=${photoObj.id}`;
           const res = await fetch(`/api/proxy?url=${encodeURIComponent(driveUrl)}`);
           
@@ -438,85 +476,73 @@ export default function AdminClientDetail({ params }) {
                   </a>
                 )}
               </div>
-              
-              {project.whatsapp && status === 'Belum Bayar' && (
-                <a 
-                  href={`https://wa.me/${project.whatsapp.startsWith('0') ? '62' + project.whatsapp.slice(1) : project.whatsapp}?text=Halo%20${project.clientName},%20berikut%20adalah%20invoice%20pembayaran%20untuk%20${project.photoType}.%20Bisa%20dicek%20di%20sini%20ya:%20${typeof window !== 'undefined' ? window.location.origin : ''}/admin/client/${id}/invoice?type=invoice`} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  style={{ textDecoration: 'none' }}
-                >
-                  <button style={{ width: '100%', fontSize: '0.9rem', padding: '10px', backgroundColor: '#25D366', color: 'white', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: '600', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
-                    📱 Bagikan Tagihan (Invoice) ke WhatsApp
-                  </button>
-                </a>
-              )}
-
-              {project.whatsapp && status === 'DP' && (
-                <a 
-                  href={`https://wa.me/${project.whatsapp.startsWith('0') ? '62' + project.whatsapp.slice(1) : project.whatsapp}?text=Halo%20${project.clientName},%20terima%20kasih%20atas%20uang%20mukanya.%20Berikut%20adalah%20tanda%20terima%20DP%20untuk%20${project.photoType}.%20Bisa%20dicek%20di%20sini%20ya:%20${typeof window !== 'undefined' ? window.location.origin : ''}/admin/client/${id}/invoice?type=receipt_dp`} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  style={{ textDecoration: 'none' }}
-                >
-                  <button style={{ width: '100%', fontSize: '0.9rem', padding: '10px', backgroundColor: '#25D366', color: 'white', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: '600', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
-                    📱 Bagikan Kwitansi DP ke WhatsApp
-                  </button>
-                </a>
-              )}
-
-              {project.whatsapp && status === 'Lunas' && (
-                <a 
-                  href={`https://wa.me/${project.whatsapp.startsWith('0') ? '62' + project.whatsapp.slice(1) : project.whatsapp}?text=Halo%20${project.clientName},%20terima%20kasih%20atas%20pelunasannya.%20Berikut%20adalah%20tanda%20terima%20pembayaran%20untuk%20${project.photoType}.%20Bisa%20dicek%20di%20sini%20ya:%20${typeof window !== 'undefined' ? window.location.origin : ''}/admin/client/${id}/invoice?type=receipt`} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  style={{ textDecoration: 'none' }}
-                >
-                  <button style={{ width: '100%', fontSize: '0.9rem', padding: '10px', backgroundColor: '#25D366', color: 'white', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: '600', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
-                    📱 Bagikan Kwitansi Lunas ke WhatsApp
-                  </button>
-                </a>
-              )}
-              
-              {project.whatsapp && project.gdriveEditedFolderId && (
-                <a 
-                  href={`https://wa.me/${project.whatsapp.startsWith('0') ? '62' + project.whatsapp.slice(1) : project.whatsapp}?text=Halo%20${project.clientName},%20kabar%20gembira!%20Hasil%20foto%20editan%20kamu%20sudah%20jadi%20dan%20siap%20diunduh.%20Silakan%20cek%20hasilnya%20di%20galeri%20kamu%20berikut%20ini:%20${clientLink}`} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  style={{ textDecoration: 'none', marginTop: '8px' }}
-                >
-                  <button style={{ width: '100%', fontSize: '0.9rem', padding: '10px', backgroundColor: '#3b82f6', color: 'white', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: '600', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(59,130,246,0.3)' }}>
-                    ✨ Bagikan Hasil Edit ke WhatsApp
-                  </button>
-                </a>
-              )}
             </div>
           </div>
         </div>
 
-        {/* Input GDrive Link Mentah */}
-        <div style={{ background: '#f9fafb', padding: '16px', borderRadius: '8px', marginBottom: '24px', border: '1px solid var(--border-color)' }}>
-          <h3 style={{ fontSize: '1.05rem', fontWeight: '600', marginBottom: '4px', color: '#111827' }}>Folder Foto Mentah</h3>
-          <p style={{ fontSize: '0.85rem', marginBottom: '12px', color: '#4b5563' }}>
-            Masukkan link folder untuk klien memilih foto (akses "Anyone with the link can view").
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <input 
-              type="url" 
-              value={gdriveLink} 
-              onChange={(e) => setGdriveLink(e.target.value)} 
-              className="input-field" 
-              placeholder="https://drive.google.com/drive/folders/..." 
-              style={{ width: '100%' }} 
-            />
-            <button className="btn-primary" onClick={handleSaveGDriveLink} disabled={savingLink || !gdriveLink} style={{ width: '100%' }}>
-              {savingLink ? 'Menyimpan...' : 'Simpan Link Mentah'}
+        {/* Link Mentahan (Multi Sessions) */}
+        <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px dashed var(--border-color)', background: '#f9fafb', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: '600' }}>Link Folder Mentahan (Sesi)</h3>
+            <button 
+              onClick={addSession} 
+              style={{ padding: '4px 12px', fontSize: '0.8rem', backgroundColor: '#e5e7eb', color: '#374151', borderRadius: '4px', cursor: 'pointer', border: '1px solid #d1d5db' }}
+            >
+              + Tambah Sesi
             </button>
           </div>
+          <p style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '16px' }}>
+            Tambahkan sesi jika acara memiliki banyak bagian (misal: Sesi Akad, Sesi Resepsi). Klien akan melihatnya dalam tab yang berbeda.
+          </p>
+          
+          {sessions.length === 0 && (
+            <div style={{ padding: '16px', textAlign: 'center', backgroundColor: '#f9fafb', borderRadius: '8px', border: '1px dashed #d1d5db', marginBottom: '12px' }}>
+              <p style={{ fontSize: '0.9rem', color: '#6b7280' }}>Belum ada sesi ditambahkan. Klik <b>+ Tambah Sesi</b></p>
+            </div>
+          )}
+          
+          {sessions.map((session, index) => (
+            <div key={session.id} style={{ display: 'flex', gap: '8px', marginBottom: '12px', alignItems: 'flex-start' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1' }}>
+                <input 
+                  type="text" 
+                  placeholder="Nama Sesi (Misal: Sesi Akad)"
+                  className="input-field" 
+                  value={session.name}
+                  onChange={(e) => updateSession(index, 'name', e.target.value)}
+                />
+                <input 
+                  type="url" 
+                  placeholder="Link Google Drive Sesi Ini..."
+                  className="input-field" 
+                  value={session.link}
+                  onChange={(e) => updateSession(index, 'link', e.target.value)}
+                />
+              </div>
+              <button 
+                onClick={() => removeSession(index)}
+                style={{ padding: '10px 12px', backgroundColor: '#fee2e2', color: '#b91c1c', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+                title="Hapus Sesi"
+              >
+                🗑️
+              </button>
+            </div>
+          ))}
+          
+          {sessions.length > 0 && (
+            <button 
+              onClick={handleSaveGDriveLink}
+              disabled={savingLink}
+              className="btn-primary" 
+              style={{ width: '100%', marginTop: '8px' }}
+            >
+              {savingLink ? 'Menyimpan...' : 'Simpan Semua Sesi Mentahan'}
+            </button>
+          )}
         </div>
 
         {/* Input GDrive Link Hasil Edit */}
-        <div style={{ background: '#f9fafb', padding: '16px', borderRadius: '8px', marginBottom: '24px', border: '1px solid var(--border-color)' }}>
+        <div style={{ background: '#f9fafb', padding: '16px', borderRadius: '8px', marginBottom: '24px', border: '1px solid var(--border-color)', marginTop: '24px' }}>
           <h3 style={{ fontSize: '1.05rem', fontWeight: '600', marginBottom: '4px', color: '#111827' }}>Folder Hasil Foto Edit</h3>
           <p style={{ fontSize: '0.85rem', marginBottom: '12px', color: '#4b5563' }}>
             Masukkan link folder berisi foto yang SUDAH SELESAI DIEDIT untuk diunduh klien.
