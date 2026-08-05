@@ -60,15 +60,28 @@ export default function AdminClientDetail({ params }) {
         
         setGdriveEditedLink(data.gdriveEditedLink || '');
         
-        if (data.gdriveFolderId) {
+        // Fetch photos from ALL sessions to build a complete dictionary
+        const foldersToFetch = data.sessions && data.sessions.length > 0 
+          ? data.sessions.map(s => s.folderId)
+          : (data.gdriveFolderId ? [data.gdriveFolderId] : []);
+
+        if (foldersToFetch.length > 0) {
           try {
-            const res = await fetch(`/api/drive?folderId=${data.gdriveFolderId}`);
-            const driveData = await res.json();
-            if (driveData.files) {
-              setPhotos(driveData.files);
-            }
+            const fetchPromises = foldersToFetch.map(folderId => 
+              fetch(`/api/drive?folderId=${folderId}`).then(res => res.json())
+            );
+            
+            const results = await Promise.all(fetchPromises);
+            let allPhotos = [];
+            results.forEach(driveData => {
+              if (driveData.files) {
+                allPhotos = [...allPhotos, ...driveData.files];
+              }
+            });
+            
+            setPhotos(allPhotos);
           } catch (e) {
-            console.error("Gagal memuat thumbnail:", e);
+            console.error("Gagal memuat thumbnail dari sesi:", e);
           }
         }
       }
