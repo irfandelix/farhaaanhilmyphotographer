@@ -101,9 +101,9 @@ export default function InvoicePage({ params }) {
 
       <main id="invoice-content" className="invoice-container" style={{ 
         maxWidth: '800px', 
-        margin: '40px auto', 
+        margin: '20px auto', 
         background: 'white', 
-        padding: '50px', 
+        padding: '30px', 
         borderRadius: '8px',
         boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
         color: '#111827',
@@ -132,7 +132,7 @@ export default function InvoicePage({ params }) {
         </div>
 
         {/* Info Box (Sesuai Format DOCX User) */}
-        <div style={{ marginBottom: '40px' }}>
+        <div style={{ marginBottom: '24px' }}>
           <table style={{ borderCollapse: 'collapse' }}>
             <tbody>
               <tr>
@@ -165,7 +165,7 @@ export default function InvoicePage({ params }) {
         </div>
 
         {/* Detail Pembayaran (Non-Table, Modern Look) */}
-        <div style={{ background: '#f9fafb', borderRadius: '12px', padding: '32px', marginBottom: '40px', border: '1px solid #e5e7eb' }}>
+        <div style={{ background: '#f9fafb', borderRadius: '12px', padding: '24px', marginBottom: '24px', border: '1px solid #e5e7eb' }}>
           
           <h3 style={{ fontSize: '1.2rem', fontWeight: '700', margin: '0 0 20px 0', color: '#111827', borderBottom: '2px solid #e5e7eb', paddingBottom: '12px' }}>
             Detail Layanan
@@ -279,7 +279,7 @@ export default function InvoicePage({ params }) {
         </div>
 
         {/* Footer */}
-        <div style={{ marginTop: '60px', textAlign: 'center', color: '#6b7280', fontSize: '0.9rem', borderTop: '1px solid #e5e7eb', paddingTop: '24px' }}>
+        <div style={{ marginTop: '32px', textAlign: 'center', color: '#6b7280', fontSize: '0.9rem', borderTop: '1px solid #e5e7eb', paddingTop: '16px' }}>
           Terima kasih atas kepercayaan Anda menggunakan jasa kami. <br/>
           Semoga hasil foto kami memberikan kenangan yang indah untuk Anda.
         </div>
