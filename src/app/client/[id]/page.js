@@ -233,16 +233,6 @@ export default function ClientGallery({ params }) {
       {/* Render Raw Photos (Selection Mode) */}
       {activeTab === 'raw' && (
         <>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
-            <button 
-              onClick={handleDownloadRawZip}
-              disabled={downloadingZip}
-              className="btn-secondary" 
-              style={{ padding: '10px 20px', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #9ca3af', backgroundColor: 'white', color: '#4b5563', borderRadius: '8px', cursor: 'pointer' }}
-            >
-              {downloadingZip ? `⏳ Mengemas ZIP... ${downloadProgress}%` : '📥 Unduh Semua Mentahan (ZIP)'}
-            </button>
-          </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
           {photos.map((photo) => {
           const isSelected = selectedPhotos.includes(photo.name);
@@ -308,14 +298,22 @@ export default function ClientGallery({ params }) {
       {/* Render Edited Photos (Download Mode) */}
       {activeTab === 'edited' && (
         <>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
+            <button 
+              onClick={handleDownloadRawZip}
+              disabled={downloadingZip}
+              className="btn-secondary" 
+              style={{ padding: '10px 20px', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #9ca3af', backgroundColor: 'white', color: '#4b5563', borderRadius: '8px', cursor: 'pointer' }}
+            >
+              {downloadingZip ? `⏳ Mengemas ZIP... ${downloadProgress}%` : '📥 Unduh Mentahan (ZIP)'}
+            </button>
             <button 
               onClick={handleDownloadZip}
               disabled={downloadingZip}
               className="btn-primary" 
               style={{ padding: '10px 20px', fontSize: '0.95rem', backgroundColor: '#059669', display: 'flex', alignItems: 'center', gap: '8px' }}
             >
-              {downloadingZip ? `⏳ Mengemas ZIP... ${downloadProgress}%` : '📥 Unduh Semua (ZIP)'}
+              {downloadingZip ? `⏳ Mengemas ZIP... ${downloadProgress}%` : '📥 Unduh Editan (ZIP)'}
             </button>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
