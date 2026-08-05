@@ -173,7 +173,9 @@ export default function InvoicePage({ params }) {
               <tr>
                 <td style={{ padding: '4px 0', width: '160px', color: '#4b5563', fontSize: '1rem' }}>Tanggal Terbit</td>
                 <td style={{ padding: '4px 16px 4px 8px', color: '#111827', fontSize: '1rem' }}>:</td>
-                <td style={{ padding: '4px 0', fontWeight: '600', fontSize: '1rem' }}>{new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</td>
+                <td style={{ padding: '4px 0', fontWeight: '600', fontSize: '1rem' }}>
+                  {new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-')}
+                </td>
               </tr>
               <tr>
                 <td style={{ padding: '4px 0', color: '#4b5563', fontSize: '1rem' }}>Nomor Invoice</td>
@@ -193,7 +195,9 @@ export default function InvoicePage({ params }) {
               <tr>
                 <td style={{ padding: '4px 0', color: '#4b5563', fontSize: '1rem' }}>Tanggal Pemotretan</td>
                 <td style={{ padding: '4px 16px 4px 8px', color: '#111827', fontSize: '1rem' }}>:</td>
-                <td style={{ padding: '4px 0', fontWeight: '600', fontSize: '1rem' }}>{project.shootDate}</td>
+                <td style={{ padding: '4px 0', fontWeight: '600', fontSize: '1rem' }}>
+                  {project.shootDate ? new Date(project.shootDate).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-') : '-'}
+                </td>
               </tr>
             </tbody>
           </table>
