@@ -38,7 +38,7 @@ export default function Home() {
   };
 
   return (
-    <main className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '20px' }}>
+    <main className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 84px)', padding: '20px' }}>
       <div className="glass-panel" style={{ padding: '40px', maxWidth: '500px', textAlign: 'center', width: '100%' }}>
         <h1 style={{ fontSize: '2.5rem', fontWeight: '700', marginBottom: '16px', color: '#111827' }}>
           Client Photo Selector
