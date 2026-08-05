@@ -66,6 +66,46 @@ export default function ClientGallery({ params }) {
     loadData();
   }, [id]);
 
+  const handleDownloadRawZip = async () => {
+    if (!photos || photos.length === 0) return;
+    
+    setDownloadingZip(true);
+    setDownloadProgress(0);
+    
+    try {
+      const zip = new JSZip();
+      const total = photos.length;
+      let successCount = 0;
+      
+      for (let i = 0; i < total; i++) {
+        const photo = photos[i];
+        if (photo.id) {
+          const res = await fetch(`/api/proxy?url=${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${photo.id}`)}`);
+          
+          if (res.ok) {
+            const blob = await res.blob();
+            zip.file(photo.name, blob);
+            successCount++;
+          }
+          
+          setDownloadProgress(Math.round(((i + 1) / total) * 100));
+        }
+      }
+      
+      if (successCount === 0) throw new Error("Tidak ada foto mentah yang berhasil diunduh.");
+      
+      setDownloadProgress(100); 
+      const content = await zip.generateAsync({ type: 'blob' });
+      saveAs(content, `${project.clientName} - Semua Foto Mentah.zip`);
+      
+    } catch (error) {
+      console.error("Download Raw ZIP Error:", error);
+      alert('Terjadi kesalahan saat mengunduh ZIP. Pastikan koneksi internet stabil.');
+    }
+    
+    setDownloadingZip(false);
+  };
+
   const handleDownloadZip = async () => {
     if (!editedPhotos || editedPhotos.length === 0) return;
     
@@ -192,7 +232,18 @@ export default function ClientGallery({ params }) {
 
       {/* Render Raw Photos (Selection Mode) */}
       {activeTab === 'raw' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
+        <>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+            <button 
+              onClick={handleDownloadRawZip}
+              disabled={downloadingZip}
+              className="btn-secondary" 
+              style={{ padding: '10px 20px', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #9ca3af', backgroundColor: 'white', color: '#4b5563', borderRadius: '8px', cursor: 'pointer' }}
+            >
+              {downloadingZip ? `⏳ Mengemas ZIP... ${downloadProgress}%` : '📥 Unduh Semua Mentahan (ZIP)'}
+            </button>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
           {photos.map((photo) => {
           const isSelected = selectedPhotos.includes(photo.name);
           return (
@@ -251,6 +302,7 @@ export default function ClientGallery({ params }) {
           )
         })}
       </div>
+      </>
       )}
 
       {/* Render Edited Photos (Download Mode) */}
