@@ -32,6 +32,9 @@ export default function AdminClientDetail({ params }) {
   const [gdriveEditedLink, setGdriveEditedLink] = useState('');
   const [savingEditedLink, setSavingEditedLink] = useState(false);
 
+  const [editLunasAmount, setEditLunasAmount] = useState('');
+  const [editLunasDate, setEditLunasDate] = useState('');
+
   useEffect(() => {
     async function fetchProject() {
       const data = await getProjectById(id);
@@ -43,6 +46,8 @@ export default function AdminClientDetail({ params }) {
         setEditPaymentAmount(data.paymentAmount || '');
         setEditDescription(data.description || '');
         setEditWhatsapp(data.whatsapp || '');
+        setEditLunasAmount(data.lunasAmount || '');
+        setEditLunasDate(data.lunasDate || '');
         setGdriveLink(data.gdriveLink || '');
         setGdriveEditedLink(data.gdriveEditedLink || '');
         
@@ -116,6 +121,8 @@ export default function AdminClientDetail({ params }) {
           items: validItems,
           paymentAmount: validItems.reduce((sum, item) => sum + (Number(item.qty) * Number(item.price)), 0),
           dpAmount: Number(editDpAmount),
+          lunasAmount: Number(editLunasAmount),
+          lunasDate: editLunasDate,
           whatsapp: editWhatsapp 
         });
       } else {
@@ -124,6 +131,8 @@ export default function AdminClientDetail({ params }) {
           paymentAmount: Number(editPaymentAmount),
           description: editDescription,
           dpAmount: Number(editDpAmount),
+          lunasAmount: Number(editLunasAmount),
+          lunasDate: editLunasDate,
           whatsapp: editWhatsapp
         });
       }
@@ -139,6 +148,10 @@ export default function AdminClientDetail({ params }) {
       setEditDescription(value);
     } else if (name === 'whatsapp') {
       setEditWhatsapp(value.replace(/\D/g, ''));
+    } else if (name === 'lunasAmount') {
+      setEditLunasAmount(value.replace(/\D/g, ''));
+    } else if (name === 'lunasDate') {
+      setEditLunasDate(value);
     } else {
       const rawValue = value.replace(/\D/g, '');
       if (name === 'dpAmount') setEditDpAmount(rawValue);
@@ -316,6 +329,30 @@ export default function AdminClientDetail({ params }) {
                 </div>
                 
                 <div style={{ marginTop: '12px' }}>
+                  <label style={{ fontSize: '0.85rem', color: '#4b5563', display: 'block', marginBottom: '4px' }}>Nominal Pelunasan (Rp)</label>
+                  <input 
+                    type="text" 
+                    name="lunasAmount"
+                    className="input-field" 
+                    value={editLunasAmount ? Number(editLunasAmount).toLocaleString('id-ID') : ''}
+                    onChange={handleFinanceChange}
+                    style={{ padding: '8px' }}
+                  />
+                </div>
+                
+                <div style={{ marginTop: '12px' }}>
+                  <label style={{ fontSize: '0.85rem', color: '#4b5563', display: 'block', marginBottom: '4px' }}>Tanggal Pelunasan</label>
+                  <input 
+                    type="date" 
+                    name="lunasDate"
+                    className="input-field" 
+                    value={editLunasDate}
+                    onChange={handleFinanceChange}
+                    style={{ padding: '8px' }}
+                  />
+                </div>
+                
+                <div style={{ marginTop: '12px' }}>
                   <label style={{ fontSize: '0.85rem', color: '#4b5563', display: 'block', marginBottom: '4px' }}>Nomor WhatsApp (Cth: 08123...)</label>
                   <input 
                     type="text" 
@@ -342,10 +379,17 @@ export default function AdminClientDetail({ params }) {
                   </div>
                 )}
                 
+                {project.lunasAmount > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', color: '#166534' }}>
+                    <span>Pelunasan {project.lunasDate ? `(${new Date(project.lunasDate).toLocaleDateString('id-ID', {day: '2-digit', month:'2-digit', year:'numeric'}).replace(/\//g, '-')})` : ''}:</span>
+                    <span style={{ fontWeight: '600' }}>- Rp {project.lunasAmount.toLocaleString('id-ID')}</span>
+                  </div>
+                )}
+                
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '12px', paddingTop: '12px', borderTop: '1px dashed #d1d5db', alignItems: 'center' }}>
                   <span style={{ fontWeight: '600', color: '#111827' }}>Sisa Tagihan:</span>
                   <span style={{ fontSize: '1.2rem', fontWeight: '700', color: '#dc2626' }}>
-                    Rp {((project.paymentAmount || 0) - (project.dpAmount || 0)).toLocaleString('id-ID')}
+                    Rp {((project.paymentAmount || 0) - (project.dpAmount || 0) - (project.lunasAmount || 0)).toLocaleString('id-ID')}
                   </span>
                 </div>
               </>

@@ -28,7 +28,8 @@ export default function InvoicePage({ params }) {
 
   const total = project.paymentAmount || 0;
   const dp = project.dpAmount || 0;
-  const sisa = total - dp;
+  const lunas = project.lunasAmount || 0;
+  const sisa = total - dp - lunas;
   
   // Logic Status & Titles
   let invoiceTitle = 'INVOICE';
@@ -274,10 +275,10 @@ export default function InvoicePage({ params }) {
                 </div>
               )}
 
-              {type === 'receipt' && sisa > 0 && (
+              {type === 'receipt' && lunas > 0 && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <span style={{ color: '#6b7280' }}>Telah dibayar (Pelunasan):</span>
-                  <span style={{ fontWeight: '600', color: '#166534' }}>- {formatRp(sisa)}</span>
+                  <span style={{ color: '#6b7280' }}>Telah dibayar (Pelunasan) {project.lunasDate ? `[${new Date(project.lunasDate).toLocaleDateString('id-ID', {day: '2-digit', month: '2-digit', year: 'numeric'}).replace(/\//g, '-')}]` : ''}:</span>
+                  <span style={{ fontWeight: '600', color: '#166534' }}>- {formatRp(lunas)}</span>
                 </div>
               )}
 
