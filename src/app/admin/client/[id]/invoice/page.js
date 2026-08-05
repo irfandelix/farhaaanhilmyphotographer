@@ -59,22 +59,57 @@ export default function InvoicePage({ params }) {
 
   const handleDownloadPDF = async () => {
     try {
+      // 1. Ganti teks tombol menjadi loading (bisa juga pakai state, tapi ini cara simpel untuk feedback instant)
+      const btn = document.getElementById('btn-download-pdf');
+      if(btn) btn.innerHTML = '⏳ Memproses...';
+
       const html2pdf = (await import('html2pdf.js')).default;
-      
       const element = document.getElementById('invoice-content');
       
+      const fileName = `${invoiceNumber}_${project.clientName.replace(/\s+/g, '_')}.pdf`;
+
       const opt = {
         margin:       10,
-        filename:     `${invoiceNumber}_${project.clientName.replace(/\s+/g, '_')}.pdf`,
+        filename:     fileName,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2, useCORS: true },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
 
-      html2pdf().set(opt).from(element).save();
+      // 2. Output sebagai Blob
+      html2pdf().set(opt).from(element).outputPdf('blob').then(async (pdfBlob) => {
+        // Cek apakah HP mendukung fitur "Share" native (Share File)
+        const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
+        
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+           try {
+             await navigator.share({
+               files: [file],
+               title: fileName
+             });
+           } catch (err) {
+             console.log('Share dibatalkan atau gagal', err);
+           }
+        } else {
+           // Fallback untuk PC / browser lama: Download manual
+           const url = URL.createObjectURL(pdfBlob);
+           const a = document.createElement('a');
+           a.href = url;
+           a.download = fileName;
+           document.body.appendChild(a);
+           a.click();
+           document.body.removeChild(a);
+           URL.revokeObjectURL(url);
+        }
+        
+        if(btn) btn.innerHTML = '📄 Unduh / Bagikan PDF';
+      });
+
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('Gagal membuat PDF.');
+      const btn = document.getElementById('btn-download-pdf');
+      if(btn) btn.innerHTML = '📄 Unduh / Bagikan PDF';
     }
   };
 
@@ -94,8 +129,8 @@ export default function InvoicePage({ params }) {
         <button onClick={printInvoice} className="btn-secondary" style={{ padding: '12px 24px', flex: 1, maxWidth: '200px' }}>
           🖨️ Cetak
         </button>
-        <button onClick={handleDownloadPDF} className="btn-primary" style={{ padding: '12px 24px', flex: 1, maxWidth: '200px' }}>
-          📄 Unduh PDF
+        <button id="btn-download-pdf" onClick={handleDownloadPDF} className="btn-primary" style={{ padding: '12px 24px', flex: 1, maxWidth: '200px' }}>
+          📄 Unduh / Bagikan PDF
         </button>
       </div>
 
