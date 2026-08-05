@@ -9,7 +9,7 @@ export function middleware(req) {
     const [user, pwd] = atob(authValue).split(':');
 
     // Gunakan variabel environment jika ada, jika tidak gunakan default
-    const adminUser = process.env.ADMIN_USERNAME || 'admin';
+    const adminUser = process.env.ADMIN_USERNAME || 'farhan';
     const adminPwd = process.env.ADMIN_PASSWORD || '041296';
 
     if (user === adminUser && pwd === adminPwd) {
