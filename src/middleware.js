@@ -8,9 +8,9 @@ export function middleware(req) {
     // atob is supported in Edge Runtime
     const [user, pwd] = atob(authValue).split(':');
 
-    // Gunakan variabel environment jika ada, jika tidak gunakan default
-    const adminUser = process.env.ADMIN_USERNAME || 'farhan';
-    const adminPwd = process.env.ADMIN_PASSWORD || '041296';
+    // Gunakan variabel environment dari .env.local atau Vercel
+    const adminUser = process.env.ADMIN_USERNAME;
+    const adminPwd = process.env.ADMIN_PASSWORD;
 
     if (user === adminUser && pwd === adminPwd) {
       return NextResponse.next();
