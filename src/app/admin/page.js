@@ -17,6 +17,43 @@ export default function AdminDashboard() {
     fetchProjects();
   }, []);
 
+  const getUpcomingProjects = (projects) => {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    
+    const monthNames = ["januari", "februari", "maret", "april", "mei", "juni", "juli", "agustus", "september", "oktober", "november", "desember"];
+    const currentMonth = monthNames[today.getMonth()];
+    const nextMonth = monthNames[(today.getMonth() + 1) % 12];
+    
+    return projects.filter(p => {
+      if (!p.shootDate) return false;
+      
+      // Jika sudah ada link gdrive mentahan, berarti pemotretan sudah selesai
+      const hasLegacyLink = !!p.gdriveLink;
+      const hasSessionLink = p.sessions && p.sessions.length > 0 && p.sessions.some(s => s.link);
+      if (hasLegacyLink || hasSessionLink) return false;
+
+      // Coba parse tanggal
+      const d = new Date(p.shootDate);
+      if (!isNaN(d.getTime())) {
+        const diffTime = d.getTime() - today.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        // Tampilkan jika jadwalnya hari ini s.d 14 hari ke depan, atau baru lewat 2 hari tapi belum diupload
+        return diffDays >= -2 && diffDays <= 14; 
+      }
+      
+      // Jika format teks ("12-13 Agustus")
+      const text = p.shootDate.toLowerCase();
+      if (text.includes(currentMonth) || text.includes(nextMonth)) {
+         return true;
+      }
+      
+      return false;
+    });
+  };
+
+  const upcomingProjects = getUpcomingProjects(projects);
+
   return (
     <main style={{ padding: '20px 16px', maxWidth: '1000px', margin: '0 auto' }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
@@ -25,6 +62,29 @@ export default function AdminDashboard() {
           <button className="btn-primary" style={{ width: '100%', maxWidth: '200px' }}>+ Klien Baru</button>
         </Link>
       </div>
+
+      {!loading && upcomingProjects.length > 0 && (
+        <div style={{ marginBottom: '32px', backgroundColor: '#fffbeb', border: '1px solid #fef3c7', borderRadius: '12px', padding: '20px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+          <h2 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#92400e', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            🔔 Pengingat Jadwal Pemotretan Terdekat
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {upcomingProjects.map(p => (
+              <div key={`alert-${p.id}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff', padding: '12px 16px', borderRadius: '8px', border: '1px solid #fde68a' }}>
+                <div>
+                  <strong style={{ display: 'block', color: '#111827', fontSize: '1rem' }}>{p.clientName} ({p.photoType})</strong>
+                  <span style={{ color: '#6b7280', fontSize: '0.9rem' }}>Tanggal: {p.shootDate}</span>
+                </div>
+                <Link href={`/admin/client/${p.id}`}>
+                  <button style={{ backgroundColor: '#f59e0b', color: 'white', padding: '6px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '600', border: 'none', cursor: 'pointer' }}>
+                    Lihat
+                  </button>
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <p>Loading projects...</p>
