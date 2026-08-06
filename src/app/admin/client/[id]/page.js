@@ -24,6 +24,7 @@ export default function AdminClientDetail({ params }) {
   const [editPaymentAmount, setEditPaymentAmount] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [editWhatsapp, setEditWhatsapp] = useState('');
+  const [editShootDate, setEditShootDate] = useState('');
   
   // GDrive Link State
   const [savingLink, setSavingLink] = useState(false);
@@ -48,6 +49,7 @@ export default function AdminClientDetail({ params }) {
         setEditWhatsapp(data.whatsapp || '');
         setEditLunasAmount(data.lunasAmount || '');
         setEditLunasDate(data.lunasDate || '');
+        setEditShootDate(data.shootDate || '');
         
         // Handle sessions (if empty, fallback to legacy gdriveLink)
         if (data.sessions && data.sessions.length > 0) {
@@ -153,7 +155,13 @@ export default function AdminClientDetail({ params }) {
   };
 
   const handleSaveFinance = async () => {
-    let payload = { dpAmount: editDpAmount, whatsapp: editWhatsapp };
+    let payload = { 
+      dpAmount: editDpAmount, 
+      whatsapp: editWhatsapp,
+      lunasAmount: editLunasAmount,
+      lunasDate: editLunasDate,
+      shootDate: editShootDate
+    };
     
     if (project.photoType === 'Foto Produk') {
       const validItems = editItems.filter(item => item.name && item.price);
@@ -175,6 +183,7 @@ export default function AdminClientDetail({ params }) {
           dpAmount: Number(editDpAmount),
           lunasAmount: Number(editLunasAmount),
           lunasDate: editLunasDate,
+          shootDate: editShootDate,
           whatsapp: editWhatsapp 
         });
       } else {
@@ -185,6 +194,7 @@ export default function AdminClientDetail({ params }) {
           dpAmount: Number(editDpAmount),
           lunasAmount: Number(editLunasAmount),
           lunasDate: editLunasDate,
+          shootDate: editShootDate,
           whatsapp: editWhatsapp
         });
       }
@@ -425,6 +435,19 @@ export default function AdminClientDetail({ params }) {
                     onChange={handleFinanceChange}
                     style={{ padding: '8px' }}
                     placeholder="Opsional"
+                  />
+                </div>
+
+                <div style={{ marginTop: '12px' }}>
+                  <label style={{ fontSize: '0.85rem', color: '#4b5563', display: 'block', marginBottom: '4px' }}>Tanggal Pemotretan (Bisa teks/range)</label>
+                  <input 
+                    type="text" 
+                    name="shootDate"
+                    className="input-field" 
+                    value={editShootDate}
+                    onChange={(e) => setEditShootDate(e.target.value)}
+                    style={{ padding: '8px' }}
+                    placeholder="Cth: 12-13 Agustus 2026"
                   />
                 </div>
               </div>

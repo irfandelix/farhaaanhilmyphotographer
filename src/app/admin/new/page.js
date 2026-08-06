@@ -141,8 +141,8 @@ export default function NewClientPage() {
           )}
 
           <div className="form-group">
-            <label className="form-label">Tanggal Pemotretan</label>
-            <input required type="date" name="shootDate" className="input-field" value={formData.shootDate} onChange={handleChange} />
+            <label className="form-label">Tanggal Pemotretan (Perkiraan / Pasti)</label>
+            <input required type="text" name="shootDate" className="input-field" value={formData.shootDate} onChange={handleChange} placeholder="Cth: 12 Agustus 2026 atau 12-13 Agustus" />
           </div>
 
           {formData.photoType === 'Foto Produk' ? (
