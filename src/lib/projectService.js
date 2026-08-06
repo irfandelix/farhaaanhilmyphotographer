@@ -135,6 +135,12 @@ export const updateProjectFinancials = async (id, data) => {
       updatedAt: serverTimestamp()
     };
 
+    if (data.whatsapp !== undefined) updatePayload.whatsapp = data.whatsapp;
+    if (data.lunasAmount !== undefined) updatePayload.lunasAmount = Number(data.lunasAmount);
+    if (data.lunasDate !== undefined) updatePayload.lunasDate = data.lunasDate;
+    if (data.shootDate !== undefined) updatePayload.shootDate = data.shootDate;
+    if (data.description !== undefined) updatePayload.description = data.description;
+
     if (data.items) {
       updatePayload.items = data.items;
       updatePayload.paymentAmount = data.items.reduce((sum, item) => sum + (Number(item.qty) * Number(item.price)), 0);
