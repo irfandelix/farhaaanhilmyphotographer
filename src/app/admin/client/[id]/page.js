@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getProjectById, updatePaymentStatus, updateGDriveLink, updateGDriveEditedLink, unlockClientSelection, updateProjectFinancials, updateGDriveSessions } from '@/lib/projectService';
+import { getProjectById, updatePaymentStatus, updateGDriveLink, updateGDriveEditedLink, unlockClientSelection, updateProjectFinancials, updateGDriveSessions, deleteProject } from '@/lib/projectService';
 
 export default function AdminClientDetail({ params }) {
   const router = useRouter();
@@ -284,6 +284,18 @@ export default function AdminClientDetail({ params }) {
         alert("Kunci berhasil dibuka.");
       } else {
         alert("Gagal membuka kunci.");
+      }
+    }
+  };
+
+  const handleDeleteProject = async () => {
+    if (confirm("⚠️ PERINGATAN: Anda yakin ingin menghapus project ini secara permanen? Data klien, invoice, dan tagihan akan hilang dan tidak dapat dikembalikan.")) {
+      const success = await deleteProject(id);
+      if (success) {
+        alert("Project berhasil dihapus.");
+        router.push('/admin');
+      } else {
+        alert("Gagal menghapus project.");
       }
     }
   };
@@ -683,6 +695,31 @@ export default function AdminClientDetail({ params }) {
               })}
             </div>
           )}
+        </div>
+
+        {/* Zona Berbahaya (Hapus Project) */}
+        <div style={{ marginTop: '48px', paddingTop: '24px', borderTop: '1px dashed #ef4444', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: '600', color: '#b91c1c', marginBottom: '8px' }}>Zona Berbahaya</h3>
+          <p style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '16px', textAlign: 'center', maxWidth: '400px' }}>
+            Tindakan ini akan menghapus project beserta invoice-nya secara permanen dari sistem. Tindakan ini tidak dapat dibatalkan.
+          </p>
+          <button 
+            onClick={handleDeleteProject}
+            style={{ 
+              padding: '10px 24px', 
+              backgroundColor: '#fee2e2', 
+              color: '#b91c1c', 
+              border: '1px solid #f87171', 
+              borderRadius: '8px', 
+              fontWeight: '600', 
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+            onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#fecaca'; }}
+            onMouseOut={(e) => { e.currentTarget.style.backgroundColor = '#fee2e2'; }}
+          >
+            🗑️ Hapus Project Ini
+          </button>
         </div>
       </div>
     </main>

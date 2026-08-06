@@ -6,6 +6,7 @@ import {
   getDoc, 
   doc, 
   updateDoc, 
+  deleteDoc,
   serverTimestamp,
   query,
   orderBy
@@ -236,6 +237,18 @@ export async function updateGDriveSessions(id, sessions) {
     return true;
   } catch (error) {
     console.error("Error updating GDrive sessions: ", error);
+    return false;
+  }
+}
+
+// Delete a project
+export async function deleteProject(id) {
+  try {
+    const docRef = doc(db, COLLECTION_NAME, id);
+    await deleteDoc(docRef);
+    return true;
+  } catch (error) {
+    console.error("Error deleting project: ", error);
     return false;
   }
 }
