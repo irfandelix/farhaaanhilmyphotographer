@@ -9,7 +9,8 @@ import {
   deleteDoc,
   serverTimestamp,
   query,
-  orderBy
+  orderBy,
+  limit
 } from 'firebase/firestore';
 
 const COLLECTION_NAME = 'projects';
@@ -41,11 +42,15 @@ export async function createProject(data) {
       calculatedPaymentAmount = items.reduce((sum, item) => sum + (Number(item.qty) * Number(item.price)), 0);
     }
 
-    // Hitung jumlah project untuk nomor urut invoice
-    const q = query(collection(db, COLLECTION_NAME));
+    // Cari nomor urut (seqNum) tertinggi yang pernah ada
+    const q = query(collection(db, COLLECTION_NAME), orderBy('seqNum', 'desc'), limit(1));
     const querySnapshot = await getDocs(q);
-    const count = querySnapshot.size;
-    const seqNum = count + 1;
+    
+    let seqNum = 1;
+    if (!querySnapshot.empty) {
+      const highestSeqNum = querySnapshot.docs[0].data().seqNum || 0;
+      seqNum = highestSeqNum + 1;
+    }
 
     const projectData = {
       clientName: data.clientName,
