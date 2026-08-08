@@ -12,6 +12,7 @@ export default function NewClientPage() {
     whatsapp: '',
     photoType: 'Foto Produk',
     shootDate: '',
+    shootTime: '',
     dpAmount: '',
     paymentAmount: '', 
     description: '',   
@@ -140,9 +141,16 @@ export default function NewClientPage() {
             </div>
           )}
 
-          <div className="form-group">
-            <label className="form-label">Tanggal Pemotretan (Perkiraan / Pasti)</label>
-            <input required type="text" name="shootDate" className="input-field" value={formData.shootDate} onChange={handleChange} placeholder="Cth: 12 Agustus 2026 atau 12-13 Agustus" />
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label className="form-label">Tanggal Pemotretan</label>
+              <input required type="text" name="shootDate" className="input-field" value={formData.shootDate} onChange={handleChange} placeholder="Cth: 12 Agustus 2026" />
+            </div>
+            
+            <div className="form-group" style={{ flex: 1 }}>
+              <label className="form-label">Jam / Sesi</label>
+              <input required type="text" name="shootTime" className="input-field" value={formData.shootTime} onChange={handleChange} placeholder="Cth: 14:00 atau Sesi Pagi" />
+            </div>
           </div>
 
           {formData.photoType === 'Foto Produk' ? (

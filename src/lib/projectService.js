@@ -58,6 +58,7 @@ export async function createProject(data) {
       description: data.description || "",
       items: items, // Save line items
       shootDate: data.shootDate,
+      shootTime: data.shootTime || "",
       paymentAmount: calculatedPaymentAmount,
       dpAmount: Number(data.dpAmount || 0),
       paymentStatus: data.paymentStatus || "Belum Bayar",
@@ -139,6 +140,7 @@ export const updateProjectFinancials = async (id, data) => {
     if (data.lunasAmount !== undefined) updatePayload.lunasAmount = Number(data.lunasAmount);
     if (data.lunasDate !== undefined) updatePayload.lunasDate = data.lunasDate;
     if (data.shootDate !== undefined) updatePayload.shootDate = data.shootDate;
+    if (data.shootTime !== undefined) updatePayload.shootTime = data.shootTime;
     if (data.description !== undefined) updatePayload.description = data.description;
 
     if (data.items) {

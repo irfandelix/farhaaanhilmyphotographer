@@ -25,6 +25,7 @@ export default function AdminClientDetail({ params }) {
   const [editDescription, setEditDescription] = useState('');
   const [editWhatsapp, setEditWhatsapp] = useState('');
   const [editShootDate, setEditShootDate] = useState('');
+  const [editShootTime, setEditShootTime] = useState('');
   
   // GDrive Link State
   const [savingLink, setSavingLink] = useState(false);
@@ -50,6 +51,7 @@ export default function AdminClientDetail({ params }) {
         setEditLunasAmount(data.lunasAmount || '');
         setEditLunasDate(data.lunasDate || '');
         setEditShootDate(data.shootDate || '');
+        setEditShootTime(data.shootTime || '');
         
         // Handle sessions (if empty, fallback to legacy gdriveLink)
         if (data.sessions && data.sessions.length > 0) {
@@ -160,7 +162,8 @@ export default function AdminClientDetail({ params }) {
       whatsapp: editWhatsapp,
       lunasAmount: editLunasAmount,
       lunasDate: editLunasDate,
-      shootDate: editShootDate
+      shootDate: editShootDate,
+      shootTime: editShootTime
     };
     
     if (project.photoType === 'Foto Produk') {
@@ -184,6 +187,7 @@ export default function AdminClientDetail({ params }) {
           lunasAmount: Number(editLunasAmount),
           lunasDate: editLunasDate,
           shootDate: editShootDate,
+          shootTime: editShootTime,
           whatsapp: editWhatsapp 
         });
       } else {
@@ -195,6 +199,7 @@ export default function AdminClientDetail({ params }) {
           lunasAmount: Number(editLunasAmount),
           lunasDate: editLunasDate,
           shootDate: editShootDate,
+          shootTime: editShootTime,
           whatsapp: editWhatsapp
         });
       }
@@ -327,7 +332,7 @@ export default function AdminClientDetail({ params }) {
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', marginBottom: '24px' }}>
           <div style={{ width: '100%' }}>
             <h1 style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)', fontWeight: '700', marginBottom: '4px' }}>{project.clientName}</h1>
-            <p style={{ color: '#4b5563', fontSize: '0.9rem' }}>{project.photoType} &bull; {project.shootDate}</p>
+            <p style={{ color: '#4b5563', fontSize: '0.9rem' }}>{project.photoType} &bull; {project.shootDate} {project.shootTime ? `• ${project.shootTime}` : ''}</p>
           </div>
           <div style={{ width: '100%', background: '#f9fafb', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
             
@@ -438,17 +443,31 @@ export default function AdminClientDetail({ params }) {
                   />
                 </div>
 
-                <div style={{ marginTop: '12px' }}>
-                  <label style={{ fontSize: '0.85rem', color: '#4b5563', display: 'block', marginBottom: '4px' }}>Tanggal Pemotretan (Bisa teks/range)</label>
-                  <input 
-                    type="text" 
-                    name="shootDate"
-                    className="input-field" 
-                    value={editShootDate}
-                    onChange={(e) => setEditShootDate(e.target.value)}
-                    style={{ padding: '8px' }}
-                    placeholder="Cth: 12-13 Agustus 2026"
-                  />
+                <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: '0.85rem', color: '#4b5563', display: 'block', marginBottom: '4px' }}>Tanggal Pemotretan</label>
+                    <input 
+                      type="text" 
+                      name="shootDate"
+                      className="input-field" 
+                      value={editShootDate}
+                      onChange={(e) => setEditShootDate(e.target.value)}
+                      style={{ padding: '8px' }}
+                      placeholder="Cth: 29 Agustus 2026"
+                    />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: '0.85rem', color: '#4b5563', display: 'block', marginBottom: '4px' }}>Jam / Sesi</label>
+                    <input 
+                      type="text" 
+                      name="shootTime"
+                      className="input-field" 
+                      value={editShootTime}
+                      onChange={(e) => setEditShootTime(e.target.value)}
+                      style={{ padding: '8px' }}
+                      placeholder="Cth: 14:00"
+                    />
+                  </div>
                 </div>
               </div>
             ) : (
