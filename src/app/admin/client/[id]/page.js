@@ -332,7 +332,7 @@ export default function AdminClientDetail({ params }) {
           <div style={{ width: '100%', background: '#f9fafb', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
             
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '600' }}>Informasi Pembayaran</h3>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '600' }}>Rincian Project & Keuangan</h3>
               <button 
                 onClick={() => isEditingFinance ? handleSaveFinance() : setIsEditingFinance(true)}
                 className={isEditingFinance ? "btn-primary" : "btn-secondary"}
