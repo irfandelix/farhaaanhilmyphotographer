@@ -136,6 +136,8 @@ export const updateProjectFinancials = async (id, data) => {
       updatedAt: serverTimestamp()
     };
 
+    if (data.clientName !== undefined) updatePayload.clientName = data.clientName;
+    if (data.photoType !== undefined) updatePayload.photoType = data.photoType;
     if (data.whatsapp !== undefined) updatePayload.whatsapp = data.whatsapp;
     if (data.lunasAmount !== undefined) updatePayload.lunasAmount = Number(data.lunasAmount);
     if (data.lunasDate !== undefined) updatePayload.lunasDate = data.lunasDate;

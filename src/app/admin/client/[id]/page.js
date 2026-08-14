@@ -21,7 +21,8 @@ export default function AdminClientDetail({ params }) {
   const [isEditingFinance, setIsEditingFinance] = useState(false);
   const [editItems, setEditItems] = useState([]);
   const [editDpAmount, setEditDpAmount] = useState('');
-  const [editPaymentAmount, setEditPaymentAmount] = useState('');
+  const [editClientName, setEditClientName] = useState('');
+  const [editPhotoType, setEditPhotoType] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [editWhatsapp, setEditWhatsapp] = useState('');
   const [editShootDate, setEditShootDate] = useState('');
@@ -44,6 +45,8 @@ export default function AdminClientDetail({ params }) {
         setProject(data);
         setStatus(data.paymentStatus);
         setEditItems(data.items || [{ name: 'Paket Jasa Fotografi', qty: 1, price: data.paymentAmount || 0 }]);
+        setEditClientName(data.clientName || '');
+        setEditPhotoType(data.photoType || '');
         setEditDpAmount(data.dpAmount || '');
         setEditPaymentAmount(data.paymentAmount || '');
         setEditDescription(data.description || '');
@@ -159,6 +162,8 @@ export default function AdminClientDetail({ params }) {
   const handleSaveFinance = async () => {
     let payload = { 
       dpAmount: editDpAmount, 
+      clientName: editClientName,
+      photoType: editPhotoType,
       whatsapp: editWhatsapp,
       lunasAmount: editLunasAmount,
       lunasDate: editLunasDate,
@@ -181,6 +186,8 @@ export default function AdminClientDetail({ params }) {
         const validItems = editItems.filter(item => item.name && item.price);
         setProject({ 
           ...project, 
+          clientName: editClientName,
+          photoType: editPhotoType,
           items: validItems,
           paymentAmount: validItems.reduce((sum, item) => sum + (Number(item.qty) * Number(item.price)), 0),
           dpAmount: Number(editDpAmount),
@@ -193,6 +200,8 @@ export default function AdminClientDetail({ params }) {
       } else {
         setProject({
           ...project,
+          clientName: editClientName,
+          photoType: editPhotoType,
           paymentAmount: Number(editPaymentAmount),
           description: editDescription,
           dpAmount: Number(editDpAmount),
@@ -349,6 +358,35 @@ export default function AdminClientDetail({ params }) {
 
             {isEditingFinance ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: '0.85rem', color: '#4b5563', display: 'block', marginBottom: '4px' }}>Nama Klien</label>
+                    <input 
+                      type="text" 
+                      className="input-field" 
+                      value={editClientName}
+                      onChange={(e) => setEditClientName(e.target.value)}
+                      style={{ padding: '8px' }}
+                    />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: '0.85rem', color: '#4b5563', display: 'block', marginBottom: '4px' }}>Jenis Sesi</label>
+                    <select 
+                      className="input-field" 
+                      value={editPhotoType}
+                      onChange={(e) => setEditPhotoType(e.target.value)}
+                      style={{ padding: '8px' }}
+                    >
+                      <option value="Graduation">Graduation</option>
+                      <option value="Group / Studio">Group / Studio</option>
+                      <option value="Foto Produk">Foto Produk</option>
+                      <option value="Event / Dokumentasi">Event / Dokumentasi</option>
+                      <option value="Wedding / Engagement">Wedding / Engagement</option>
+                      <option value="Lainnya">Lainnya</option>
+                    </select>
+                  </div>
+                </div>
+
                 {project.photoType === 'Foto Produk' ? (
                   <>
                     <label style={{ fontSize: '0.85rem', color: '#4b5563', display: 'block', marginBottom: '4px' }}>Rincian Layanan / Produk</label>
