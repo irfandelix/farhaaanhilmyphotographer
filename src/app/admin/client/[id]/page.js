@@ -172,7 +172,7 @@ export default function AdminClientDetail({ params }) {
       shootTime: editShootTime
     };
     
-    if (project.photoType === 'Foto Produk') {
+    if (editPhotoType === 'Foto Produk') {
       const validItems = editItems.filter(item => item.name && item.price);
       payload.items = validItems;
     } else {
@@ -183,7 +183,7 @@ export default function AdminClientDetail({ params }) {
     const success = await updateProjectFinancials(id, payload);
     
     if (success) {
-      if (project.photoType === 'Foto Produk') {
+      if (editPhotoType === 'Foto Produk') {
         const validItems = editItems.filter(item => item.name && item.price);
         setProject({ 
           ...project, 
@@ -215,7 +215,7 @@ export default function AdminClientDetail({ params }) {
       }
       setIsEditingFinance(false);
     } else {
-      alert("Gagal memperbarui harga & DP.");
+      alert("Gagal memperbarui info project.");
     }
   };
 
@@ -388,7 +388,7 @@ export default function AdminClientDetail({ params }) {
                   </div>
                 </div>
 
-                {project.photoType === 'Foto Produk' ? (
+                {editPhotoType === 'Foto Produk' ? (
                   <>
                     <label style={{ fontSize: '0.85rem', color: '#4b5563', display: 'block', marginBottom: '4px' }}>Rincian Layanan / Produk</label>
                     {editItems.map((item, index) => (
