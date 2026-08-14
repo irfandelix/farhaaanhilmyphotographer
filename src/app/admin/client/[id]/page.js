@@ -21,6 +21,7 @@ export default function AdminClientDetail({ params }) {
   const [isEditingFinance, setIsEditingFinance] = useState(false);
   const [editItems, setEditItems] = useState([]);
   const [editDpAmount, setEditDpAmount] = useState('');
+  const [editPaymentAmount, setEditPaymentAmount] = useState('');
   const [editClientName, setEditClientName] = useState('');
   const [editPhotoType, setEditPhotoType] = useState('');
   const [editDescription, setEditDescription] = useState('');
