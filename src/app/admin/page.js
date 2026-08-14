@@ -58,8 +58,8 @@ export default function AdminDashboard() {
     <main style={{ padding: '20px 16px', maxWidth: '1000px', margin: '0 auto' }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
         <h1 style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)', fontWeight: '700' }}>Dashboard Admin</h1>
-        <Link href="/admin/new" style={{ width: '100%' }}>
-          <button className="btn-primary" style={{ width: '100%', maxWidth: '200px' }}>+ Klien Baru</button>
+        <Link href="/admin/new">
+          <button className="btn-primary" style={{ padding: '10px 24px', fontSize: '1rem' }}>+ Klien Baru</button>
         </Link>
       </div>
 
