@@ -96,9 +96,14 @@ export default function NewClientPage() {
           <div className="form-group">
             <label className="form-label">Jenis Foto</label>
             <select name="photoType" className="input-field" value={formData.photoType} onChange={handleChange}>
-              <option value="Foto Produk">Foto Produk</option>
-              <option value="Event Birthday">Event Birthday</option>
               <option value="Graduation">Graduation</option>
+              <option value="Foto Studio">Foto Studio</option>
+              <option value="Foto Group">Foto Group</option>
+              <option value="Foto Produk">Foto Produk</option>
+              <option value="Event / Dokumentasi">Event / Dokumentasi</option>
+              <option value="Wedding">Wedding</option>
+              <option value="Engagement">Engagement</option>
+              <option value="Lainnya">Lainnya</option>
             </select>
           </div>
 
