@@ -466,6 +466,7 @@ export default function ClientGallery({ params }) {
           )
         })}
             </div>
+            )}
             
             {/* Pagination UI */}
             {viewMode === 'all' && totalPages > 1 && (
