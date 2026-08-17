@@ -108,43 +108,70 @@ export default function AdminDashboard() {
           <p style={{ color: '#6b7280', fontSize: '1.1rem' }}>Belum ada project klien.</p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-          {projects.map((project) => {
-             const statusColor = project.paymentStatus === 'Lunas' ? '#dcfce3' : project.paymentStatus === 'DP' ? '#fef3c7' : '#fee2e2';
-             const statusTextColor = project.paymentStatus === 'Lunas' ? '#166534' : project.paymentStatus === 'DP' ? '#92400e' : '#991b1b';
-             return (
-            <Link key={project.id} href={`/admin/client/${project.id}`}>
-              <div className="glass-panel animate-fade-in" style={{ padding: '20px', cursor: 'pointer', transition: 'transform 0.2s', ':hover': { transform: 'translateY(-4px)' } }}>
-                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-                  <div>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '8px' }}>{project.clientName}</h3>
-                    <div style={{ color: '#6b7280', fontSize: '0.9rem', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <span>{project.photoType}</span>
-                      <span>Tanggal: {project.shootDate}</span>
-                      {project.shootTime && <span>Waktu: {project.shootTime}</span>}
+        <>
+          {(() => {
+            const progressProjects = projects.filter(p => p.paymentStatus !== 'Lunas');
+            const lunasProjects = projects.filter(p => p.paymentStatus === 'Lunas');
+
+            const renderProjectCard = (project) => {
+              const statusColor = project.paymentStatus === 'Lunas' ? '#dcfce3' : project.paymentStatus === 'DP' ? '#fef3c7' : '#fee2e2';
+              const statusTextColor = project.paymentStatus === 'Lunas' ? '#166534' : project.paymentStatus === 'DP' ? '#92400e' : '#991b1b';
+              return (
+                <Link key={project.id} href={`/admin/client/${project.id}`}>
+                  <div className="glass-panel animate-fade-in" style={{ padding: '20px', cursor: 'pointer', transition: 'transform 0.2s', ':hover': { transform: 'translateY(-4px)' } }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+                      <div>
+                        <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '8px' }}>{project.clientName}</h3>
+                        <div style={{ color: '#6b7280', fontSize: '0.9rem', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <span>{project.photoType}</span>
+                          <span>Tanggal: {project.shootDate}</span>
+                          {project.shootTime && <span>Waktu: {project.shootTime}</span>}
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', justifyContent: 'space-between', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
+                        <span style={{ 
+                          padding: '6px 12px', 
+                          borderRadius: '20px', 
+                          fontSize: '0.85rem', 
+                          fontWeight: '500',
+                          backgroundColor: statusColor,
+                          color: statusTextColor
+                        }}>
+                          {project.paymentStatus}
+                        </span>
+                        <span style={{ fontWeight: '600', color: '#111827' }}>
+                          Rp {project.paymentAmount.toLocaleString('id-ID')}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', justifyContent: 'space-between', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
-                    <span style={{ 
-                      padding: '6px 12px', 
-                      borderRadius: '20px', 
-                      fontSize: '0.85rem', 
-                      fontWeight: '500',
-                      backgroundColor: statusColor,
-                      color: statusTextColor
-                    }}>
-                      {project.paymentStatus}
-                    </span>
-                    <span style={{ fontWeight: '600', color: '#111827' }}>
-                      Rp {project.paymentAmount.toLocaleString('id-ID')}
-                    </span>
+                </Link>
+              );
+            };
+
+            return (
+              <>
+                {progressProjects.length > 0 && (
+                  <div style={{ marginBottom: '40px' }}>
+                    <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '16px', color: '#374151' }}>Sedang Berjalan (Progress)</h2>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+                      {progressProjects.map(renderProjectCard)}
+                    </div>
                   </div>
-                </div>
-              </div>
-            </Link>
-            )
-          })}
-        </div>
+                )}
+                
+                {lunasProjects.length > 0 && (
+                  <div>
+                    <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '16px', color: '#374151' }}>Selesai (Lunas)</h2>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+                      {lunasProjects.map(renderProjectCard)}
+                    </div>
+                  </div>
+                )}
+              </>
+            );
+          })()}
+        </>
       )}
     </main>
   );
