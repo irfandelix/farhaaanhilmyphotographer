@@ -86,7 +86,9 @@ export default function AdminDashboard() {
               <div key={`alert-${p.id}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff', padding: '12px 16px', borderRadius: '8px', border: '1px solid #fde68a' }}>
                 <div>
                   <strong style={{ display: 'block', color: '#111827', fontSize: '1rem' }}>{p.clientName} ({p.photoType})</strong>
-                  <span style={{ color: '#6b7280', fontSize: '0.9rem' }}>Tanggal: {p.shootDate}</span>
+                  <span style={{ color: '#6b7280', fontSize: '0.9rem' }}>
+                    Tanggal: {p.shootDate} {p.shootTime && `• Jam: ${p.shootTime}`}
+                  </span>
                 </div>
                 <Link href={`/admin/client/${p.id}`}>
                   <button style={{ backgroundColor: '#f59e0b', color: 'white', padding: '6px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '600', border: 'none', cursor: 'pointer' }}>
@@ -117,7 +119,7 @@ export default function AdminDashboard() {
                   <div>
                     <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '8px' }}>{project.clientName}</h3>
                     <p style={{ color: '#6b7280', fontSize: '0.9rem', marginTop: '4px' }}>
-                      {project.photoType} &bull; {project.shootDate}
+                      {project.photoType} &bull; {project.shootDate} {project.shootTime && `\u2022 Jam: ${project.shootTime}`}
                     </p>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', justifyContent: 'space-between', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
