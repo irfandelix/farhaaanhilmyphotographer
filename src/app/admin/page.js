@@ -110,8 +110,9 @@ export default function AdminDashboard() {
       ) : (
         <>
           {(() => {
-            const progressProjects = projects.filter(p => p.paymentStatus !== 'Lunas');
-            const lunasProjects = projects.filter(p => p.paymentStatus === 'Lunas');
+            const isFinished = (p) => p.paymentStatus === 'Lunas' || (p.gdriveEditedLink && p.gdriveEditedLink.trim() !== '');
+            const progressProjects = projects.filter(p => !isFinished(p));
+            const lunasProjects = projects.filter(p => isFinished(p));
 
             const renderProjectCard = (project) => {
               const statusColor = project.paymentStatus === 'Lunas' ? '#dcfce3' : project.paymentStatus === 'DP' ? '#fef3c7' : '#fee2e2';
@@ -121,7 +122,10 @@ export default function AdminDashboard() {
                   <div className="glass-panel animate-fade-in" style={{ padding: '20px', cursor: 'pointer', transition: 'transform 0.2s', ':hover': { transform: 'translateY(-4px)' } }}>
                     <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
                       <div>
-                        <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '8px' }}>{project.clientName}</h3>
+                        <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '8px' }}>
+                          {project.clientName}
+                          {project.gdriveEditedLink && <span style={{ marginLeft: '8px', fontSize: '0.8rem', backgroundColor: '#dbeafe', color: '#1e40af', padding: '2px 8px', borderRadius: '12px', fontWeight: 'normal' }}>✓ Foto Terkirim</span>}
+                        </h3>
                         <div style={{ color: '#6b7280', fontSize: '0.9rem', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                           <span>{project.photoType}</span>
                           <span>Tanggal: {project.shootDate}</span>
@@ -162,7 +166,7 @@ export default function AdminDashboard() {
                 
                 {lunasProjects.length > 0 && (
                   <div>
-                    <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '16px', color: '#374151' }}>Selesai (Lunas)</h2>
+                    <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '16px', color: '#374151' }}>Selesai (Lunas / Foto Terkirim)</h2>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
                       {lunasProjects.map(renderProjectCard)}
                     </div>
