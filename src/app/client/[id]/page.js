@@ -16,8 +16,6 @@ export default function ClientGallery({ params }) {
   const [error, setError] = useState(null);
   const [sortOrder, setSortOrder] = useState('name');
   const [viewMode, setViewMode] = useState('all'); // 'all' or 'selected'
-  const [currentPage, setCurrentPage] = useState(1);
-  const photosPerPage = 50;
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   
@@ -93,7 +91,6 @@ export default function ClientGallery({ params }) {
 
   const handleSessionChange = (sessionId) => {
     setActiveSessionId(sessionId);
-    setCurrentPage(1);
     const session = sessions.find(s => s.id === sessionId);
     if (session) {
       fetchSessionPhotos(session.folderId);
@@ -277,11 +274,6 @@ export default function ClientGallery({ params }) {
 
   const sortedPhotos = getSortedPhotos();
   const selectedPhotoObjects = sortedPhotos.filter(p => selectedPhotos.includes(p.name));
-  
-  const indexOfLastPhoto = currentPage * photosPerPage;
-  const indexOfFirstPhoto = indexOfLastPhoto - photosPerPage;
-  const currentPhotos = sortedPhotos.slice(indexOfFirstPhoto, indexOfLastPhoto);
-  const totalPages = Math.ceil(sortedPhotos.length / photosPerPage);
 
   return (
     <main style={{ padding: '20px 16px', paddingBottom: '120px', maxWidth: '1200px', margin: '0 auto' }}>
@@ -392,7 +384,7 @@ export default function ClientGallery({ params }) {
                   <label style={{ fontSize: '0.9rem', color: '#4b5563', fontWeight: '500' }}>Urutkan:</label>
                   <select 
                     value={sortOrder} 
-                    onChange={(e) => { setSortOrder(e.target.value); setCurrentPage(1); }}
+                    onChange={(e) => setSortOrder(e.target.value)}
                     style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #d1d5db', background: 'white', color: '#111827', fontSize: '0.9rem', cursor: 'pointer' }}
                   >
                     <option value="name">Nama (A-Z)</option>
@@ -408,7 +400,7 @@ export default function ClientGallery({ params }) {
                 </div>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
-                  {(viewMode === 'selected' ? selectedPhotoObjects : currentPhotos).map((photo) => {
+                  {(viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos).map((photo) => {
           const isSelected = selectedPhotos.includes(photo.name);
           return (
             <div 
@@ -466,48 +458,6 @@ export default function ClientGallery({ params }) {
           )
         })}
             </div>
-            )}
-            
-            {/* Pagination UI */}
-            {viewMode === 'all' && totalPages > 1 && (
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '32px', flexWrap: 'wrap' }}>
-                <button 
-                  onClick={() => { setCurrentPage(prev => Math.max(prev - 1, 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                  disabled={currentPage === 1}
-                  className="btn-secondary"
-                  style={{ padding: '8px 16px', borderRadius: '8px', opacity: currentPage === 1 ? 0.5 : 1 }}
-                >
-                  &laquo; Prev
-                </button>
-                
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
-                  // Only show current page, 1, last page, and 2 pages around current
-                  if (page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)) {
-                    return (
-                      <button
-                        key={page}
-                        onClick={() => { setCurrentPage(page); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                        className={currentPage === page ? "btn-primary" : "btn-secondary"}
-                        style={{ padding: '8px 16px', borderRadius: '8px', minWidth: '40px' }}
-                      >
-                        {page}
-                      </button>
-                    );
-                  } else if (page === currentPage - 2 || page === currentPage + 2) {
-                    return <span key={page} style={{ padding: '8px', color: '#6b7280' }}>...</span>;
-                  }
-                  return null;
-                })}
-
-                <button 
-                  onClick={() => { setCurrentPage(prev => Math.min(prev + 1, totalPages)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                  disabled={currentPage === totalPages}
-                  className="btn-secondary"
-                  style={{ padding: '8px 16px', borderRadius: '8px', opacity: currentPage === totalPages ? 0.5 : 1 }}
-                >
-                  Next &raquo;
-                </button>
-              </div>
             )}
             </>
           )}
