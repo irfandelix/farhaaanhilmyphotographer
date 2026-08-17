@@ -118,9 +118,11 @@ export default function AdminDashboard() {
                 <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
                   <div>
                     <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '8px' }}>{project.clientName}</h3>
-                    <p style={{ color: '#6b7280', fontSize: '0.9rem', marginTop: '4px', lineHeight: '1.5' }}>
-                      {project.photoType} &bull; {project.shootDate} {project.shootTime && <span style={{ whiteSpace: 'nowrap' }}>&bull; Jam: {project.shootTime}</span>}
-                    </p>
+                    <div style={{ color: '#6b7280', fontSize: '0.9rem', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <span>{project.photoType}</span>
+                      <span>Tanggal: {project.shootDate}</span>
+                      {project.shootTime && <span>Waktu: {project.shootTime}</span>}
+                    </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', justifyContent: 'space-between', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
                     <span style={{ 
