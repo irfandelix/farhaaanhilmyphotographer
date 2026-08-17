@@ -14,6 +14,7 @@ export default function ClientGallery({ params }) {
   const [selectedPhotos, setSelectedPhotos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [sortOrder, setSortOrder] = useState('name');
   const [currentPage, setCurrentPage] = useState(1);
   const photosPerPage = 50;
   const [saving, setSaving] = useState(false);
@@ -252,10 +253,32 @@ export default function ClientGallery({ params }) {
   if (loading) return <main style={{ padding: '40px', textAlign: 'center' }}>Loading Gallery...</main>;
   if (error) return <main style={{ padding: '40px', textAlign: 'center', color: '#991b1b' }}>{error}</main>;
 
+  const getSortedPhotos = () => {
+    let sorted = [...photos];
+    if (sortOrder === 'name') {
+      sorted.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+    } else if (sortOrder === 'time') {
+      sorted.sort((a, b) => {
+        const timeA = new Date(a.createdTime || 0).getTime();
+        const timeB = new Date(b.createdTime || 0).getTime();
+        return timeA - timeB; // Oldest first
+      });
+    } else if (sortOrder === 'selected') {
+      sorted.sort((a, b) => {
+        const aSel = selectedPhotos.includes(a.name);
+        const bSel = selectedPhotos.includes(b.name);
+        if (aSel === bSel) return a.name.localeCompare(b.name, undefined, { numeric: true });
+        return aSel ? -1 : 1;
+      });
+    }
+    return sorted;
+  };
+
+  const sortedPhotos = getSortedPhotos();
   const indexOfLastPhoto = currentPage * photosPerPage;
   const indexOfFirstPhoto = indexOfLastPhoto - photosPerPage;
-  const currentPhotos = photos.slice(indexOfFirstPhoto, indexOfLastPhoto);
-  const totalPages = Math.ceil(photos.length / photosPerPage);
+  const currentPhotos = sortedPhotos.slice(indexOfFirstPhoto, indexOfLastPhoto);
+  const totalPages = Math.ceil(sortedPhotos.length / photosPerPage);
 
   return (
     <main style={{ padding: '20px 16px', paddingBottom: '120px', maxWidth: '1200px', margin: '0 auto' }}>
@@ -331,7 +354,25 @@ export default function ClientGallery({ params }) {
               <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
+            <>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+                <span style={{ color: '#4b5563', fontSize: '0.9rem' }}>
+                  Total {sortedPhotos.length} foto
+                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <label style={{ fontSize: '0.9rem', color: '#4b5563', fontWeight: '500' }}>Urutkan:</label>
+                  <select 
+                    value={sortOrder} 
+                    onChange={(e) => { setSortOrder(e.target.value); setCurrentPage(1); }}
+                    style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #d1d5db', background: 'white', color: '#111827', fontSize: '0.9rem', cursor: 'pointer' }}
+                  >
+                    <option value="name">Nama (A-Z)</option>
+                    <option value="time">Waktu Diunggah</option>
+                    <option value="selected">Yang Dipilih Saja</option>
+                  </select>
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
               {currentPhotos.map((photo) => {
           const isSelected = selectedPhotos.includes(photo.name);
           return (
@@ -432,6 +473,7 @@ export default function ClientGallery({ params }) {
                 </button>
               </div>
             )}
+            </>
           )}
         </>
       )}

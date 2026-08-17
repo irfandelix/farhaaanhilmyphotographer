@@ -17,7 +17,7 @@ export async function GET(request) {
     // Fetch files from Google Drive API
     // We only fetch image types
     const query = `'${folderId}' in parents and mimeType contains 'image/' and trashed = false`;
-    const baseUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=nextPageToken,files(id,name,thumbnailLink)&pageSize=1000&key=${apiKey}`;
+    const baseUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=nextPageToken,files(id,name,thumbnailLink,createdTime)&pageSize=1000&key=${apiKey}`;
     
     let allFiles = [];
     let pageToken = null;
