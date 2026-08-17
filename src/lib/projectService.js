@@ -210,10 +210,19 @@ export async function updateGDriveLink(id, link) {
 // Update GDrive Edited Link
 export async function updateGDriveEditedLink(id, link) {
   try {
+    const docRef = doc(db, COLLECTION_NAME, id);
+    
+    if (!link || link.trim() === '') {
+      await updateDoc(docRef, {
+        gdriveEditedLink: '',
+        gdriveEditedFolderId: ''
+      });
+      return true;
+    }
+
     const folderId = extractFolderId(link);
     if (!folderId) throw new Error("Link Google Drive tidak valid");
 
-    const docRef = doc(db, COLLECTION_NAME, id);
     await updateDoc(docRef, {
       gdriveEditedLink: link,
       gdriveEditedFolderId: folderId

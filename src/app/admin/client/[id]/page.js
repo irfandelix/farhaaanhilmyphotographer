@@ -147,14 +147,18 @@ export default function AdminClientDetail({ params }) {
     setSessions(newSessions);
   };
 
-  const handleSaveGDriveEditedLink = async () => {
-    if (!gdriveEditedLink) return;
+  const handleSaveGDriveEditedLink = async (linkToSave = gdriveEditedLink) => {
     setSavingEditedLink(true);
-    const success = await updateGDriveEditedLink(id, gdriveEditedLink);
+    const success = await updateGDriveEditedLink(id, linkToSave);
     setSavingEditedLink(false);
     if (success) {
-      alert('Link Google Drive (Hasil Edit) berhasil disimpan!');
-      setProject({ ...project, gdriveEditedLink: gdriveEditedLink, gdriveEditedFolderId: 'updated' });
+      if (!linkToSave || linkToSave.trim() === '') {
+        alert('Link Google Drive (Hasil Edit) berhasil dihapus!');
+      } else {
+        alert('Link Google Drive (Hasil Edit) berhasil disimpan!');
+      }
+      setProject({ ...project, gdriveEditedLink: linkToSave, gdriveEditedFolderId: linkToSave ? 'updated' : '' });
+      setGdriveEditedLink(linkToSave);
     } else {
       alert('Gagal menyimpan link. Pastikan formatnya benar.');
     }
@@ -656,15 +660,31 @@ export default function AdminClientDetail({ params }) {
             Masukkan link folder berisi foto yang SUDAH SELESAI DIEDIT untuk diunduh klien.
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <input 
-              type="url" 
-              value={gdriveEditedLink} 
-              onChange={(e) => setGdriveEditedLink(e.target.value)} 
-              className="input-field" 
-              placeholder="https://drive.google.com/drive/folders/..." 
-              style={{ width: '100%' }} 
-            />
-            <button className="btn-primary" onClick={handleSaveGDriveEditedLink} disabled={savingEditedLink || !gdriveEditedLink} style={{ width: '100%', backgroundColor: '#059669' }}>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <input 
+                type="url" 
+                value={gdriveEditedLink} 
+                onChange={(e) => setGdriveEditedLink(e.target.value)} 
+                className="input-field" 
+                placeholder="https://drive.google.com/drive/folders/..." 
+                style={{ flex: 1, width: '100%' }} 
+              />
+              {project.gdriveEditedLink && (
+                <button 
+                  onClick={() => {
+                    if (confirm("Yakin ingin menghapus link folder hasil edit ini?")) {
+                      handleSaveGDriveEditedLink('');
+                    }
+                  }}
+                  disabled={savingEditedLink}
+                  style={{ padding: '10px 12px', backgroundColor: '#fee2e2', color: '#b91c1c', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+                  title="Hapus Link Hasil Edit"
+                >
+                  🗑️
+                </button>
+              )}
+            </div>
+            <button className="btn-primary" onClick={() => handleSaveGDriveEditedLink(gdriveEditedLink)} disabled={savingEditedLink || (!gdriveEditedLink && !project.gdriveEditedLink)} style={{ width: '100%', backgroundColor: '#059669' }}>
               {savingEditedLink ? 'Menyimpan...' : 'Simpan Link Hasil Edit'}
             </button>
           </div>
