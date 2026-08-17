@@ -15,6 +15,7 @@ export default function ClientGallery({ params }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sortOrder, setSortOrder] = useState('name');
+  const [viewMode, setViewMode] = useState('all'); // 'all' or 'selected'
   const [currentPage, setCurrentPage] = useState(1);
   const photosPerPage = 50;
   const [saving, setSaving] = useState(false);
@@ -275,6 +276,8 @@ export default function ClientGallery({ params }) {
   };
 
   const sortedPhotos = getSortedPhotos();
+  const selectedPhotoObjects = sortedPhotos.filter(p => selectedPhotos.includes(p.name));
+  
   const indexOfLastPhoto = currentPage * photosPerPage;
   const indexOfFirstPhoto = indexOfLastPhoto - photosPerPage;
   const currentPhotos = sortedPhotos.slice(indexOfFirstPhoto, indexOfLastPhoto);
@@ -322,7 +325,33 @@ export default function ClientGallery({ params }) {
       {/* Render Raw Photos (Selection Mode) */}
       {activeTab === 'raw' && (
         <>
-          {sessions.length > 1 && (
+          {/* Sub-tabs for Selection Mode */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '24px' }}>
+            <button 
+              onClick={() => setViewMode('all')}
+              style={{
+                padding: '10px 20px', borderRadius: '8px', fontWeight: '600', border: '1px solid', cursor: 'pointer', transition: 'all 0.2s',
+                backgroundColor: viewMode === 'all' ? '#111827' : 'white',
+                color: viewMode === 'all' ? 'white' : '#4b5563',
+                borderColor: viewMode === 'all' ? '#111827' : '#d1d5db'
+              }}
+            >
+              Semua Foto ({photos.length})
+            </button>
+            <button 
+              onClick={() => setViewMode('selected')}
+              style={{
+                padding: '10px 20px', borderRadius: '8px', fontWeight: '600', border: '1px solid', cursor: 'pointer', transition: 'all 0.2s',
+                backgroundColor: viewMode === 'selected' ? '#111827' : 'white',
+                color: viewMode === 'selected' ? 'white' : '#4b5563',
+                borderColor: viewMode === 'selected' ? '#111827' : '#d1d5db'
+              }}
+            >
+              Foto Terpilih ({selectedPhotos.length})
+            </button>
+          </div>
+
+          {sessions.length > 1 && viewMode === 'all' && (
             <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '16px', marginBottom: '16px', justifyContent: 'center' }}>
               {sessions.map(session => (
                 <button
@@ -368,12 +397,18 @@ export default function ClientGallery({ params }) {
                   >
                     <option value="name">Nama (A-Z)</option>
                     <option value="time">Waktu Diunggah</option>
-                    <option value="selected">Yang Dipilih Saja</option>
                   </select>
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
-              {currentPhotos.map((photo) => {
+              
+              {viewMode === 'selected' && selectedPhotoObjects.length === 0 ? (
+                <div style={{ padding: '60px 20px', textAlign: 'center', backgroundColor: '#f9fafb', borderRadius: '12px', border: '1px dashed #d1d5db' }}>
+                  <p style={{ color: '#6b7280', fontSize: '1.1rem', marginBottom: '8px' }}>Belum ada foto yang dipilih.</p>
+                  <p style={{ color: '#9ca3af', fontSize: '0.9rem' }}>Silakan kembali ke "Semua Foto" dan klik tanda centang pada foto yang Anda inginkan.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
+                  {(viewMode === 'selected' ? selectedPhotoObjects : currentPhotos).map((photo) => {
           const isSelected = selectedPhotos.includes(photo.name);
           return (
             <div 
@@ -433,7 +468,7 @@ export default function ClientGallery({ params }) {
             </div>
             
             {/* Pagination UI */}
-            {totalPages > 1 && (
+            {viewMode === 'all' && totalPages > 1 && (
               <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '32px', flexWrap: 'wrap' }}>
                 <button 
                   onClick={() => { setCurrentPage(prev => Math.max(prev - 1, 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
