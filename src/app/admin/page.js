@@ -87,7 +87,7 @@ export default function AdminDashboard() {
                 <div>
                   <strong style={{ display: 'block', color: '#111827', fontSize: '1rem' }}>{p.clientName} ({p.photoType})</strong>
                   <span style={{ color: '#6b7280', fontSize: '0.9rem' }}>
-                    Tanggal: {p.shootDate} {p.shootTime && `• Jam: ${p.shootTime}`}
+                    Tanggal: {p.shootDate} {p.shootTime && <span style={{ whiteSpace: 'nowrap' }}>&bull; Jam: {p.shootTime}</span>}
                   </span>
                 </div>
                 <Link href={`/admin/client/${p.id}`}>
@@ -118,8 +118,8 @@ export default function AdminDashboard() {
                 <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
                   <div>
                     <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '8px' }}>{project.clientName}</h3>
-                    <p style={{ color: '#6b7280', fontSize: '0.9rem', marginTop: '4px' }}>
-                      {project.photoType} &bull; {project.shootDate} {project.shootTime && `\u2022 Jam: ${project.shootTime}`}
+                    <p style={{ color: '#6b7280', fontSize: '0.9rem', marginTop: '4px', lineHeight: '1.5' }}>
+                      {project.photoType} &bull; {project.shootDate} {project.shootTime && <span style={{ whiteSpace: 'nowrap' }}>&bull; Jam: {project.shootTime}</span>}
                     </p>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', justifyContent: 'space-between', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
