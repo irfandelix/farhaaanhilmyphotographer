@@ -14,6 +14,8 @@ export default function ClientGallery({ params }) {
   const [selectedPhotos, setSelectedPhotos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const photosPerPage = 50;
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   
@@ -89,6 +91,7 @@ export default function ClientGallery({ params }) {
 
   const handleSessionChange = (sessionId) => {
     setActiveSessionId(sessionId);
+    setCurrentPage(1);
     const session = sessions.find(s => s.id === sessionId);
     if (session) {
       fetchSessionPhotos(session.folderId);
@@ -249,6 +252,11 @@ export default function ClientGallery({ params }) {
   if (loading) return <main style={{ padding: '40px', textAlign: 'center' }}>Loading Gallery...</main>;
   if (error) return <main style={{ padding: '40px', textAlign: 'center', color: '#991b1b' }}>{error}</main>;
 
+  const indexOfLastPhoto = currentPage * photosPerPage;
+  const indexOfFirstPhoto = indexOfLastPhoto - photosPerPage;
+  const currentPhotos = photos.slice(indexOfFirstPhoto, indexOfLastPhoto);
+  const totalPages = Math.ceil(photos.length / photosPerPage);
+
   return (
     <main style={{ padding: '20px 16px', paddingBottom: '120px', maxWidth: '1200px', margin: '0 auto' }}>
       <div style={{ textAlign: 'center', marginBottom: '32px' }}>
@@ -324,7 +332,7 @@ export default function ClientGallery({ params }) {
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
-              {photos.map((photo) => {
+              {currentPhotos.map((photo) => {
           const isSelected = selectedPhotos.includes(photo.name);
           return (
             <div 
@@ -382,6 +390,48 @@ export default function ClientGallery({ params }) {
           )
         })}
             </div>
+            
+            {/* Pagination UI */}
+            {totalPages > 1 && (
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '32px', flexWrap: 'wrap' }}>
+                <button 
+                  onClick={() => { setCurrentPage(prev => Math.max(prev - 1, 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  disabled={currentPage === 1}
+                  className="btn-secondary"
+                  style={{ padding: '8px 16px', borderRadius: '8px', opacity: currentPage === 1 ? 0.5 : 1 }}
+                >
+                  &laquo; Prev
+                </button>
+                
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
+                  // Only show current page, 1, last page, and 2 pages around current
+                  if (page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)) {
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => { setCurrentPage(page); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                        className={currentPage === page ? "btn-primary" : "btn-secondary"}
+                        style={{ padding: '8px 16px', borderRadius: '8px', minWidth: '40px' }}
+                      >
+                        {page}
+                      </button>
+                    );
+                  } else if (page === currentPage - 2 || page === currentPage + 2) {
+                    return <span key={page} style={{ padding: '8px', color: '#6b7280' }}>...</span>;
+                  }
+                  return null;
+                })}
+
+                <button 
+                  onClick={() => { setCurrentPage(prev => Math.min(prev + 1, totalPages)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  disabled={currentPage === totalPages}
+                  className="btn-secondary"
+                  style={{ padding: '8px 16px', borderRadius: '8px', opacity: currentPage === totalPages ? 0.5 : 1 }}
+                >
+                  Next &raquo;
+                </button>
+              </div>
+            )}
           )}
         </>
       )}
