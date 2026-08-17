@@ -105,8 +105,6 @@ export default function AdminClientDetail({ params }) {
   };
 
   const handleSaveGDriveLink = async () => {
-    if (sessions.length === 0) return;
-    
     // Validasi basic
     for (let s of sessions) {
       if (!s.name || !s.link) {
@@ -641,7 +639,7 @@ export default function AdminClientDetail({ params }) {
             </div>
           ))}
           
-          {sessions.length > 0 && (
+          { (sessions.length > 0 || (project.sessions && project.sessions.length > 0)) && (
             <button 
               onClick={handleSaveGDriveLink}
               disabled={savingLink}
