@@ -639,16 +639,14 @@ export default function AdminClientDetail({ params }) {
             </div>
           ))}
           
-          { (sessions.length > 0 || (project.sessions && project.sessions.length > 0)) && (
-            <button 
-              onClick={handleSaveGDriveLink}
-              disabled={savingLink}
-              className="btn-primary" 
-              style={{ width: '100%', marginTop: '8px' }}
-            >
-              {savingLink ? 'Menyimpan...' : 'Simpan Semua Sesi Mentahan'}
-            </button>
-          )}
+          <button 
+            onClick={handleSaveGDriveLink}
+            disabled={savingLink}
+            className="btn-primary" 
+            style={{ width: '100%', marginTop: '8px' }}
+          >
+            {savingLink ? 'Menyimpan...' : 'Simpan Perubahan Sesi'}
+          </button>
         </div>
 
         {/* Input GDrive Link Hasil Edit */}
