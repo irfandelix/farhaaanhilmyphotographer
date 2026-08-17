@@ -135,16 +135,18 @@ export default function InvoicePage({ params }) {
         </button>
       </div>
 
-      <main id="invoice-content" className="invoice-container" style={{ 
-        maxWidth: '800px', 
-        margin: '20px auto', 
-        background: 'white', 
-        padding: '30px', 
-        borderRadius: '8px',
-        boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
-        color: '#111827',
-        fontFamily: 'system-ui, -apple-system, sans-serif'
-      }}>
+      <div style={{ overflowX: 'auto', padding: '0 10px', width: '100%' }}>
+        <main id="invoice-content" className="invoice-container" style={{ 
+          minWidth: '700px',
+          maxWidth: '800px', 
+          margin: '20px auto', 
+          background: 'white', 
+          padding: '40px', 
+          borderRadius: '8px',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+          color: '#111827',
+          fontFamily: 'system-ui, -apple-system, sans-serif'
+        }}>
         
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #e5e7eb', paddingBottom: '24px', marginBottom: '32px' }}>
@@ -197,7 +199,8 @@ export default function InvoicePage({ params }) {
                 <td style={{ padding: '4px 0', color: '#4b5563', fontSize: '1rem' }}>Tanggal Pemotretan</td>
                 <td style={{ padding: '4px 16px 4px 8px', color: '#111827', fontSize: '1rem' }}>:</td>
                 <td style={{ padding: '4px 0', fontWeight: '600', fontSize: '1rem' }}>
-                  {project.shootDate ? new Date(project.shootDate).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-') : '-'}
+                  {project.shootDate ? project.shootDate : '-'}
+                  {project.shootTime ? ` (${project.shootTime})` : ''}
                 </td>
               </tr>
             </tbody>
@@ -325,6 +328,7 @@ export default function InvoicePage({ params }) {
         </div>
 
       </main>
+      </div>
     </>
   );
 }
