@@ -33,8 +33,21 @@ export default function AdminDashboard() {
       const hasSessionLink = p.sessions && p.sessions.length > 0 && p.sessions.some(s => s.link);
       if (hasLegacyLink || hasSessionLink) return false;
 
+      // Konversi nama bulan Indonesia ke Inggris agar bisa diparse oleh new Date()
+      const monthMap = {
+        'januari': 'January', 'februari': 'February', 'maret': 'March', 'april': 'April',
+        'mei': 'May', 'juni': 'June', 'juli': 'July', 'agustus': 'August',
+        'september': 'September', 'oktober': 'October', 'november': 'November', 'desember': 'December'
+      };
+      
+      let parsedDateStr = p.shootDate;
+      Object.keys(monthMap).forEach(idMonth => {
+        const regex = new RegExp(idMonth, "gi");
+        parsedDateStr = parsedDateStr.replace(regex, monthMap[idMonth]);
+      });
+
       // Coba parse tanggal
-      const d = new Date(p.shootDate);
+      const d = new Date(parsedDateStr);
       if (!isNaN(d.getTime())) {
         const diffTime = d.getTime() - today.getTime();
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
