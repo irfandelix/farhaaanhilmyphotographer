@@ -122,9 +122,12 @@ export default function AdminDashboard() {
                   <div className="glass-panel animate-fade-in" style={{ padding: '20px', cursor: 'pointer', transition: 'transform 0.2s', ':hover': { transform: 'translateY(-4px)' } }}>
                     <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
                       <div>
-                        <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '8px' }}>
+                        <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '8px', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                           {project.clientName}
-                          {project.gdriveEditedLink && <span style={{ marginLeft: '8px', fontSize: '0.8rem', backgroundColor: '#dbeafe', color: '#1e40af', padding: '2px 8px', borderRadius: '12px', fontWeight: 'normal' }}>✓ Foto Terkirim</span>}
+                          {project.gdriveEditedLink 
+                            ? <span style={{ fontSize: '0.8rem', backgroundColor: '#dbeafe', color: '#1e40af', padding: '2px 8px', borderRadius: '12px', fontWeight: 'normal' }}>✓ Foto Terkirim</span>
+                            : <span style={{ fontSize: '0.8rem', backgroundColor: '#fef3c7', color: '#92400e', padding: '2px 8px', borderRadius: '12px', fontWeight: 'normal' }}>⏳ Belum Upload Edit</span>
+                          }
                         </h3>
                         <div style={{ color: '#6b7280', fontSize: '0.9rem', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                           <span>{project.photoType}</span>
