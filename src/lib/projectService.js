@@ -42,13 +42,13 @@ export async function createProject(data) {
       calculatedPaymentAmount = items.reduce((sum, item) => sum + (Number(item.qty) * Number(item.price)), 0);
     }
 
-    // Cari nomor urut (seqNum) tertinggi yang pernah ada
-    const q = query(collection(db, COLLECTION_NAME), orderBy('seqNum', 'desc'), limit(1));
+    // Cari nomor urut (invoiceSeq) tertinggi yang pernah ada
+    const q = query(collection(db, COLLECTION_NAME), orderBy('invoiceSeq', 'desc'), limit(1));
     const querySnapshot = await getDocs(q);
     
     let seqNum = 1;
     if (!querySnapshot.empty) {
-      const highestSeqNum = querySnapshot.docs[0].data().seqNum || 0;
+      const highestSeqNum = querySnapshot.docs[0].data().invoiceSeq || 0;
       seqNum = highestSeqNum + 1;
     }
 

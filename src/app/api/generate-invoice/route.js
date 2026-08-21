@@ -31,8 +31,12 @@ export async function GET(request) {
     const dpAmount = Number(project.dpAmount || 0);
     const sisaTagihan = paymentAmount - dpAmount;
 
+    const seq = project.invoiceSeq || 1;
+    const invoiceNumber = `INV-${String(seq).padStart(3, '0')}`;
+
     // Siapkan data untuk docxtemplater
     const templateData = {
+      invoiceNumber: invoiceNumber,
       clientName: project.clientName || '-',
       photoType: project.photoType || '-',
       shootDate: project.shootDate || '-',
