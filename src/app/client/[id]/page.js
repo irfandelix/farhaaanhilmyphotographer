@@ -274,6 +274,55 @@ export default function ClientGallery({ params }) {
 
   const sortedPhotos = getSortedPhotos();
   const selectedPhotoObjects = sortedPhotos.filter(p => selectedPhotos.includes(p.name));
+  const currentList = activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos);
+
+  // Navigation handlers
+  const handleNextPreview = () => {
+    if (!previewPhoto) return;
+    const currentIndex = currentList.findIndex(p => p.id === previewPhoto.id);
+    if (currentIndex !== -1 && currentIndex < currentList.length - 1) {
+      setPreviewPhoto(currentList[currentIndex + 1]);
+    }
+  };
+
+  const handlePrevPreview = () => {
+    if (!previewPhoto) return;
+    const currentIndex = currentList.findIndex(p => p.id === previewPhoto.id);
+    if (currentIndex > 0) {
+      setPreviewPhoto(currentList[currentIndex - 1]);
+    }
+  };
+
+  // Keyboard Navigation
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!previewPhoto) return;
+      if (e.key === 'ArrowRight') handleNextPreview();
+      if (e.key === 'ArrowLeft') handlePrevPreview();
+      if (e.key === 'Escape') setPreviewPhoto(null);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [previewPhoto, currentList]);
+
+  // Touch Swipe State
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
+
+  const onTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+  const onTouchMove = (e) => setTouchEnd(e.targetTouches[0].clientX);
+  const onTouchEndEvent = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+    if (isLeftSwipe) handleNextPreview();
+    if (isRightSwipe) handlePrevPreview();
+  };
+
 
   return (
     <main style={{ padding: '20px 16px', paddingBottom: '120px', maxWidth: '1200px', margin: '0 auto' }}>
@@ -591,7 +640,11 @@ export default function ClientGallery({ params }) {
 
       {/* Lightbox / Preview Modal */}
       {previewPhoto && (
-        <div style={{
+        <div 
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEndEvent}
+          style={{
           position: 'fixed',
           top: 0, left: 0, right: 0, bottom: 0,
           backgroundColor: 'rgba(0,0,0,0.9)',
@@ -609,6 +662,22 @@ export default function ClientGallery({ params }) {
             title="Tutup Preview"
           >&times;</button>
           
+          {currentList.findIndex(p => p.id === previewPhoto.id) > 0 && (
+            <button 
+              onClick={(e) => { e.stopPropagation(); handlePrevPreview(); }}
+              style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.5)', border: 'none', color: 'white', fontSize: '2rem', cursor: 'pointer', width: '50px', height: '50px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              title="Sebelumnya"
+            >&#10094;</button>
+          )}
+          
+          {currentList.findIndex(p => p.id === previewPhoto.id) < currentList.length - 1 && (
+            <button 
+              onClick={(e) => { e.stopPropagation(); handleNextPreview(); }}
+              style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.5)', border: 'none', color: 'white', fontSize: '2rem', cursor: 'pointer', width: '50px', height: '50px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              title="Selanjutnya"
+            >&#10095;</button>
+          )}
+
           <img 
             src={previewPhoto.thumbnailLink ? `/api/proxy?url=${encodeURIComponent(previewPhoto.thumbnailLink.replace('=s220', '=w1200'))}` : ''}
             onError={(e) => { 
