@@ -36,7 +36,7 @@ export async function GET(request) {
 
     // Siapkan data untuk docxtemplater
     const templateData = {
-      invoiceNumber: invoiceNumber,
+      nomor_invoice: invoiceNumber,
       clientName: project.clientName || '-',
       photoType: project.photoType || '-',
       shootDate: project.shootDate || '-',
