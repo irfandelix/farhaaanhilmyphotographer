@@ -305,20 +305,28 @@ export default function ClientGallery({ params }) {
 
   // Touch Swipe State
   const [touchStart, setTouchStart] = useState(null);
-  const [touchEnd, setTouchEnd] = useState(null);
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
 
   const onTouchStart = (e) => {
-    setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
+    setIsSwiping(true);
+    setSwipeOffset(0);
   };
-  const onTouchMove = (e) => setTouchEnd(e.targetTouches[0].clientX);
+  const onTouchMove = (e) => {
+    if (touchStart !== null) {
+      setSwipeOffset(e.targetTouches[0].clientX - touchStart);
+    }
+  };
   const onTouchEndEvent = () => {
-    if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > 50;
-    const isRightSwipe = distance < -50;
-    if (isLeftSwipe) handleNextPreview();
-    if (isRightSwipe) handlePrevPreview();
+    setIsSwiping(false);
+    if (swipeOffset < -70) {
+      handleNextPreview();
+    } else if (swipeOffset > 70) {
+      handlePrevPreview();
+    }
+    setSwipeOffset(0);
+    setTouchStart(null);
   };
 
   if (loading) return <main style={{ padding: '40px', textAlign: 'center' }}>Loading Gallery...</main>;
@@ -679,7 +687,15 @@ export default function ClientGallery({ params }) {
             >&#10095;</button>
           )}
 
-          <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', maxWidth: '100%', maxHeight: '75vh' }}>
+          <div style={{ 
+            position: 'relative', 
+            display: 'flex', 
+            justifyContent: 'center', 
+            maxWidth: '100%', 
+            maxHeight: '75vh',
+            transform: `translateX(${swipeOffset}px)`,
+            transition: isSwiping ? 'none' : 'transform 0.2s ease-out'
+          }}>
             {activeTab === 'raw' && selectedPhotos.includes(previewPhoto.name) && (
               <div style={{
                 position: 'absolute',
