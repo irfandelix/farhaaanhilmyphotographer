@@ -248,8 +248,6 @@ export default function ClientGallery({ params }) {
     }
   };
 
-  if (loading) return <main style={{ padding: '40px', textAlign: 'center' }}>Loading Gallery...</main>;
-  if (error) return <main style={{ padding: '40px', textAlign: 'center', color: '#991b1b' }}>{error}</main>;
 
   const getSortedPhotos = () => {
     let sorted = [...photos];
@@ -322,6 +320,9 @@ export default function ClientGallery({ params }) {
     if (isLeftSwipe) handleNextPreview();
     if (isRightSwipe) handlePrevPreview();
   };
+
+  if (loading) return <main style={{ padding: '40px', textAlign: 'center' }}>Loading Gallery...</main>;
+  if (error) return <main style={{ padding: '40px', textAlign: 'center', color: '#991b1b' }}>{error}</main>;
 
 
   return (
