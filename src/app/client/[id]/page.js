@@ -601,7 +601,7 @@ export default function ClientGallery({ params }) {
         index={previewIndex >= 0 ? previewIndex : 0}
         close={() => setPreviewIndex(-1)}
         slides={(activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos)).map(photo => ({
-          src: photo.thumbnailLink ? '/api/proxy?url=' + encodeURIComponent(photo.thumbnailLink.replace('=s220', '=w1200')) : '',
+          src: photo.thumbnailLink ? '/api/proxy?url=' + encodeURIComponent(photo.thumbnailLink.replace('=s220', '=w600')) : '',
           alt: photo.name,
         }))}
         plugins={[Zoom]}
