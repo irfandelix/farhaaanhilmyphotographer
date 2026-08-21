@@ -4,6 +4,9 @@ import { useEffect, useState, use } from 'react';
 import { getProjectById, updateSelectedPhotos } from '@/lib/projectService';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
+import Lightbox from "yet-another-react-lightbox";
+import "yet-another-react-lightbox/styles.css";
+import Zoom from "yet-another-react-lightbox/plugins/zoom";
 
 export default function ClientGallery({ params }) {
   const resolvedParams = use(params);
@@ -28,7 +31,7 @@ export default function ClientGallery({ params }) {
   const [loadingPhotos, setLoadingPhotos] = useState(false);
   
   // State untuk Lightbox Preview
-  const [previewPhoto, setPreviewPhoto] = useState(null);
+  const [previewIndex, setPreviewIndex] = useState(-1);
 
   // State untuk Download ZIP
   const [downloadingZip, setDownloadingZip] = useState(false);
@@ -274,61 +277,6 @@ export default function ClientGallery({ params }) {
   const selectedPhotoObjects = sortedPhotos.filter(p => selectedPhotos.includes(p.name));
   const currentList = activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos);
 
-  // Navigation handlers
-  const handleNextPreview = () => {
-    if (!previewPhoto) return;
-    const currentIndex = currentList.findIndex(p => p.id === previewPhoto.id);
-    if (currentIndex !== -1 && currentIndex < currentList.length - 1) {
-      setPreviewPhoto(currentList[currentIndex + 1]);
-    }
-  };
-
-  const handlePrevPreview = () => {
-    if (!previewPhoto) return;
-    const currentIndex = currentList.findIndex(p => p.id === previewPhoto.id);
-    if (currentIndex > 0) {
-      setPreviewPhoto(currentList[currentIndex - 1]);
-    }
-  };
-
-  // Keyboard Navigation
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (!previewPhoto) return;
-      if (e.key === 'ArrowRight') handleNextPreview();
-      if (e.key === 'ArrowLeft') handlePrevPreview();
-      if (e.key === 'Escape') setPreviewPhoto(null);
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [previewPhoto, currentList]);
-
-  // Touch Swipe State
-  const [touchStart, setTouchStart] = useState(null);
-  const [swipeOffset, setSwipeOffset] = useState(0);
-  const [isSwiping, setIsSwiping] = useState(false);
-
-  const onTouchStart = (e) => {
-    setTouchStart(e.targetTouches[0].clientX);
-    setIsSwiping(true);
-    setSwipeOffset(0);
-  };
-  const onTouchMove = (e) => {
-    if (touchStart !== null) {
-      setSwipeOffset(e.targetTouches[0].clientX - touchStart);
-    }
-  };
-  const onTouchEndEvent = () => {
-    setIsSwiping(false);
-    if (swipeOffset < -70) {
-      handleNextPreview();
-    } else if (swipeOffset > 70) {
-      handlePrevPreview();
-    }
-    setSwipeOffset(0);
-    setTouchStart(null);
-  };
-
   if (loading) return <main style={{ padding: '40px', textAlign: 'center' }}>Loading Gallery...</main>;
   if (error) return <main style={{ padding: '40px', textAlign: 'center', color: '#991b1b' }}>{error}</main>;
 
@@ -492,7 +440,7 @@ export default function ClientGallery({ params }) {
               </div>
 
               <div 
-                onClick={() => setPreviewPhoto(photo)}
+                onClick={() => setPreviewIndex((activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos)).findIndex(p => p.id === photo.id))}
                 style={{ height: '160px', width: '100%', position: 'relative', background: '#e5e7eb', cursor: 'zoom-in' }}
                 title="Klik untuk perbesar"
               >
@@ -562,7 +510,7 @@ export default function ClientGallery({ params }) {
               }}
             >
               <div 
-                onClick={() => setPreviewPhoto(photo)}
+                onClick={() => setPreviewIndex((activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos)).findIndex(p => p.id === photo.id))}
                 style={{ height: '160px', width: '100%', position: 'relative', background: '#e5e7eb', cursor: 'zoom-in' }}
                 title="Klik untuk perbesar"
               >
@@ -647,161 +595,121 @@ export default function ClientGallery({ params }) {
       </div>
       )}
 
-      {/* Lightbox / Preview Modal */}
-      {previewPhoto && (
-        <div 
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          onTouchEnd={onTouchEndEvent}
-          style={{
-          position: 'fixed',
-          top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.9)',
-          zIndex: 9999,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '20px',
-          backdropFilter: 'blur(5px)'
-        }}>
-          <button 
-            onClick={() => setPreviewPhoto(null)}
-            style={{ position: 'absolute', top: '20px', right: '20px', background: 'rgba(255,255,255,0.2)', border: 'none', color: 'white', fontSize: '2rem', cursor: 'pointer', width: '50px', height: '50px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', paddingBottom: '6px' }}
-            title="Tutup Preview"
-          >&times;</button>
-          
-          {currentList.findIndex(p => p.id === previewPhoto.id) > 0 && (
-            <button 
-              onClick={(e) => { e.stopPropagation(); handlePrevPreview(); }}
-              style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.5)', border: 'none', color: 'white', fontSize: '2rem', cursor: 'pointer', width: '50px', height: '50px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-              title="Sebelumnya"
-            >&#10094;</button>
-          )}
-          
-          {currentList.findIndex(p => p.id === previewPhoto.id) < currentList.length - 1 && (
-            <button 
-              onClick={(e) => { e.stopPropagation(); handleNextPreview(); }}
-              style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.5)', border: 'none', color: 'white', fontSize: '2rem', cursor: 'pointer', width: '50px', height: '50px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-              title="Selanjutnya"
-            >&#10095;</button>
+            {/* Lightbox / Preview Modal */}
+      <Lightbox
+        open={previewIndex >= 0}
+        index={previewIndex >= 0 ? previewIndex : 0}
+        close={() => setPreviewIndex(-1)}
+        slides={(activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos)).map(photo => ({
+          src: photo.thumbnailLink ? '/api/proxy?url=' + encodeURIComponent(photo.thumbnailLink.replace('=s220', '=w1200')) : '',
+          alt: photo.name,
+        }))}
+        plugins={[Zoom]}
+        on={{
+          view: ({ index }) => setPreviewIndex(index),
+        }}
+      />
+
+      {previewIndex >= 0 && (activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex] && (
+        <>
+          {activeTab === 'raw' && selectedPhotos.includes((activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].name) && (
+            <div style={{
+              position: 'fixed',
+              top: '20px',
+              left: '20px',
+              backgroundColor: 'var(--primary)',
+              color: 'white',
+              padding: '8px 16px',
+              borderRadius: '20px',
+              fontWeight: 'bold',
+              fontSize: '1rem',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              zIndex: 100000
+            }}>
+              ? Terpilih
+            </div>
           )}
 
           <div style={{ 
-            position: 'relative', 
+            position: 'fixed', 
+            bottom: '24px', 
+            left: 0, 
+            right: 0, 
+            zIndex: 100000, 
             display: 'flex', 
-            justifyContent: 'center', 
-            maxWidth: '100%', 
-            maxHeight: '75vh',
-            transform: `translateX(${swipeOffset}px)`,
-            transition: isSwiping ? 'none' : 'transform 0.2s ease-out'
+            justifyContent: 'center',
+            pointerEvents: 'none'
           }}>
-            {activeTab === 'raw' && selectedPhotos.includes(previewPhoto.name) && (
-              <div style={{
-                position: 'absolute',
-                top: '16px',
-                left: '16px',
-                backgroundColor: 'var(--primary)',
-                color: 'white',
-                padding: '8px 16px',
-                borderRadius: '20px',
-                fontWeight: 'bold',
-                fontSize: '1rem',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                zIndex: 10
-              }}>
-                ✓ Terpilih
-              </div>
-            )}
-            <img 
-              src={previewPhoto.thumbnailLink ? `/api/proxy?url=${encodeURIComponent(previewPhoto.thumbnailLink.replace('=s220', '=w600'))}` : ''}
-              onError={(e) => { 
-                e.target.onerror = null; 
-                e.target.src = `/api/proxy?url=${encodeURIComponent(`https://drive.google.com/thumbnail?id=${previewPhoto.id}&sz=w600`)}`; 
-              }}
-              alt={previewPhoto.name}
-              style={{ 
-                maxWidth: '100%', 
-                maxHeight: '75vh', 
-                objectFit: 'contain', 
-                borderRadius: '8px', 
-                boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
-                backgroundImage: previewPhoto.thumbnailLink ? `url(/api/proxy?url=${encodeURIComponent(previewPhoto.thumbnailLink.replace('=s220', '=w600'))})` : 'none',
-                backgroundSize: 'contain',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat'
-              }}
-            />
-          </div>
-          
-          <div style={{ marginTop: '24px', display: 'flex', gap: '16px', alignItems: 'center', width: '100%', justifyContent: 'center' }}>
-            {activeTab === 'raw' ? (
-              !project?.isLocked ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', maxWidth: '300px' }}>
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleSelect(previewPhoto.name);
-                    }}
-                    className="btn-primary"
-                    style={{ 
-                      padding: '14px 24px', 
-                      fontSize: '1rem',
-                      fontWeight: 'bold',
-                      width: '100%',
-                      boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
-                      backgroundColor: selectedPhotos.includes(previewPhoto.name) ? '#ef4444' : 'var(--primary)',
-                      border: 'none',
-                      color: 'white',
-                      borderRadius: '100px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {selectedPhotos.includes(previewPhoto.name) ? 'Hapus dari Pilihan' : 'Pilih Foto Ini'}
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setPreviewPhoto(null);
-                    }}
-                    style={{
-                      padding: '10px 24px', 
-                      fontSize: '0.95rem',
-                      fontWeight: '600',
-                      width: '100%',
-                      backgroundColor: 'rgba(255,255,255,0.15)',
-                      border: '1px solid rgba(255,255,255,0.3)',
-                      color: 'white',
-                      borderRadius: '100px',
-                      cursor: 'pointer',
-                      backdropFilter: 'blur(5px)'
-                    }}
-                  >
-                    Selesai / Tutup
-                  </button>
-                </div>
+            <div style={{ pointerEvents: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', maxWidth: '300px', padding: '0 20px' }}>
+              {activeTab === 'raw' ? (
+                !project?.isLocked ? (
+                  <>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleSelect((activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].name);
+                      }}
+                      className="btn-primary"
+                      style={{ 
+                        padding: '14px 24px', 
+                        fontSize: '1rem',
+                        fontWeight: 'bold',
+                        width: '100%',
+                        boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+                        backgroundColor: selectedPhotos.includes((activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].name) ? '#ef4444' : 'var(--primary)',
+                        border: 'none',
+                        color: 'white',
+                        borderRadius: '100px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {selectedPhotos.includes((activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].name) ? 'Hapus dari Pilihan' : 'Pilih Foto Ini'}
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPreviewIndex(-1);
+                      }}
+                      style={{
+                        padding: '10px 24px', 
+                        fontSize: '0.95rem',
+                        fontWeight: '600',
+                        width: '100%',
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        border: '1px solid rgba(255,255,255,0.3)',
+                        color: 'white',
+                        borderRadius: '100px',
+                        cursor: 'pointer',
+                        backdropFilter: 'blur(5px)'
+                      }}
+                    >
+                      Selesai / Tutup
+                    </button>
+                  </>
+                ) : (
+                  <div style={{ padding: '12px 24px', background: '#dcfce3', color: '#166534', borderRadius: '8px', fontWeight: '600', textAlign: 'center' }}>
+                    ?? Pilihan Sudah Dikunci
+                  </div>
+                )
               ) : (
-                <div style={{ padding: '12px 24px', background: '#dcfce3', color: '#166534', borderRadius: '8px', fontWeight: '600' }}>
-                  🔒 Pilihan Sudah Dikunci
-                </div>
-              )
-            ) : (
-              <a 
-                href={previewPhoto.webContentLink || `https://drive.google.com/uc?export=download&id=${previewPhoto.id}`} 
-                target="_blank" rel="noopener noreferrer"
-                style={{ width: '100%', maxWidth: '300px', display: 'block', textDecoration: 'none' }}
-              >
-                <button className="btn-primary" style={{ width: '100%', padding: '14px 24px', fontSize: '1rem', fontWeight: 'bold', backgroundColor: '#059669', boxShadow: '0 4px 15px rgba(5,150,105,0.3)' }}>
-                  ⬇️ Download Foto
-                </button>
-              </a>
-            )}
+                <a 
+                  href={(activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].webContentLink || 'https://drive.google.com/uc?export=download&id=' + (activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].id} 
+                  target="_blank" rel="noopener noreferrer"
+                  style={{ width: '100%', display: 'block', textDecoration: 'none' }}
+                >
+                  <button className="btn-primary" style={{ width: '100%', padding: '14px 24px', fontSize: '1rem', fontWeight: 'bold', backgroundColor: '#059669', boxShadow: '0 4px 15px rgba(5,150,105,0.3)', borderRadius: '100px', border: 'none', color: 'white', cursor: 'pointer' }}>
+                    ?? Download Foto
+                  </button>
+                </a>
+              )}
+            </div>
           </div>
-        </div>
+        </>
       )}
+
     </main>
   );
 }
