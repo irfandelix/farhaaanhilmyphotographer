@@ -678,23 +678,45 @@ export default function ClientGallery({ params }) {
             >&#10095;</button>
           )}
 
-          <img 
-            src={previewPhoto.thumbnailLink ? `/api/proxy?url=${encodeURIComponent(previewPhoto.thumbnailLink.replace('=s220', '=w1200'))}` : ''}
-            onError={(e) => { 
-              e.target.onerror = null; 
-              e.target.src = `/api/proxy?url=${encodeURIComponent(`https://drive.google.com/thumbnail?id=${previewPhoto.id}&sz=w1200`)}`; 
-            }}
-            alt={previewPhoto.name}
-            style={{ maxWidth: '100%', maxHeight: '75vh', objectFit: 'contain', borderRadius: '8px', boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }}
-          />
+          <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', maxWidth: '100%', maxHeight: '75vh' }}>
+            {activeTab === 'raw' && selectedPhotos.includes(previewPhoto.name) && (
+              <div style={{
+                position: 'absolute',
+                top: '16px',
+                left: '16px',
+                backgroundColor: 'var(--primary)',
+                color: 'white',
+                padding: '8px 16px',
+                borderRadius: '20px',
+                fontWeight: 'bold',
+                fontSize: '1rem',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                zIndex: 10
+              }}>
+                ✓ Terpilih
+              </div>
+            )}
+            <img 
+              src={previewPhoto.thumbnailLink ? `/api/proxy?url=${encodeURIComponent(previewPhoto.thumbnailLink.replace('=s220', '=w1200'))}` : ''}
+              onError={(e) => { 
+                e.target.onerror = null; 
+                e.target.src = `/api/proxy?url=${encodeURIComponent(`https://drive.google.com/thumbnail?id=${previewPhoto.id}&sz=w1200`)}`; 
+              }}
+              alt={previewPhoto.name}
+              style={{ maxWidth: '100%', maxHeight: '75vh', objectFit: 'contain', borderRadius: '8px', boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }}
+            />
+          </div>
           
           <div style={{ marginTop: '24px', display: 'flex', gap: '16px', alignItems: 'center', width: '100%', justifyContent: 'center' }}>
             {activeTab === 'raw' ? (
               !project?.isLocked ? (
                 <button 
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     toggleSelect(previewPhoto.name);
-                    setPreviewPhoto(null);
                   }}
                   className="btn-primary"
                   style={{ 
