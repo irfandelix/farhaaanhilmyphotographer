@@ -402,7 +402,7 @@ export default function ClientGallery({ params }) {
               {viewMode === 'selected' && selectedPhotoObjects.length === 0 ? (
                 <div style={{ padding: '60px 20px', textAlign: 'center', backgroundColor: '#f9fafb', borderRadius: '12px', border: '1px dashed #d1d5db' }}>
                   <p style={{ color: '#6b7280', fontSize: '1.1rem', marginBottom: '8px' }}>Belum ada foto yang dipilih.</p>
-                  <p style={{ color: '#9ca3af', fontSize: '0.9rem' }}>Silakan kembali ke "Semua Foto" dan klik tanda centang pada foto yang Anda inginkan.</p>
+                  <p style={{ color: '#9ca3af', fontSize: '0.9rem' }}>Silakan kembali ke &quot;Semua Foto&quot; dan klik tanda centang pada foto yang Anda inginkan.</p>
                 </div>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
