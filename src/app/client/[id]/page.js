@@ -701,13 +701,23 @@ export default function ClientGallery({ params }) {
               </div>
             )}
             <img 
-              src={previewPhoto.thumbnailLink ? `/api/proxy?url=${encodeURIComponent(previewPhoto.thumbnailLink.replace('=s220', '=w1200'))}` : ''}
+              src={previewPhoto.thumbnailLink ? `/api/proxy?url=${encodeURIComponent(previewPhoto.thumbnailLink.replace('=s220', '=w800'))}` : ''}
               onError={(e) => { 
                 e.target.onerror = null; 
-                e.target.src = `/api/proxy?url=${encodeURIComponent(`https://drive.google.com/thumbnail?id=${previewPhoto.id}&sz=w1200`)}`; 
+                e.target.src = `/api/proxy?url=${encodeURIComponent(`https://drive.google.com/thumbnail?id=${previewPhoto.id}&sz=w800`)}`; 
               }}
               alt={previewPhoto.name}
-              style={{ maxWidth: '100%', maxHeight: '75vh', objectFit: 'contain', borderRadius: '8px', boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }}
+              style={{ 
+                maxWidth: '100%', 
+                maxHeight: '75vh', 
+                objectFit: 'contain', 
+                borderRadius: '8px', 
+                boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
+                backgroundImage: previewPhoto.thumbnailLink ? `url(/api/proxy?url=${encodeURIComponent(previewPhoto.thumbnailLink)})` : 'none',
+                backgroundSize: 'contain',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat'
+              }}
             />
           </div>
           
