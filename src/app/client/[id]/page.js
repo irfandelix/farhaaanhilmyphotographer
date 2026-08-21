@@ -713,24 +713,49 @@ export default function ClientGallery({ params }) {
           <div style={{ marginTop: '24px', display: 'flex', gap: '16px', alignItems: 'center', width: '100%', justifyContent: 'center' }}>
             {activeTab === 'raw' ? (
               !project?.isLocked ? (
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleSelect(previewPhoto.name);
-                  }}
-                  className="btn-primary"
-                  style={{ 
-                    padding: '14px 24px', 
-                    fontSize: '1rem',
-                    fontWeight: 'bold',
-                    width: '100%',
-                    maxWidth: '300px',
-                    boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
-                    backgroundColor: selectedPhotos.includes(previewPhoto.name) ? '#ef4444' : 'var(--primary)'
-                  }}
-                >
-                  {selectedPhotos.includes(previewPhoto.name) ? 'Hapus dari Pilihan' : 'Pilih Foto Ini'}
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', maxWidth: '300px' }}>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleSelect(previewPhoto.name);
+                    }}
+                    className="btn-primary"
+                    style={{ 
+                      padding: '14px 24px', 
+                      fontSize: '1rem',
+                      fontWeight: 'bold',
+                      width: '100%',
+                      boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+                      backgroundColor: selectedPhotos.includes(previewPhoto.name) ? '#ef4444' : 'var(--primary)',
+                      border: 'none',
+                      color: 'white',
+                      borderRadius: '100px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {selectedPhotos.includes(previewPhoto.name) ? 'Hapus dari Pilihan' : 'Pilih Foto Ini'}
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPreviewPhoto(null);
+                    }}
+                    style={{
+                      padding: '10px 24px', 
+                      fontSize: '0.95rem',
+                      fontWeight: '600',
+                      width: '100%',
+                      backgroundColor: 'rgba(255,255,255,0.15)',
+                      border: '1px solid rgba(255,255,255,0.3)',
+                      color: 'white',
+                      borderRadius: '100px',
+                      cursor: 'pointer',
+                      backdropFilter: 'blur(5px)'
+                    }}
+                  >
+                    Selesai / Tutup
+                  </button>
+                </div>
               ) : (
                 <div style={{ padding: '12px 24px', background: '#dcfce3', color: '#166534', borderRadius: '8px', fontWeight: '600' }}>
                   🔒 Pilihan Sudah Dikunci
