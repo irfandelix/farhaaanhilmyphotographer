@@ -637,16 +637,10 @@ export default function ClientGallery({ params }) {
               {activeTab === 'raw' ? (
                 <>
                   {project.paymentStatus === 'Lunas' && (
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const link = document.createElement('a');
-                        link.href = `/api/proxy?url=${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${(activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].id}`)}`;
-                        link.download = (activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].name;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                      }}
+                    <a 
+                      href={`/api/proxy?url=${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${(activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].id}`)}`}
+                      download={(activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].name}
+                      onClick={(e) => e.stopPropagation()}
                       style={{ 
                         padding: '10px 24px', 
                         fontSize: '0.95rem',
@@ -658,11 +652,15 @@ export default function ClientGallery({ params }) {
                         color: 'white',
                         borderRadius: '100px',
                         cursor: 'pointer',
-                        pointerEvents: 'auto'
+                        pointerEvents: 'auto',
+                        textDecoration: 'none',
+                        display: 'block',
+                        textAlign: 'center',
+                        boxSizing: 'border-box'
                       }}
                     >
                       📥 Unduh Mentahan
-                    </button>
+                    </a>
                   )}
                   {!project?.isLocked ? (
                     <>
