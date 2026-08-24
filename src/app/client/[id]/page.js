@@ -592,54 +592,81 @@ export default function ClientGallery({ params }) {
         const isSelected = selectedPhotos.includes(currentPhoto?.name);
         
         return (
-          <Lightbox
-            open={true}
-            index={previewIndex}
-            close={() => setPreviewIndex(-1)}
-            slides={(activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos)).map(photo => ({
-              src: photo.thumbnailLink ? '/api/proxy?url=' + encodeURIComponent(photo.thumbnailLink.replace('=s220', '=w600')) : '',
-              alt: photo.name,
-            }))}
-            plugins={[Zoom]}
-            on={{
-              view: ({ index }) => setPreviewIndex(index),
-            }}
-            toolbar={{
-              buttons: [
-                activeTab === 'raw' && !project?.isLocked ? (
+          <>
+            <Lightbox
+              open={true}
+              index={previewIndex}
+              close={() => setPreviewIndex(-1)}
+              slides={(activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos)).map(photo => ({
+                src: photo.thumbnailLink ? '/api/proxy?url=' + encodeURIComponent(photo.thumbnailLink.replace('=s220', '=w600')) : '',
+                alt: photo.name,
+              }))}
+              plugins={[Zoom]}
+              on={{
+                view: ({ index }) => setPreviewIndex(index),
+              }}
+            />
+            
+            {typeof document !== 'undefined' && createPortal(
+              <div style={{
+                position: 'fixed',
+                bottom: '30px',
+                left: 0,
+                right: 0,
+                zIndex: 9999999,
+                display: 'flex',
+                justifyContent: 'center',
+                gap: '12px',
+                pointerEvents: 'none'
+              }}>
+                {activeTab === 'raw' && !project?.isLocked && (
                   <button
-                    key="pilih-btn"
-                    onClick={() => toggleSelect(currentPhoto.name)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleSelect(currentPhoto.name);
+                    }}
                     style={{
-                      padding: '6px 14px',
-                      fontSize: '0.9rem',
+                      padding: '12px 24px',
+                      fontSize: '1rem',
                       fontWeight: 'bold',
                       backgroundColor: isSelected ? '#ef4444' : 'var(--primary)',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
                       border: 'none',
                       color: 'white',
                       borderRadius: '100px',
                       cursor: 'pointer',
-                      marginRight: '8px'
+                      pointerEvents: 'auto'
                     }}
                   >
                     {isSelected ? '✓ Terpilih (Batal)' : 'Pilih Foto Ini'}
                   </button>
-                ) : null,
-                activeTab === 'raw' && project?.isLocked ? (
-                  <div key="locked" style={{ padding: '6px 14px', background: '#dcfce3', color: '#166534', borderRadius: '100px', fontWeight: 'bold', fontSize: '0.9rem', marginRight: '8px' }}>
+                )}
+                
+                {activeTab === 'raw' && project?.isLocked && (
+                  <div style={{
+                    padding: '12px 24px',
+                    fontSize: '1rem',
+                    fontWeight: 'bold',
+                    backgroundColor: '#dcfce3',
+                    color: '#166534',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                    borderRadius: '100px',
+                    pointerEvents: 'auto'
+                  }}>
                     🔒 Dikunci
                   </div>
-                ) : null,
-                project?.paymentStatus === 'Lunas' ? (
+                )}
+                
+                {project?.paymentStatus === 'Lunas' && (
                   <a
-                    key="unduh-btn"
                     href={`/api/proxy?url=${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${currentPhoto?.id}`)}`}
                     download={currentPhoto?.name}
                     style={{
-                      padding: '6px 14px',
-                      fontSize: '0.9rem',
+                      padding: '12px 24px',
+                      fontSize: '1rem',
                       fontWeight: 'bold',
                       backgroundColor: '#3b82f6',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
                       border: 'none',
                       color: 'white',
                       borderRadius: '100px',
@@ -647,17 +674,16 @@ export default function ClientGallery({ params }) {
                       textDecoration: 'none',
                       display: 'flex',
                       alignItems: 'center',
-                      marginRight: '8px'
+                      pointerEvents: 'auto'
                     }}
                   >
                     📥 Unduh
                   </a>
-                ) : null,
-                "zoom",
-                "close"
-              ].filter(Boolean)
-            }}
-          />
+                )}
+              </div>,
+              document.body
+            )}
+          </>
         );
       })()}
 
