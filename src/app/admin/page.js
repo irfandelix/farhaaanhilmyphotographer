@@ -24,7 +24,11 @@ export default function AdminDashboard() {
         });
         
         if (timeStr) {
-          const cleanTime = timeStr.replace(/WIB|WITA|WIT/gi, '').trim();
+          let cleanTime = timeStr.replace(/WIB|WITA|WIT/gi, '').trim();
+          // If range (e.g. "9.00-10.00"), take the first one
+          cleanTime = cleanTime.split('-')[0].trim();
+          // Replace dot with colon for valid JS Date parsing
+          cleanTime = cleanTime.replace(/\./g, ':');
           parsedDateStr += ` ${cleanTime}`;
         }
         
