@@ -626,15 +626,15 @@ export default function ClientGallery({ params }) {
           <div style={{ 
             position: 'fixed', 
             bottom: '24px', 
-            left: '50%',
-            transform: 'translateX(-50%)', 
-            zIndex: 100000, 
+            left: 0,
+            right: 0, 
+            zIndex: 999999, 
             display: 'flex', 
             justifyContent: 'center',
-            pointerEvents: 'none',
             width: '100%',
             padding: '0 16px',
-            boxSizing: 'border-box'
+            boxSizing: 'border-box',
+            pointerEvents: 'none'
           }}>
             <div style={{ 
               pointerEvents: 'auto', 
@@ -721,12 +721,9 @@ export default function ClientGallery({ params }) {
                     </>
                   )}
                   {project.paymentStatus === 'Lunas' && (
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const photoId = (activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].id;
-                        window.location.href = `/api/proxy?url=${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${photoId}`)}`;
-                      }}
+                    <a 
+                      href={`/api/proxy?url=${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${(activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].id}`)}`}
+                      download={(activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].name}
                       style={{ 
                         padding: '10px 16px', 
                         fontSize: '0.9rem',
@@ -739,6 +736,7 @@ export default function ClientGallery({ params }) {
                         borderRadius: '8px',
                         cursor: 'pointer',
                         pointerEvents: 'auto',
+                        textDecoration: 'none',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -746,21 +744,18 @@ export default function ClientGallery({ params }) {
                       }}
                     >
                       📥 Unduh
-                    </button>
+                    </a>
                   )}
                 </>
               ) : (
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    const photoId = (activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].id;
-                    window.location.href = `/api/proxy?url=${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${photoId}`)}`;
-                  }}
+                <a 
+                  href={`/api/proxy?url=${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${(activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].id}`)}`}
+                  download={(activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].name}
                   className="btn-primary" 
-                  style={{ width: '100%', padding: '12px 24px', fontSize: '1rem', fontWeight: 'bold', backgroundColor: '#059669', boxShadow: '0 4px 15px rgba(5,150,105,0.3)', borderRadius: '8px', border: 'none', color: 'white', cursor: 'pointer' }}
+                  style={{ width: '100%', padding: '12px 24px', fontSize: '1rem', fontWeight: 'bold', backgroundColor: '#059669', boxShadow: '0 4px 15px rgba(5,150,105,0.3)', borderRadius: '8px', border: 'none', color: 'white', cursor: 'pointer', textDecoration: 'none', textAlign: 'center', display: 'block', boxSizing: 'border-box' }}
                 >
                   📥 Download Foto
-                </button>
+                </a>
               )}
             </div>
           </div>
