@@ -295,7 +295,7 @@ export default function ClientGallery({ params }) {
             onClick={() => setActiveTab('edited')}
             style={{
               padding: '12px 24px', borderRadius: '100px', fontWeight: '600', border: 'none', cursor: 'pointer', transition: 'all 0.2s',
-              backgroundColor: activeTab === 'edited' ? '#059669' : '#e5e7eb',
+              backgroundColor: activeTab === 'edited' ? '#3b82f6' : '#e5e7eb',
               color: activeTab === 'edited' ? 'white' : '#4b5563',
               boxShadow: activeTab === 'edited' ? '0 4px 12px rgba(5,150,105,0.3)' : 'none'
             }}
@@ -449,7 +449,7 @@ export default function ClientGallery({ params }) {
                         key={photo.id}
                         style={{ 
                           display: 'grid', gridTemplateColumns: 'auto 60px 1fr 1fr 1fr 1fr', gap: '16px', padding: '8px 16px', 
-                          backgroundColor: isSelected ? '#e8f9ef' : 'white', 
+                          backgroundColor: isSelected ? '#eff6ff' : 'white', 
                           border: isSelected ? '1px solid var(--primary)' : '1px solid #e5e7eb',
                           borderRadius: '8px', alignItems: 'center', transition: 'all 0.2s'
                         }}
@@ -499,7 +499,7 @@ export default function ClientGallery({ params }) {
                           transition: 'all 0.2s',
                           transform: isSelected ? 'scale(0.95)' : 'scale(1)',
                           border: isSelected ? '3px solid var(--primary)' : '1px solid var(--glass-border)',
-                          backgroundColor: isSelected ? '#e8f9ef' : 'var(--glass-bg)',
+                          backgroundColor: isSelected ? '#eff6ff' : 'var(--glass-bg)',
                           display: 'flex',
                           flexDirection: 'column',
                           position: 'relative'
@@ -562,7 +562,7 @@ export default function ClientGallery({ params }) {
                 onClick={handleDownloadZip}
                 disabled={downloadingZip}
                 className="btn-primary" 
-                style={{ padding: '6px 14px', fontSize: '0.9rem', backgroundColor: '#059669', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '8px', border: 'none', color: 'white', cursor: 'pointer', fontWeight: '600' }}
+                style={{ padding: '6px 14px', fontSize: '0.9rem', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '8px', border: 'none', color: 'white', cursor: 'pointer', fontWeight: '600' }}
               >
                 {downloadingZip ? `⏳ Mengemas ZIP... ${downloadProgress}%` : '📥 Unduh Editan (ZIP)'}
               </button>
