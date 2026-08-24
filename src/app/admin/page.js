@@ -142,9 +142,14 @@ export default function AdminDashboard() {
       ) : (
         <>
           {(() => {
-            const isFinished = (p) => p.paymentStatus === 'Lunas' || (p.gdriveEditedLink && p.gdriveEditedLink.trim() !== '');
-            const progressProjects = projects.filter(p => !isFinished(p));
-            const lunasProjects = projects.filter(p => isFinished(p));
+            const isFinished = (p) => p.gdriveEditedLink && p.gdriveEditedLink.trim() !== '';
+            
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const upcomingProjects = projects.filter(p => !isFinished(p) && new Date(p.shootDate) > today);
+            const progressProjects = projects.filter(p => !isFinished(p) && new Date(p.shootDate) <= today);
+            const completedProjects = projects.filter(p => isFinished(p));
 
             const renderProjectCard = (project) => {
               const statusColor = project.paymentStatus === 'Lunas' ? '#dcfce3' : project.paymentStatus === 'DP' ? '#fef3c7' : '#fee2e2';
@@ -202,20 +207,29 @@ export default function AdminDashboard() {
 
             return (
               <>
+                {upcomingProjects.length > 0 && (
+                  <div style={{ marginBottom: '40px' }}>
+                    <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '16px', color: '#374151' }}>Yang Akan Datang</h2>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+                      {upcomingProjects.map(renderProjectCard)}
+                    </div>
+                  </div>
+                )}
+
                 {progressProjects.length > 0 && (
                   <div style={{ marginBottom: '40px' }}>
-                    <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '16px', color: '#374151' }}>Sedang Berjalan (Progress)</h2>
+                    <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '16px', color: '#374151' }}>Sedang Berjalan</h2>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
                       {progressProjects.map(renderProjectCard)}
                     </div>
                   </div>
                 )}
                 
-                {lunasProjects.length > 0 && (
+                {completedProjects.length > 0 && (
                   <div>
-                    <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '16px', color: '#374151' }}>Selesai (Lunas / Foto Terkirim)</h2>
+                    <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '16px', color: '#374151' }}>Selesai (Foto Terkirim)</h2>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-                      {lunasProjects.map(renderProjectCard)}
+                      {completedProjects.map(renderProjectCard)}
                     </div>
                   </div>
                 )}
