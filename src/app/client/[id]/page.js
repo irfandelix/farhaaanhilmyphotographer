@@ -101,7 +101,7 @@ export default function ClientGallery({ params }) {
   };
 
   const handleDownloadRawZip = async () => {
-    if (!sessions || sessions.length === 0) return;
+    if (!photos || photos.length === 0) return;
     
     setDownloadingZip(true);
     setDownloadProgress(0);
@@ -109,49 +109,23 @@ export default function ClientGallery({ params }) {
     try {
       const zip = new JSZip();
       let successCount = 0;
+      const totalFilesToDownload = photos.length;
       
-      // Tahap 1: Kumpulkan daftar file dari semua sesi
-      const allSessionFiles = [];
-      let totalFilesToDownload = 0;
+      const currentSession = sessions.find(s => s.id === activeSessionId);
+      const sessionName = currentSession ? currentSession.name : 'Sesi';
       
-      for (const session of sessions) {
-        try {
-          const res = await fetch(`/api/drive?folderId=${session.folderId}`);
-          const data = await res.json();
-          if (!data.error && data.files && data.files.length > 0) {
-            allSessionFiles.push({
-              sessionName: session.name,
-              files: data.files
-            });
-            totalFilesToDownload += data.files.length;
+      for (let i = 0; i < totalFilesToDownload; i++) {
+        const photo = photos[i];
+        if (photo.id) {
+          const res = await fetch(`/api/proxy?url=${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${photo.id}`)}`);
+          
+          if (res.ok) {
+            const blob = await res.blob();
+            zip.file(photo.name, blob);
+            successCount++;
           }
-        } catch(e) {
-          console.error("Gagal mendapatkan daftar foto untuk sesi", session.name, e);
-        }
-      }
-
-      if (totalFilesToDownload === 0) throw new Error("Tidak ada foto mentah yang ditemukan.");
-
-      let currentFileIndex = 0;
-      
-      // Tahap 2: Unduh file satu per satu dan masukkan ke folder ZIP
-      for (const sessionData of allSessionFiles) {
-        // Jika ada lebih dari 1 sesi, buat sub-folder. Jika cuma 1, langsung di root zip.
-        const targetZipFolder = sessions.length > 1 ? zip.folder(sessionData.sessionName) : zip;
-        
-        for (const photo of sessionData.files) {
-          if (photo.id) {
-            const res = await fetch(`/api/proxy?url=${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${photo.id}`)}`);
-            
-            if (res.ok) {
-              const blob = await res.blob();
-              targetZipFolder.file(photo.name, blob);
-              successCount++;
-            }
-            
-            currentFileIndex++;
-            setDownloadProgress(Math.round((currentFileIndex / totalFilesToDownload) * 100));
-          }
+          
+          setDownloadProgress(Math.round(((i + 1) / totalFilesToDownload) * 100));
         }
       }
       
@@ -159,7 +133,7 @@ export default function ClientGallery({ params }) {
       
       setDownloadProgress(100); 
       const content = await zip.generateAsync({ type: 'blob' });
-      saveAs(content, `${project.clientName} - Semua Foto Mentah.zip`);
+      saveAs(content, `${project.clientName} - Mentahan ${sessionName}.zip`);
       
     } catch (error) {
       console.error("Download Raw ZIP Error:", error);
@@ -332,7 +306,7 @@ export default function ClientGallery({ params }) {
                 style={{ padding: '12px 24px', fontSize: '1rem', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '100px', boxShadow: '0 4px 15px rgba(59,130,246,0.3)', border: 'none', color: 'white', cursor: 'pointer', fontWeight: 'bold' }}
                 title="Hanya tersedia untuk klien yang sudah Lunas"
               >
-                {downloadingZip ? `⏳ Mengemas ZIP... ${downloadProgress}%` : '📥 Unduh Semua Foto Asli (Mentahan)'}
+                {downloadingZip ? `⏳ Mengemas ZIP... ${downloadProgress}%` : '📥 Unduh Mentahan Sesi Ini'}
               </button>
             </div>
           )}
@@ -496,7 +470,7 @@ export default function ClientGallery({ params }) {
                 style={{ padding: '10px 20px', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #9ca3af', backgroundColor: 'white', color: '#4b5563', borderRadius: '8px', cursor: 'pointer' }}
                 title="Hanya tersedia untuk klien yang sudah Lunas"
               >
-                {downloadingZip ? `⏳ Mengemas ZIP... ${downloadProgress}%` : `📥 Unduh Semua Mentahan (ZIP)`}
+                {downloadingZip ? `⏳ Mengemas ZIP... ${downloadProgress}%` : `📥 Unduh Mentahan Sesi Ini`}
               </button>
             )}
             <button 
