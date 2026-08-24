@@ -165,10 +165,18 @@ export default function AdminDashboard() {
                         <div style={{ color: '#6b7280', fontSize: '0.9rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                           <span>{project.photoType}</span>
                           <span>•</span>
-                          {project.gdriveEditedLink 
-                            ? <span style={{ fontSize: '0.8rem', backgroundColor: '#dbeafe', color: '#1e40af', padding: '2px 8px', borderRadius: '12px', fontWeight: '500' }}>✓ Foto Terkirim</span>
-                            : <span style={{ fontSize: '0.8rem', backgroundColor: '#fef3c7', color: '#92400e', padding: '2px 8px', borderRadius: '12px', fontWeight: '500' }}>⏳ Belum Upload Edit</span>
-                          }
+                          {(() => {
+                            if (project.gdriveEditedLink) {
+                              return <span style={{ fontSize: '0.8rem', backgroundColor: '#dcfce3', color: '#166534', padding: '2px 8px', borderRadius: '12px', fontWeight: '500' }}>✅ Selesai (Foto Terkirim)</span>;
+                            }
+                            if (project.selectedPhotos && project.selectedPhotos.length > 0) {
+                              return <span style={{ fontSize: '0.8rem', backgroundColor: '#fef3c7', color: '#92400e', padding: '2px 8px', borderRadius: '12px', fontWeight: '500' }}>⏳ Belum Upload Edit</span>;
+                            }
+                            if (project.gdriveLink || (project.sessions && project.sessions.length > 0)) {
+                              return <span style={{ fontSize: '0.8rem', backgroundColor: '#fee2e2', color: '#991b1b', padding: '2px 8px', borderRadius: '12px', fontWeight: '500' }}>📸 Belum Pilih Foto</span>;
+                            }
+                            return <span style={{ fontSize: '0.8rem', backgroundColor: '#f3f4f6', color: '#374151', padding: '2px 8px', borderRadius: '12px', fontWeight: '500' }}>📤 Belum Upload Mentahan</span>;
+                          })()}
                         </div>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', justifyContent: 'space-between', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
