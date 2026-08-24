@@ -626,14 +626,30 @@ export default function ClientGallery({ params }) {
           <div style={{ 
             position: 'fixed', 
             bottom: '24px', 
-            left: 0, 
-            right: 0, 
+            left: '50%',
+            transform: 'translateX(-50%)', 
             zIndex: 100000, 
             display: 'flex', 
             justifyContent: 'center',
-            pointerEvents: 'none'
+            pointerEvents: 'none',
+            width: '100%',
+            padding: '0 16px',
+            boxSizing: 'border-box'
           }}>
-            <div style={{ pointerEvents: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', maxWidth: '300px', padding: '0 20px' }}>
+            <div style={{ 
+              pointerEvents: 'auto', 
+              display: 'flex', 
+              flexDirection: 'row', 
+              gap: '8px', 
+              width: '100%', 
+              maxWidth: '600px',
+              justifyContent: 'center',
+              backgroundColor: 'rgba(255, 255, 255, 0.15)',
+              backdropFilter: 'blur(12px)',
+              padding: '12px',
+              borderRadius: '16px',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
+            }}>
               {activeTab === 'raw' ? (
                 <>
                   {!project?.isLocked ? (
@@ -643,21 +659,20 @@ export default function ClientGallery({ params }) {
                           e.stopPropagation();
                           toggleSelect((activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].name);
                         }}
-                        className="btn-primary"
                         style={{ 
-                          padding: '14px 24px', 
-                          fontSize: '1rem',
+                          padding: '10px 16px', 
+                          fontSize: '0.9rem',
                           fontWeight: 'bold',
-                          width: '100%',
-                          boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+                          flex: 1,
+                          boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
                           backgroundColor: selectedPhotos.includes((activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].name) ? '#ef4444' : 'var(--primary)',
                           border: 'none',
                           color: 'white',
-                          borderRadius: '100px',
+                          borderRadius: '8px',
                           cursor: 'pointer'
                         }}
                       >
-                        {selectedPhotos.includes((activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].name) ? 'Hapus dari Pilihan' : 'Pilih Foto Ini'}
+                        {selectedPhotos.includes((activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].name) ? 'Batal Pilih' : 'Pilih Foto'}
                       </button>
                       <button
                         onClick={(e) => {
@@ -665,25 +680,24 @@ export default function ClientGallery({ params }) {
                           setPreviewIndex(-1);
                         }}
                         style={{
-                          padding: '10px 24px', 
-                          fontSize: '0.95rem',
+                          padding: '10px 16px', 
+                          fontSize: '0.9rem',
                           fontWeight: '600',
-                          width: '100%',
-                          backgroundColor: 'rgba(0,0,0,0.5)',
-                          border: '1px solid rgba(255,255,255,0.3)',
+                          flex: 1,
+                          backgroundColor: 'rgba(0,0,0,0.6)',
+                          border: 'none',
                           color: 'white',
-                          borderRadius: '100px',
+                          borderRadius: '8px',
                           cursor: 'pointer',
-                          backdropFilter: 'blur(5px)'
                         }}
                       >
-                        Selesai / Tutup
+                        Tutup
                       </button>
                     </>
                   ) : (
                     <>
-                      <div style={{ padding: '12px 24px', background: '#dcfce3', color: '#166534', borderRadius: '8px', fontWeight: '600', textAlign: 'center' }}>
-                        🔒 Pilihan Sudah Dikunci
+                      <div style={{ padding: '10px 16px', background: '#dcfce3', color: '#166534', borderRadius: '8px', fontWeight: '600', textAlign: 'center', flex: 1, fontSize: '0.9rem' }}>
+                        🔒 Dikunci
                       </div>
                       <button
                         onClick={(e) => {
@@ -691,16 +705,15 @@ export default function ClientGallery({ params }) {
                           setPreviewIndex(-1);
                         }}
                         style={{
-                          padding: '10px 24px', 
-                          fontSize: '0.95rem',
+                          padding: '10px 16px', 
+                          fontSize: '0.9rem',
                           fontWeight: '600',
-                          width: '100%',
-                          backgroundColor: 'rgba(0,0,0,0.5)',
-                          border: '1px solid rgba(255,255,255,0.3)',
+                          flex: 1,
+                          backgroundColor: 'rgba(0,0,0,0.6)',
+                          border: 'none',
                           color: 'white',
-                          borderRadius: '100px',
+                          borderRadius: '8px',
                           cursor: 'pointer',
-                          backdropFilter: 'blur(5px)'
                         }}
                       >
                         Tutup
@@ -713,24 +726,25 @@ export default function ClientGallery({ params }) {
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{ 
-                        padding: '10px 24px', 
-                        fontSize: '0.95rem',
+                        padding: '10px 16px', 
+                        fontSize: '0.9rem',
                         fontWeight: 'bold',
-                        width: '100%',
+                        flex: 1,
                         boxShadow: '0 4px 15px rgba(59,130,246,0.3)',
                         backgroundColor: '#3b82f6',
                         border: 'none',
                         color: 'white',
-                        borderRadius: '100px',
+                        borderRadius: '8px',
                         cursor: 'pointer',
                         pointerEvents: 'auto',
                         textDecoration: 'none',
-                        display: 'block',
-                        textAlign: 'center',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                         boxSizing: 'border-box'
                       }}
                     >
-                      📥 Unduh Mentahan
+                      📥 Unduh
                     </a>
                   )}
                 </>
@@ -740,7 +754,7 @@ export default function ClientGallery({ params }) {
                   target="_blank" rel="noopener noreferrer"
                   style={{ width: '100%', display: 'block', textDecoration: 'none' }}
                 >
-                  <button className="btn-primary" style={{ width: '100%', padding: '14px 24px', fontSize: '1rem', fontWeight: 'bold', backgroundColor: '#059669', boxShadow: '0 4px 15px rgba(5,150,105,0.3)', borderRadius: '100px', border: 'none', color: 'white', cursor: 'pointer' }}>
+                  <button className="btn-primary" style={{ width: '100%', padding: '12px 24px', fontSize: '1rem', fontWeight: 'bold', backgroundColor: '#059669', boxShadow: '0 4px 15px rgba(5,150,105,0.3)', borderRadius: '8px', border: 'none', color: 'white', cursor: 'pointer' }}>
                     📥 Download Foto
                   </button>
                 </a>
