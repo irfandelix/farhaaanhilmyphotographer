@@ -2,49 +2,53 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import NewClientModal from '@/components/NewClientModal';
 import { getProjects } from '@/lib/projectService';
 
 export default function AdminDashboard() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+
+  const fetchProjects = async () => {
+    setLoading(true);
+    const data = await getProjects();
+    const parseShootDateTime = (dateStr, timeStr) => {
+      if (!dateStr) return 0;
+      const monthMap = {
+        'januari': 'January', 'februari': 'February', 'maret': 'March', 'april': 'April',
+        'mei': 'May', 'juni': 'June', 'juli': 'July', 'agustus': 'August',
+        'september': 'September', 'oktober': 'October', 'november': 'November', 'desember': 'December'
+      };
+      let parsedDateStr = dateStr.toLowerCase();
+      Object.keys(monthMap).forEach(idMonth => {
+        parsedDateStr = parsedDateStr.replace(new RegExp(idMonth, "g"), monthMap[idMonth]);
+      });
+      
+      if (timeStr) {
+        let cleanTime = timeStr.replace(/WIB|WITA|WIT/gi, '').trim();
+        // If range (e.g. "9.00-10.00"), take the first one
+        cleanTime = cleanTime.split('-')[0].trim();
+        // Replace dot with colon for valid JS Date parsing
+        cleanTime = cleanTime.replace(/\./g, ':');
+        parsedDateStr += ` ${cleanTime}`;
+      }
+      
+      const d = new Date(parsedDateStr);
+      if (isNaN(d.getTime())) return 0;
+      return d.getTime();
+    };
+
+    const sortedData = [...data].sort((a, b) => {
+      const timeA = parseShootDateTime(a.shootDate, a.shootTime) || (a.createdAt?.seconds * 1000) || 0;
+      const timeB = parseShootDateTime(b.shootDate, b.shootTime) || (b.createdAt?.seconds * 1000) || 0;
+      return timeB - timeA;
+    });
+    setProjects(sortedData);
+    setLoading(false);
+  };
 
   useEffect(() => {
-    async function fetchProjects() {
-      const data = await getProjects();
-      const parseShootDateTime = (dateStr, timeStr) => {
-        if (!dateStr) return 0;
-        const monthMap = {
-          'januari': 'January', 'februari': 'February', 'maret': 'March', 'april': 'April',
-          'mei': 'May', 'juni': 'June', 'juli': 'July', 'agustus': 'August',
-          'september': 'September', 'oktober': 'October', 'november': 'November', 'desember': 'December'
-        };
-        let parsedDateStr = dateStr.toLowerCase();
-        Object.keys(monthMap).forEach(idMonth => {
-          parsedDateStr = parsedDateStr.replace(new RegExp(idMonth, "g"), monthMap[idMonth]);
-        });
-        
-        if (timeStr) {
-          let cleanTime = timeStr.replace(/WIB|WITA|WIT/gi, '').trim();
-          // If range (e.g. "9.00-10.00"), take the first one
-          cleanTime = cleanTime.split('-')[0].trim();
-          // Replace dot with colon for valid JS Date parsing
-          cleanTime = cleanTime.replace(/\./g, ':');
-          parsedDateStr += ` ${cleanTime}`;
-        }
-        
-        const d = new Date(parsedDateStr);
-        if (isNaN(d.getTime())) return 0;
-        return d.getTime();
-      };
-
-      const sortedData = [...data].sort((a, b) => {
-        const timeA = parseShootDateTime(a.shootDate, a.shootTime) || (a.createdAt?.seconds * 1000) || 0;
-        const timeB = parseShootDateTime(b.shootDate, b.shootTime) || (b.createdAt?.seconds * 1000) || 0;
-        return timeB - timeA;
-      });
-      setProjects(sortedData);
-      setLoading(false);
-    }
     fetchProjects();
   }, []);
 
@@ -102,9 +106,7 @@ export default function AdminDashboard() {
     <main style={{ padding: '20px 16px', maxWidth: '1000px', margin: '0 auto' }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
         <h1 style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)', fontWeight: '700' }}>Dashboard Admin</h1>
-        <Link href="/admin/new">
-          <button className="btn-primary" style={{ padding: '10px 24px', fontSize: '1rem' }}>+ Klien Baru</button>
-        </Link>
+        <button onClick={() => setShowModal(true)} className="btn-primary" style={{ padding: '10px 24px', fontSize: '1rem', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>+ Klien Baru</button>
       </div>
 
       {!loading && upcomingProjects.length > 0 && (
@@ -254,6 +256,16 @@ export default function AdminDashboard() {
             );
           })()}
         </>
+      )}
+
+      {showModal && (
+        <NewClientModal 
+          onClose={() => setShowModal(false)} 
+          onSuccess={() => {
+            setShowModal(false);
+            fetchProjects();
+          }} 
+        />
       )}
     </main>
   );

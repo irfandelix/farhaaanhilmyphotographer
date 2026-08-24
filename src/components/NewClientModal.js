@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createProject, getProjects } from '@/lib/projectService';
 
-export default function NewClientPage() {
+export default function NewClientModal({ onClose, onSuccess }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -136,7 +136,8 @@ export default function NewClientPage() {
     const result = await createProject(payload);
     
     if (result.success) {
-      router.push('/admin');
+      if (onSuccess) onSuccess();
+      if (onClose) onClose();
     } else {
       alert("Gagal membuat proyek: " + result.error);
       setLoading(false);
@@ -144,8 +145,9 @@ export default function NewClientPage() {
   };
 
   return (
-    <main style={{ padding: '20px 16px', maxWidth: '600px', margin: '0 auto' }}>
-      <div className="glass-panel" style={{ padding: '24px 16px' }}>
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+      <div className="glass-panel" style={{ padding: '24px 16px', width: '100%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto', position: 'relative' }}>
+        <button onClick={onClose} type="button" style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#6b7280' }}>&times;</button>
         <h1 style={{ fontSize: 'clamp(1.5rem, 5vw, 1.8rem)', fontWeight: '700', marginBottom: '24px' }}>Tambah Klien Baru</h1>
         
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -272,13 +274,13 @@ export default function NewClientPage() {
           </div>
 
           <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
-            <button type="button" className="btn-secondary" onClick={() => router.back()} style={{ flex: 1 }}>Batal</button>
+            <button type="button" className="btn-secondary" onClick={onClose} style={{ flex: 1 }}>Batal</button>
             <button type="submit" className="btn-primary" disabled={loading} style={{ flex: 2 }}>
               {loading ? 'Menyimpan...' : 'Simpan Klien'}
             </button>
           </div>
         </form>
       </div>
-    </main>
+    </div>
   );
 }
