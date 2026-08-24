@@ -638,9 +638,9 @@ export default function ClientGallery({ params }) {
                 <>
                   {project.paymentStatus === 'Lunas' && (
                     <a 
-                      href={`/api/proxy?url=${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${(activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].id}`)}`}
-                      download={(activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].name}
-                      onClick={(e) => e.stopPropagation()}
+                      href={`https://drive.google.com/uc?export=download&id=${(activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       style={{ 
                         padding: '10px 24px', 
                         fontSize: '0.95rem',
