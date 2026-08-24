@@ -641,34 +641,38 @@ export default function ClientGallery({ params }) {
                             toggleSelect(currentPhoto.name);
                           }}
                           style={{
-                            padding: '12px 24px',
-                            fontSize: '1rem',
-                            fontWeight: 'bold',
+                            padding: '8px 16px',
+                            fontSize: '0.9rem',
+                            fontWeight: '600',
                             backgroundColor: isSelected ? '#ef4444' : 'var(--primary)',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
                             border: 'none',
                             color: 'white',
                             borderRadius: '100px',
                             cursor: 'pointer',
-                            pointerEvents: 'auto'
+                            pointerEvents: 'auto',
+                            minWidth: '120px',
+                            textAlign: 'center'
                           }}
                         >
-                          {isSelected ? '✓ Terpilih (Batal)' : 'Pilih Foto Ini'}
+                          {isSelected ? 'Terpilih (Batal)' : 'Pilih Foto'}
                         </button>
                       )}
                       
                       {activeTab === 'raw' && project?.isLocked && (
                         <div style={{
-                          padding: '12px 24px',
-                          fontSize: '1rem',
-                          fontWeight: 'bold',
+                          padding: '8px 16px',
+                          fontSize: '0.9rem',
+                          fontWeight: '600',
                           backgroundColor: '#dcfce3',
                           color: '#166534',
-                          boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
                           borderRadius: '100px',
-                          pointerEvents: 'auto'
+                          pointerEvents: 'auto',
+                          minWidth: '120px',
+                          textAlign: 'center'
                         }}>
-                          🔒 Dikunci
+                          Dikunci
                         </div>
                       )}
                       
@@ -678,11 +682,11 @@ export default function ClientGallery({ params }) {
                           download={currentPhoto.name}
                           onClick={(e) => e.stopPropagation()}
                           style={{
-                            padding: '12px 24px',
-                            fontSize: '1rem',
-                            fontWeight: 'bold',
+                            padding: '8px 16px',
+                            fontSize: '0.9rem',
+                            fontWeight: '600',
                             backgroundColor: '#3b82f6',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
                             border: 'none',
                             color: 'white',
                             borderRadius: '100px',
@@ -690,10 +694,12 @@ export default function ClientGallery({ params }) {
                             textDecoration: 'none',
                             display: 'flex',
                             alignItems: 'center',
-                            pointerEvents: 'auto'
+                            justifyContent: 'center',
+                            pointerEvents: 'auto',
+                            minWidth: '120px'
                           }}
                         >
-                          📥 Unduh
+                          Unduh
                         </a>
                       )}
                     </div>
