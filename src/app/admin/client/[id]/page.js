@@ -587,7 +587,6 @@ export default function AdminClientDetail({ params }) {
                   </div>
                   </div>
                 </div>
-              </>
             ) : (
               <>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
