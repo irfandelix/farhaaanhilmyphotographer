@@ -168,6 +168,8 @@ export default function NewClientModal({ onClose, onSuccess }) {
               <option value="Foto Studio">Foto Studio</option>
               <option value="Foto Group">Foto Group</option>
               <option value="Foto Produk">Foto Produk</option>
+              <option value="Event Birthday">Event Birthday</option>
+              <option value="Birthday Photoshoot">Birthday Photoshoot</option>
               <option value="Event / Dokumentasi">Event / Dokumentasi</option>
               <option value="Wedding">Wedding</option>
               <option value="Engagement">Engagement</option>
