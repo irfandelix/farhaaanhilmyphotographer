@@ -323,6 +323,20 @@ export default function ClientGallery({ params }) {
       {/* Render Raw Photos (Selection Mode) */}
       {activeTab === 'raw' && (
         <>
+          {project.paymentStatus === 'Lunas' && sessions.length > 0 && (
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+              <button 
+                onClick={handleDownloadRawZip}
+                disabled={downloadingZip}
+                className="btn-primary" 
+                style={{ padding: '12px 24px', fontSize: '1rem', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '100px', boxShadow: '0 4px 15px rgba(59,130,246,0.3)', border: 'none', color: 'white', cursor: 'pointer', fontWeight: 'bold' }}
+                title="Hanya tersedia untuk klien yang sudah Lunas"
+              >
+                {downloadingZip ? `⏳ Mengemas ZIP... ${downloadProgress}%` : '📥 Unduh Semua Foto Asli (Mentahan)'}
+              </button>
+            </div>
+          )}
+
           {/* Sub-tabs for Selection Mode */}
           <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '24px' }}>
             <button 
