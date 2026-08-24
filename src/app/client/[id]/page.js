@@ -293,70 +293,7 @@ export default function ClientGallery({ params }) {
       {/* Render Raw Photos (Selection Mode) */}
       {activeTab === 'raw' && (
         <>
-          {/* Sub-tabs for Selection Mode */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '24px' }}>
-            <button 
-              onClick={() => setViewMode('all')}
-              style={{
-                padding: '10px 20px', borderRadius: '8px', fontWeight: '600', border: '1px solid', cursor: 'pointer', transition: 'all 0.2s',
-                backgroundColor: viewMode === 'all' ? '#111827' : 'white',
-                color: viewMode === 'all' ? 'white' : '#4b5563',
-                borderColor: viewMode === 'all' ? '#111827' : '#d1d5db'
-              }}
-            >
-              Semua Foto ({photos.length})
-            </button>
-            <button 
-              onClick={() => setViewMode('selected')}
-              style={{
-                padding: '10px 20px', borderRadius: '8px', fontWeight: '600', border: '1px solid', cursor: 'pointer', transition: 'all 0.2s',
-                backgroundColor: viewMode === 'selected' ? '#111827' : 'white',
-                color: viewMode === 'selected' ? 'white' : '#4b5563',
-                borderColor: viewMode === 'selected' ? '#111827' : '#d1d5db'
-              }}
-            >
-              Foto Terpilih ({selectedPhotos.length})
-            </button>
-          </div>
-
-          {sessions.length > 1 && viewMode === 'all' && (
-            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '16px', marginBottom: '16px', justifyContent: 'center' }}>
-              {sessions.map(session => (
-                <button
-                  key={session.id}
-                  onClick={() => handleSessionChange(session.id)}
-                  style={{
-                    padding: '8px 16px',
-                    borderRadius: '20px',
-                    whiteSpace: 'nowrap',
-                    fontWeight: activeSessionId === session.id ? '600' : '400',
-                    backgroundColor: activeSessionId === session.id ? '#3b82f6' : '#f3f4f6',
-                    color: activeSessionId === session.id ? 'white' : '#374151',
-                    border: 'none',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    boxShadow: activeSessionId === session.id ? '0 2px 8px rgba(59,130,246,0.3)' : 'none'
-                  }}
-                >
-                  {session.name}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {project.paymentStatus === 'Lunas' && sessions.length > 0 && viewMode === 'all' && (
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
-              <button 
-                onClick={handleDownloadRawZip}
-                disabled={downloadingZip}
-                className="btn-primary" 
-                style={{ padding: '10px 20px', fontSize: '0.95rem', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '100px', boxShadow: '0 4px 15px rgba(59,130,246,0.3)', border: 'none', color: 'white', cursor: 'pointer', fontWeight: 'bold' }}
-                title="Hanya tersedia untuk klien yang sudah Lunas"
-              >
-                {downloadingZip ? `⏳ Mengemas ZIP... ${downloadProgress}%` : '📥 Unduh Mentahan Sesi Ini'}
-              </button>
-            </div>
-          )}
+          {/* Removed tabs, sessions, download to put in toolbar below */}
           
           {loadingPhotos ? (
             <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>
@@ -366,10 +303,48 @@ export default function ClientGallery({ params }) {
             </div>
           ) : (
             <>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
-                <span style={{ color: '#4b5563', fontSize: '0.9rem' }}>
-                  Total {sortedPhotos.length} foto
-                </span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '16px' }}>
+                {/* Left Controls: Tabs and Download */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button 
+                      onClick={() => setViewMode('all')}
+                      style={{
+                        padding: '6px 14px', borderRadius: '8px', fontWeight: '600', border: '1px solid', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.9rem',
+                        backgroundColor: viewMode === 'all' ? '#111827' : 'white',
+                        color: viewMode === 'all' ? 'white' : '#4b5563',
+                        borderColor: viewMode === 'all' ? '#111827' : '#d1d5db'
+                      }}
+                    >
+                      Semua Foto ({photos.length})
+                    </button>
+                    <button 
+                      onClick={() => setViewMode('selected')}
+                      style={{
+                        padding: '6px 14px', borderRadius: '8px', fontWeight: '600', border: '1px solid', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.9rem',
+                        backgroundColor: viewMode === 'selected' ? '#111827' : 'white',
+                        color: viewMode === 'selected' ? 'white' : '#4b5563',
+                        borderColor: viewMode === 'selected' ? '#111827' : '#d1d5db'
+                      }}
+                    >
+                      Foto Terpilih ({selectedPhotos.length})
+                    </button>
+                  </div>
+                  
+                  {project.paymentStatus === 'Lunas' && sessions.length > 0 && viewMode === 'all' && (
+                    <button 
+                      onClick={handleDownloadRawZip}
+                      disabled={downloadingZip}
+                      className="btn-primary" 
+                      style={{ padding: '6px 14px', fontSize: '0.9rem', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '8px', border: 'none', color: 'white', cursor: 'pointer', fontWeight: '600' }}
+                      title="Hanya tersedia untuk klien yang sudah Lunas"
+                    >
+                      {downloadingZip ? `⏳ Mengemas ZIP... ${downloadProgress}%` : '📥 Unduh Mentahan Sesi Ini'}
+                    </button>
+                  )}
+                </div>
+
+                {/* Right Controls: Filters */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#e5e7eb', padding: '4px', borderRadius: '8px' }}>
                     <button 
@@ -398,6 +373,31 @@ export default function ClientGallery({ params }) {
                   </div>
                 </div>
               </div>
+
+              {sessions.length > 1 && viewMode === 'all' && (
+                <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '16px', marginBottom: '8px', justifyContent: 'flex-start' }}>
+                  {sessions.map(session => (
+                    <button
+                      key={session.id}
+                      onClick={() => handleSessionChange(session.id)}
+                      style={{
+                        padding: '6px 14px',
+                        borderRadius: '20px',
+                        whiteSpace: 'nowrap',
+                        fontSize: '0.85rem',
+                        fontWeight: activeSessionId === session.id ? '600' : '400',
+                        backgroundColor: activeSessionId === session.id ? '#e0f2fe' : '#f3f4f6',
+                        color: activeSessionId === session.id ? '#0369a1' : '#4b5563',
+                        border: 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                      }}
+                    >
+                      {session.name}
+                    </button>
+                  ))}
+                </div>
+              )}
               
               {viewMode === 'selected' && selectedPhotoObjects.length === 0 ? (
                 <div style={{ padding: '60px 20px', textAlign: 'center', backgroundColor: '#f9fafb', borderRadius: '12px', border: '1px dashed #d1d5db' }}>
