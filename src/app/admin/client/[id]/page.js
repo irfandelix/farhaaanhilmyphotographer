@@ -142,7 +142,7 @@ export default function AdminClientDetail({ params }) {
     setSavingLink(false);
     
     if (success) {
-      alert('Sesi & Link Google Drive (Mentah) berhasil disimpan!');
+      alert('Sesi & Link Google Drive (Original) berhasil disimpan!');
       // Force refresh data
       const updatedData = await getProjectById(id);
       if (updatedData) {
@@ -664,10 +664,10 @@ export default function AdminClientDetail({ params }) {
           </div>
         </div>
 
-        {/* Link Mentahan (Multi Sessions) */}
+        {/* Link Original (Multi Sessions) */}
         <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px dashed var(--border-color)', background: '#f9fafb', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: '600' }}>Link Folder Mentahan (Sesi)</h3>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: '600' }}>Link Folder Original (Sesi)</h3>
             <button 
               onClick={addSession} 
               style={{ padding: '4px 12px', fontSize: '0.8rem', backgroundColor: '#e5e7eb', color: '#374151', borderRadius: '4px', cursor: 'pointer', border: '1px solid #d1d5db' }}

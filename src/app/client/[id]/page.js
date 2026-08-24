@@ -130,11 +130,11 @@ export default function ClientGallery({ params }) {
         }
       }
       
-      if (successCount === 0) throw new Error("Tidak ada foto mentah yang berhasil diunduh.");
+      if (successCount === 0) throw new Error("Tidak ada foto original yang berhasil diunduh.");
       
       setDownloadProgress(100); 
       const content = await zip.generateAsync({ type: 'blob' });
-      saveAs(content, `${project.clientName} - Mentahan ${sessionName}.zip`);
+      saveAs(content, `${project.clientName} - Original ${sessionName}.zip`);
       
     } catch (error) {
       console.error("Download Raw ZIP Error:", error);
@@ -289,7 +289,7 @@ export default function ClientGallery({ params }) {
               boxShadow: activeTab === 'raw' ? '0 4px 12px rgba(0,0,0,0.1)' : 'none'
             }}
           >
-            Pilihan Foto 📸
+            Foto Original 📸
           </button>
           <button 
             onClick={() => setActiveTab('edited')}
@@ -354,7 +354,7 @@ export default function ClientGallery({ params }) {
                       style={{ padding: '6px 14px', fontSize: '0.9rem', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '8px', border: 'none', color: 'white', cursor: 'pointer', fontWeight: '600' }}
                       title="Hanya tersedia untuk klien yang sudah Lunas"
                     >
-                      {downloadingZip ? `⏳ Mengemas ZIP... ${downloadProgress}%` : '📥 Unduh Mentahan Sesi Ini'}
+                      {downloadingZip ? `⏳ Mengemas ZIP... ${downloadProgress}%` : '📥 Unduh Original Sesi Ini'}
                     </button>
                   )}
                 </div>
@@ -732,7 +732,7 @@ export default function ClientGallery({ params }) {
 
       {activeTab === 'raw' && photos.length === 0 && (
         <div style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
-          Belum ada foto yang ditemukan di folder mentah ini.
+          Belum ada foto yang ditemukan di folder original ini.
         </div>
       )}
       

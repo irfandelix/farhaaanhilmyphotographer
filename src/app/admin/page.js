@@ -59,7 +59,7 @@ export default function AdminDashboard() {
     return projects.filter(p => {
       if (!p.shootDate) return false;
       
-      // Jika sudah ada link gdrive mentahan, berarti pemotretan sudah selesai
+      // Jika sudah ada link gdrive original, berarti pemotretan sudah selesai
       const hasLegacyLink = !!p.gdriveLink;
       const hasSessionLink = p.sessions && p.sessions.length > 0 && p.sessions.some(s => s.link);
       if (hasLegacyLink || hasSessionLink) return false;
@@ -175,7 +175,7 @@ export default function AdminDashboard() {
                             if (project.gdriveLink || (project.sessions && project.sessions.length > 0)) {
                               return <span style={{ fontSize: '0.8rem', backgroundColor: '#fee2e2', color: '#991b1b', padding: '2px 8px', borderRadius: '12px', fontWeight: '500' }}>📸 Belum Pilih Foto</span>;
                             }
-                            return <span style={{ fontSize: '0.8rem', backgroundColor: '#f3f4f6', color: '#374151', padding: '2px 8px', borderRadius: '12px', fontWeight: '500' }}>📤 Belum Upload Mentahan</span>;
+                            return <span style={{ fontSize: '0.8rem', backgroundColor: '#f3f4f6', color: '#374151', padding: '2px 8px', borderRadius: '12px', fontWeight: '500' }}>📤 Belum Upload Original</span>;
                           })()}
                         </div>
                       </div>
