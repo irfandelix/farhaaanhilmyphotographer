@@ -417,7 +417,7 @@ export default function ClientGallery({ params }) {
                     <div>Nama File</div>
                     <div>Resolusi</div>
                     <div>Ukuran</div>
-                    <div>Tanggal Diambil</div>
+                    <div>Tanggal Diunggah</div>
                   </div>
                   {(viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos).map((photo, index) => {
                     const isSelected = selectedPhotos.includes(photo.name);
@@ -427,8 +427,8 @@ export default function ClientGallery({ params }) {
                     const height = photo.imageMediaMetadata?.height || '?';
                     
                     let dateStr = '-';
-                    if (photo.imageMediaMetadata?.time || photo.createdTime) {
-                       const d = new Date(photo.imageMediaMetadata?.time || photo.createdTime);
+                    if (photo.createdTime) {
+                       const d = new Date(photo.createdTime);
                        if (!isNaN(d.getTime())) {
                          dateStr = d.toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
                        }
