@@ -676,55 +676,107 @@ export default function ClientGallery({ params }) {
           }}>
             <div style={{ pointerEvents: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', maxWidth: '300px', padding: '0 20px' }}>
               {activeTab === 'raw' ? (
-                !project?.isLocked ? (
-                  <>
+                <>
+                  {project.paymentStatus === 'Lunas' && (
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
-                        toggleSelect((activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].name);
+                        const link = document.createElement('a');
+                        link.href = `/api/proxy?url=${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${(activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].id}`)}`;
+                        link.download = (activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].name;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
                       }}
-                      className="btn-primary"
                       style={{ 
-                        padding: '14px 24px', 
-                        fontSize: '1rem',
+                        padding: '10px 24px', 
+                        fontSize: '0.95rem',
                         fontWeight: 'bold',
                         width: '100%',
-                        boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
-                        backgroundColor: selectedPhotos.includes((activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].name) ? '#ef4444' : 'var(--primary)',
+                        boxShadow: '0 4px 15px rgba(59,130,246,0.3)',
+                        backgroundColor: '#3b82f6',
                         border: 'none',
                         color: 'white',
                         borderRadius: '100px',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {selectedPhotos.includes((activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].name) ? 'Hapus dari Pilihan' : 'Pilih Foto Ini'}
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setPreviewIndex(-1);
-                      }}
-                      style={{
-                        padding: '10px 24px', 
-                        fontSize: '0.95rem',
-                        fontWeight: '600',
-                        width: '100%',
-                        backgroundColor: 'rgba(0,0,0,0.5)',
-                        border: '1px solid rgba(255,255,255,0.3)',
-                        color: 'white',
-                        borderRadius: '100px',
                         cursor: 'pointer',
-                        backdropFilter: 'blur(5px)'
+                        pointerEvents: 'auto'
                       }}
                     >
-                      Selesai / Tutup
+                      📥 Unduh Mentahan
                     </button>
-                  </>
-                ) : (
-                  <div style={{ padding: '12px 24px', background: '#dcfce3', color: '#166534', borderRadius: '8px', fontWeight: '600', textAlign: 'center' }}>
-                    ?? Pilihan Sudah Dikunci
-                  </div>
-                )
+                  )}
+                  {!project?.isLocked ? (
+                    <>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleSelect((activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].name);
+                        }}
+                        className="btn-primary"
+                        style={{ 
+                          padding: '14px 24px', 
+                          fontSize: '1rem',
+                          fontWeight: 'bold',
+                          width: '100%',
+                          boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+                          backgroundColor: selectedPhotos.includes((activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].name) ? '#ef4444' : 'var(--primary)',
+                          border: 'none',
+                          color: 'white',
+                          borderRadius: '100px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {selectedPhotos.includes((activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].name) ? 'Hapus dari Pilihan' : 'Pilih Foto Ini'}
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPreviewIndex(-1);
+                        }}
+                        style={{
+                          padding: '10px 24px', 
+                          fontSize: '0.95rem',
+                          fontWeight: '600',
+                          width: '100%',
+                          backgroundColor: 'rgba(0,0,0,0.5)',
+                          border: '1px solid rgba(255,255,255,0.3)',
+                          color: 'white',
+                          borderRadius: '100px',
+                          cursor: 'pointer',
+                          backdropFilter: 'blur(5px)'
+                        }}
+                      >
+                        Selesai / Tutup
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ padding: '12px 24px', background: '#dcfce3', color: '#166534', borderRadius: '8px', fontWeight: '600', textAlign: 'center' }}>
+                        🔒 Pilihan Sudah Dikunci
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPreviewIndex(-1);
+                        }}
+                        style={{
+                          padding: '10px 24px', 
+                          fontSize: '0.95rem',
+                          fontWeight: '600',
+                          width: '100%',
+                          backgroundColor: 'rgba(0,0,0,0.5)',
+                          border: '1px solid rgba(255,255,255,0.3)',
+                          color: 'white',
+                          borderRadius: '100px',
+                          cursor: 'pointer',
+                          backdropFilter: 'blur(5px)'
+                        }}
+                      >
+                        Tutup
+                      </button>
+                    </>
+                  )}
+                </>
               ) : (
                 <a 
                   href={(activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].webContentLink || 'https://drive.google.com/uc?export=download&id=' + (activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].id} 
@@ -732,7 +784,7 @@ export default function ClientGallery({ params }) {
                   style={{ width: '100%', display: 'block', textDecoration: 'none' }}
                 >
                   <button className="btn-primary" style={{ width: '100%', padding: '14px 24px', fontSize: '1rem', fontWeight: 'bold', backgroundColor: '#059669', boxShadow: '0 4px 15px rgba(5,150,105,0.3)', borderRadius: '100px', border: 'none', color: 'white', cursor: 'pointer' }}>
-                    ?? Download Foto
+                    📥 Download Foto
                   </button>
                 </a>
               )}
