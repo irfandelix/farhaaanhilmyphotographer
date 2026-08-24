@@ -25,7 +25,7 @@ export default function ClientGallery({ params }) {
   
   const [editedPhotos, setEditedPhotos] = useState([]);
   const [activeTab, setActiveTab] = useState('raw'); // 'raw' or 'edited'
-  
+  const [viewFormat, setViewFormat] = useState('grid'); // 'grid' or 'list'
   // Sessions
   const [sessions, setSessions] = useState([]);
   const [activeSessionId, setActiveSessionId] = useState(null);
@@ -375,16 +375,32 @@ export default function ClientGallery({ params }) {
                 <span style={{ color: '#4b5563', fontSize: '0.9rem' }}>
                   Total {sortedPhotos.length} foto
                 </span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <label style={{ fontSize: '0.9rem', color: '#4b5563', fontWeight: '500' }}>Urutkan:</label>
-                  <select 
-                    value={sortOrder} 
-                    onChange={(e) => setSortOrder(e.target.value)}
-                    style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #d1d5db', background: 'white', color: '#111827', fontSize: '0.9rem', cursor: 'pointer' }}
-                  >
-                    <option value="name">Nama (A-Z)</option>
-                    <option value="time">Waktu Diunggah</option>
-                  </select>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#e5e7eb', padding: '4px', borderRadius: '8px' }}>
+                    <button 
+                      onClick={() => setViewFormat('grid')}
+                      style={{ padding: '6px 12px', borderRadius: '6px', border: 'none', cursor: 'pointer', background: viewFormat === 'grid' ? 'white' : 'transparent', color: viewFormat === 'grid' ? '#111827' : '#4b5563', boxShadow: viewFormat === 'grid' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', fontWeight: viewFormat === 'grid' ? '600' : '400', fontSize: '0.85rem' }}
+                    >
+                      Grid
+                    </button>
+                    <button 
+                      onClick={() => setViewFormat('list')}
+                      style={{ padding: '6px 12px', borderRadius: '6px', border: 'none', cursor: 'pointer', background: viewFormat === 'list' ? 'white' : 'transparent', color: viewFormat === 'list' ? '#111827' : '#4b5563', boxShadow: viewFormat === 'list' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', fontWeight: viewFormat === 'list' ? '600' : '400', fontSize: '0.85rem' }}
+                    >
+                      List
+                    </button>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <label style={{ fontSize: '0.9rem', color: '#4b5563', fontWeight: '500' }}>Urutkan:</label>
+                    <select 
+                      value={sortOrder} 
+                      onChange={(e) => setSortOrder(e.target.value)}
+                      style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #d1d5db', background: 'white', color: '#111827', fontSize: '0.9rem', cursor: 'pointer' }}
+                    >
+                      <option value="name">Nama (A-Z)</option>
+                      <option value="time">Waktu Diunggah</option>
+                    </select>
+                  </div>
                 </div>
               </div>
               
@@ -393,61 +409,127 @@ export default function ClientGallery({ params }) {
                   <p style={{ color: '#6b7280', fontSize: '1.1rem', marginBottom: '8px' }}>Belum ada foto yang dipilih.</p>
                   <p style={{ color: '#9ca3af', fontSize: '0.9rem' }}>Silakan kembali ke &quot;Semua Foto&quot; dan klik tanda centang pada foto yang Anda inginkan.</p>
                 </div>
+              ) : viewFormat === 'list' ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'auto 60px 1fr 1fr 1fr 1fr', gap: '16px', padding: '12px 16px', backgroundColor: '#f3f4f6', borderRadius: '8px', fontWeight: '600', fontSize: '0.85rem', color: '#4b5563' }}>
+                    <div style={{ width: '24px' }}></div>
+                    <div>Foto</div>
+                    <div>Nama File</div>
+                    <div>Resolusi</div>
+                    <div>Ukuran</div>
+                    <div>Tanggal Diambil</div>
+                  </div>
+                  {(viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos).map((photo, index) => {
+                    const isSelected = selectedPhotos.includes(photo.name);
+                    const fileSizeBytes = parseInt(photo.size || '0');
+                    const fileSizeMB = (fileSizeBytes / (1024 * 1024)).toFixed(2) + ' MB';
+                    const width = photo.imageMediaMetadata?.width || '?';
+                    const height = photo.imageMediaMetadata?.height || '?';
+                    
+                    let dateStr = '-';
+                    if (photo.imageMediaMetadata?.time || photo.createdTime) {
+                       const d = new Date(photo.imageMediaMetadata?.time || photo.createdTime);
+                       if (!isNaN(d.getTime())) {
+                         dateStr = d.toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                       }
+                    }
+
+                    return (
+                      <div 
+                        key={photo.id}
+                        style={{ 
+                          display: 'grid', gridTemplateColumns: 'auto 60px 1fr 1fr 1fr 1fr', gap: '16px', padding: '8px 16px', 
+                          backgroundColor: isSelected ? '#e8f9ef' : 'white', 
+                          border: isSelected ? '1px solid var(--primary)' : '1px solid #e5e7eb',
+                          borderRadius: '8px', alignItems: 'center', transition: 'all 0.2s'
+                        }}
+                      >
+                        <div 
+                          onClick={() => toggleSelect(photo.name)}
+                          style={{
+                            width: '24px', height: '24px', borderRadius: '6px',
+                            backgroundColor: isSelected ? 'var(--primary)' : 'white',
+                            border: isSelected ? 'none' : '2px solid #d1d5db',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: 'white', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 'bold'
+                          }}
+                        >
+                          {isSelected && <span>✓</span>}
+                        </div>
+                        
+                        <div 
+                          onClick={() => setPreviewIndex((activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos)).findIndex(p => p.id === photo.id))}
+                          style={{ width: '60px', height: '40px', background: '#e5e7eb', cursor: 'zoom-in', borderRadius: '4px', overflow: 'hidden' }}
+                        >
+                          <img 
+                            src={photo.thumbnailLink ? `/api/proxy?url=${encodeURIComponent(photo.thumbnailLink.replace('=s220', '=w100'))}` : ''}
+                            alt={photo.name} 
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                          />
+                        </div>
+                        
+                        <div onClick={() => toggleSelect(photo.name)} style={{ fontSize: '0.9rem', fontWeight: '500', cursor: 'pointer', wordBreak: 'break-all' }}>{photo.name}</div>
+                        <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>{width} x {height}</div>
+                        <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>{fileSizeMB}</div>
+                        <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>{dateStr}</div>
+                      </div>
+                    );
+                  })}
+                </div>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
                   {(viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos).map((photo) => {
-          const isSelected = selectedPhotos.includes(photo.name);
-          return (
-            <div 
-              key={photo.id}
-              className="glass-panel"
-              style={{
-                overflow: 'hidden',
-                transition: 'all 0.2s',
-                transform: isSelected ? 'scale(0.95)' : 'scale(1)',
-                border: isSelected ? '3px solid var(--primary)' : '1px solid var(--glass-border)',
-                backgroundColor: isSelected ? '#e8f9ef' : 'var(--glass-bg)',
-                display: 'flex',
-                flexDirection: 'column',
-                position: 'relative'
-              }}
-            >
-              {/* Checkbox (Klik untuk memilih cepat) */}
-              <div 
-                onClick={() => toggleSelect(photo.name)}
-                style={{
-                  position: 'absolute', top: '12px', left: '12px', zIndex: 10,
-                  width: '32px', height: '32px', borderRadius: '50%',
-                  backgroundColor: isSelected ? 'var(--primary)' : 'rgba(255,255,255,0.9)',
-                  border: isSelected ? 'none' : '2px solid #9ca3af',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'white', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                  fontSize: '1.2rem', fontWeight: 'bold'
-                }}
-              >
-                {isSelected && <span>✓</span>}
-              </div>
+                    const isSelected = selectedPhotos.includes(photo.name);
+                    return (
+                      <div 
+                        key={photo.id}
+                        className="glass-panel"
+                        style={{
+                          overflow: 'hidden',
+                          transition: 'all 0.2s',
+                          transform: isSelected ? 'scale(0.95)' : 'scale(1)',
+                          border: isSelected ? '3px solid var(--primary)' : '1px solid var(--glass-border)',
+                          backgroundColor: isSelected ? '#e8f9ef' : 'var(--glass-bg)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          position: 'relative'
+                        }}
+                      >
+                        {/* Checkbox (Klik untuk memilih cepat) */}
+                        <div 
+                          onClick={() => toggleSelect(photo.name)}
+                          style={{
+                            position: 'absolute', top: '12px', left: '12px', zIndex: 10,
+                            width: '32px', height: '32px', borderRadius: '50%',
+                            backgroundColor: isSelected ? 'var(--primary)' : 'rgba(255,255,255,0.9)',
+                            border: isSelected ? 'none' : '2px solid #9ca3af',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: 'white', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                            fontSize: '1.2rem', fontWeight: 'bold'
+                          }}
+                        >
+                          {isSelected && <span>✓</span>}
+                        </div>
 
-
-              <div 
-                onClick={() => setPreviewIndex((activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos)).findIndex(p => p.id === photo.id))}
-                style={{ height: '160px', width: '100%', position: 'relative', background: '#e5e7eb', cursor: 'zoom-in' }}
-                title="Klik untuk perbesar"
-              >
-                <img 
-                  src={photo.thumbnailLink ? `/api/proxy?url=${encodeURIComponent(photo.thumbnailLink.replace('=s220', '=w600'))}` : ''}
-                  onError={(e) => { 
-                    e.target.onerror = null; 
-                    e.target.src = `/api/proxy?url=${encodeURIComponent(`https://drive.google.com/thumbnail?id=${photo.id}&sz=w600`)}`; 
-                  }}
-                  alt={photo.name} 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                />
-              </div>
-              <div 
-                onClick={() => toggleSelect(photo.name)}
-                style={{ padding: '12px', textAlign: 'center', fontSize: '0.9rem', fontWeight: '500', wordBreak: 'break-all', cursor: 'pointer' }}
-              >
+                        <div 
+                          onClick={() => setPreviewIndex((activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos)).findIndex(p => p.id === photo.id))}
+                          style={{ height: '160px', width: '100%', position: 'relative', background: '#e5e7eb', cursor: 'zoom-in' }}
+                          title="Klik untuk perbesar"
+                        >
+                          <img 
+                            src={photo.thumbnailLink ? `/api/proxy?url=${encodeURIComponent(photo.thumbnailLink.replace('=s220', '=w600'))}` : ''}
+                            onError={(e) => { 
+                              e.target.onerror = null; 
+                              e.target.src = `/api/proxy?url=${encodeURIComponent(`https://drive.google.com/thumbnail?id=${photo.id}&sz=w600`)}`; 
+                            }}
+                            alt={photo.name} 
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                          />
+                        </div>
+                        <div 
+                          onClick={() => toggleSelect(photo.name)}
+                          style={{ padding: '12px', textAlign: 'center', fontSize: '0.9rem', fontWeight: '500', wordBreak: 'break-all', cursor: 'pointer' }}
+                        >
                 {photo.name}
               </div>
             </div>
