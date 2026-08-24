@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getProjectById, updatePaymentStatus, updateGDriveLink, updateGDriveEditedLink, updateProjectFinancials, updateGDriveSessions, deleteProject } from '@/lib/projectService';
+import { getProjectById, updatePaymentStatus, updateGDriveLink, updateGDriveEditedLink, updateProjectFinancials, updateGDriveSessions, deleteProject, getProjects } from '@/lib/projectService';
 
 export default function AdminClientDetail({ params }) {
   const router = useRouter();
@@ -27,7 +27,8 @@ export default function AdminClientDetail({ params }) {
   const [editDescription, setEditDescription] = useState('');
   const [editWhatsapp, setEditWhatsapp] = useState('');
   const [editShootDate, setEditShootDate] = useState('');
-  const [editShootTime, setEditShootTime] = useState('');
+  const [editStartTime, setEditStartTime] = useState('');
+  const [editEndTime, setEditEndTime] = useState('');
   
   // GDrive Link State
   const [savingLink, setSavingLink] = useState(false);
@@ -54,8 +55,31 @@ export default function AdminClientDetail({ params }) {
         setEditWhatsapp(data.whatsapp || '');
         setEditLunasAmount(data.lunasAmount || '');
         setEditLunasDate(data.lunasDate || '');
-        setEditShootDate(data.shootDate || '');
-        setEditShootTime(data.shootTime || '');
+        let initDate = '';
+        if (data.shootDate) {
+          const monthMap = { 'Januari': '01', 'Februari': '02', 'Maret': '03', 'April': '04', 'Mei': '05', 'Juni': '06', 'Juli': '07', 'Agustus': '08', 'September': '09', 'Oktober': '10', 'November': '11', 'Desember': '12' };
+          const parts = data.shootDate.split(' ');
+          if (parts.length === 3) {
+            initDate = `${parts[2]}-${monthMap[parts[1]] || '01'}-${parts[0].padStart(2, '0')}`;
+          } else {
+            initDate = data.shootDate;
+          }
+        }
+        setEditShootDate(initDate);
+        
+        let st = '';
+        let et = '';
+        if (data.shootTime) {
+          if (data.shootTime.includes('-')) {
+            const parts = data.shootTime.split('-');
+            st = parts[0].trim();
+            et = parts[1].trim();
+          } else {
+            st = data.shootTime.trim();
+          }
+        }
+        setEditStartTime(st);
+        setEditEndTime(et);
         
         // Handle sessions (if empty, fallback to legacy gdriveLink)
         if (data.sessions && data.sessions.length > 0) {
@@ -162,7 +186,63 @@ export default function AdminClientDetail({ params }) {
     }
   };
 
+  const parseShootDateTime = (dateStr, timeStr) => {
+    if (!dateStr) return { date: 0, start: 0, end: 0 };
+    const monthMap = { 'januari': 'January', 'februari': 'February', 'maret': 'March', 'april': 'April', 'mei': 'May', 'juni': 'June', 'juli': 'July', 'agustus': 'August', 'september': 'September', 'oktober': 'October', 'november': 'November', 'desember': 'December' };
+    let parsedDateStr = dateStr.toLowerCase();
+    Object.keys(monthMap).forEach(idMonth => { parsedDateStr = parsedDateStr.replace(new RegExp(idMonth, 'g'), monthMap[idMonth]); });
+    const d = new Date(parsedDateStr);
+    if (isNaN(d.getTime())) return { date: 0, start: 0, end: 0 };
+    let start = 0, end = 0;
+    if (timeStr) {
+      let cleanTime = timeStr.replace(/WIB|WITA|WIT/gi, '').trim().replace(/\./g, ':');
+      if (cleanTime.includes('-')) {
+        const parts = cleanTime.split('-');
+        const ds = new Date(parsedDateStr + ' ' + parts[0].trim());
+        const de = new Date(parsedDateStr + ' ' + parts[1].trim());
+        start = isNaN(ds.getTime()) ? 0 : ds.getTime();
+        end = isNaN(de.getTime()) ? 0 : de.getTime();
+      } else {
+        const ds = new Date(parsedDateStr + ' ' + cleanTime);
+        start = isNaN(ds.getTime()) ? 0 : ds.getTime();
+        end = start + (2 * 60 * 60 * 1000);
+      }
+    }
+    return { date: d.setHours(0,0,0,0), start, end };
+  };
+
   const handleSaveFinance = async () => {
+    const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    let formattedDate = editShootDate;
+    if (editShootDate && editShootDate.includes('-')) {
+      const d = new Date(editShootDate);
+      if (!isNaN(d.getTime())) {
+        formattedDate = `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+      }
+    }
+    const formattedTime = `${editStartTime} - ${editEndTime}`;
+
+    const newTiming = parseShootDateTime(formattedDate, formattedTime);
+    if (newTiming.date !== 0 && newTiming.start !== 0) {
+      const existingProjects = await getProjects();
+      const overlaps = existingProjects.filter(p => {
+        if (p.id === id) return false;
+        const pTiming = parseShootDateTime(p.shootDate, p.shootTime);
+        if (pTiming.date !== newTiming.date) return false;
+        if (pTiming.start === 0 || pTiming.end === 0) return false;
+        return (newTiming.start < pTiming.end && newTiming.end > pTiming.start);
+      });
+
+      if (overlaps.length > 0) {
+        const confirmMsg = `PERINGATAN BENTROK JADWAL!\n\nJadwal ini bentrok dengan klien berikut:\n` + 
+          overlaps.map(o => `- ${o.clientName} (${o.shootTime})`).join('\n') + 
+          `\n\nApakah Anda tetap ingin menyimpan jadwal ini?`;
+        if (!window.confirm(confirmMsg)) {
+          return;
+        }
+      }
+    }
+
     let payload = { 
       dpAmount: editDpAmount, 
       clientName: editClientName,
@@ -170,8 +250,8 @@ export default function AdminClientDetail({ params }) {
       whatsapp: editWhatsapp,
       lunasAmount: editLunasAmount,
       lunasDate: editLunasDate,
-      shootDate: editShootDate,
-      shootTime: editShootTime
+      shootDate: formattedDate,
+      shootTime: formattedTime
     };
     
     if (editPhotoType === 'Foto Produk') {
@@ -196,8 +276,8 @@ export default function AdminClientDetail({ params }) {
           dpAmount: Number(editDpAmount),
           lunasAmount: Number(editLunasAmount),
           lunasDate: editLunasDate,
-          shootDate: editShootDate,
-          shootTime: editShootTime,
+          shootDate: formattedDate,
+          shootTime: formattedTime,
           whatsapp: editWhatsapp 
         });
       } else {
@@ -210,8 +290,8 @@ export default function AdminClientDetail({ params }) {
           dpAmount: Number(editDpAmount),
           lunasAmount: Number(editLunasAmount),
           lunasDate: editLunasDate,
-          shootDate: editShootDate,
-          shootTime: editShootTime,
+          shootDate: formattedDate,
+          shootTime: formattedTime,
           whatsapp: editWhatsapp
         });
       }
@@ -474,33 +554,38 @@ export default function AdminClientDetail({ params }) {
                   />
                 </div>
 
-                <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
                   <div style={{ flex: 1 }}>
-                    <label style={{ fontSize: '0.85rem', color: '#4b5563', display: 'block', marginBottom: '4px' }}>Tanggal Pemotretan</label>
+                    <label style={{ fontSize: '0.85rem', color: '#6b7280', display: 'block', marginBottom: '4px' }}>Tanggal</label>
                     <input 
-                      type="text" 
-                      name="shootDate"
-                      className="input-field" 
+                      type="date" 
                       value={editShootDate}
                       onChange={(e) => setEditShootDate(e.target.value)}
+                      className="input-field"
                       style={{ padding: '8px' }}
-                      placeholder="Cth: 29 Agustus 2026"
                     />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <label style={{ fontSize: '0.85rem', color: '#4b5563', display: 'block', marginBottom: '4px' }}>Jam / Sesi</label>
+                    <label style={{ fontSize: '0.85rem', color: '#6b7280', display: 'block', marginBottom: '4px' }}>Mulai</label>
                     <input 
-                      type="text" 
-                      name="shootTime"
-                      className="input-field" 
-                      value={editShootTime}
-                      onChange={(e) => setEditShootTime(e.target.value)}
+                      type="time" 
+                      value={editStartTime}
+                      onChange={(e) => setEditStartTime(e.target.value)}
+                      className="input-field"
                       style={{ padding: '8px' }}
-                      placeholder="Cth: 14:00"
+                    />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: '0.85rem', color: '#6b7280', display: 'block', marginBottom: '4px' }}>Selesai</label>
+                    <input 
+                      type="time" 
+                      value={editEndTime}
+                      onChange={(e) => setEditEndTime(e.target.value)}
+                      className="input-field"
+                      style={{ padding: '8px' }}
                     />
                   </div>
                 </div>
-              </div>
             ) : (
               <>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
