@@ -721,10 +721,12 @@ export default function ClientGallery({ params }) {
                     </>
                   )}
                   {project.paymentStatus === 'Lunas' && (
-                    <a 
-                      href={`https://drive.google.com/uc?export=download&id=${(activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const photoId = (activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].id;
+                        window.location.href = `/api/proxy?url=${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${photoId}`)}`;
+                      }}
                       style={{ 
                         padding: '10px 16px', 
                         fontSize: '0.9rem',
@@ -737,7 +739,6 @@ export default function ClientGallery({ params }) {
                         borderRadius: '8px',
                         cursor: 'pointer',
                         pointerEvents: 'auto',
-                        textDecoration: 'none',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -745,19 +746,21 @@ export default function ClientGallery({ params }) {
                       }}
                     >
                       📥 Unduh
-                    </a>
+                    </button>
                   )}
                 </>
               ) : (
-                <a 
-                  href={(activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].webContentLink || 'https://drive.google.com/uc?export=download&id=' + (activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].id} 
-                  target="_blank" rel="noopener noreferrer"
-                  style={{ width: '100%', display: 'block', textDecoration: 'none' }}
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const photoId = (activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].id;
+                    window.location.href = `/api/proxy?url=${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${photoId}`)}`;
+                  }}
+                  className="btn-primary" 
+                  style={{ width: '100%', padding: '12px 24px', fontSize: '1rem', fontWeight: 'bold', backgroundColor: '#059669', boxShadow: '0 4px 15px rgba(5,150,105,0.3)', borderRadius: '8px', border: 'none', color: 'white', cursor: 'pointer' }}
                 >
-                  <button className="btn-primary" style={{ width: '100%', padding: '12px 24px', fontSize: '1rem', fontWeight: 'bold', backgroundColor: '#059669', boxShadow: '0 4px 15px rgba(5,150,105,0.3)', borderRadius: '8px', border: 'none', color: 'white', cursor: 'pointer' }}>
-                    📥 Download Foto
-                  </button>
-                </a>
+                  📥 Download Foto
+                </button>
               )}
             </div>
           </div>
