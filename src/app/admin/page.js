@@ -11,7 +11,34 @@ export default function AdminDashboard() {
   useEffect(() => {
     async function fetchProjects() {
       const data = await getProjects();
-      setProjects(data);
+      const parseShootDateTime = (dateStr, timeStr) => {
+        if (!dateStr) return 0;
+        const monthMap = {
+          'januari': 'January', 'februari': 'February', 'maret': 'March', 'april': 'April',
+          'mei': 'May', 'juni': 'June', 'juli': 'July', 'agustus': 'August',
+          'september': 'September', 'oktober': 'October', 'november': 'November', 'desember': 'December'
+        };
+        let parsedDateStr = dateStr.toLowerCase();
+        Object.keys(monthMap).forEach(idMonth => {
+          parsedDateStr = parsedDateStr.replace(new RegExp(idMonth, "g"), monthMap[idMonth]);
+        });
+        
+        if (timeStr) {
+          const cleanTime = timeStr.replace(/WIB|WITA|WIT/gi, '').trim();
+          parsedDateStr += ` ${cleanTime}`;
+        }
+        
+        const d = new Date(parsedDateStr);
+        if (isNaN(d.getTime())) return 0;
+        return d.getTime();
+      };
+
+      const sortedData = [...data].sort((a, b) => {
+        const timeA = parseShootDateTime(a.shootDate, a.shootTime) || (a.createdAt?.seconds * 1000) || 0;
+        const timeB = parseShootDateTime(b.shootDate, b.shootTime) || (b.createdAt?.seconds * 1000) || 0;
+        return timeB - timeA;
+      });
+      setProjects(sortedData);
       setLoading(false);
     }
     fetchProjects();
