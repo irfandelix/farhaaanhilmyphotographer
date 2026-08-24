@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, use } from 'react';
+import { createPortal } from 'react-dom';
 import { getProjectById, updateSelectedPhotos } from '@/lib/projectService';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
@@ -621,11 +622,10 @@ export default function ClientGallery({ params }) {
             }}>
               ? Terpilih
             </div>
-          )}
-
-          <div style={{ 
-            position: 'fixed', 
-            bottom: '24px', 
+          {typeof document !== 'undefined' && createPortal(
+            <div style={{ 
+              position: 'fixed', 
+              bottom: '24px', 
             left: 0,
             right: 0, 
             zIndex: 999999, 
@@ -759,6 +759,7 @@ export default function ClientGallery({ params }) {
               )}
             </div>
           </div>
+          , document.body)}
         </>
       )}
 
