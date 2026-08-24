@@ -427,28 +427,6 @@ export default function ClientGallery({ params }) {
                 {isSelected && <span>✓</span>}
               </div>
 
-              {/* Individual Download Button */}
-              {project.paymentStatus === 'Lunas' && (
-                <a 
-                  href={`/api/proxy?url=${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${photo.id}`)}`}
-                  download={photo.name}
-                  onClick={(e) => e.stopPropagation()}
-                  style={{
-                    position: 'absolute', top: '12px', right: '12px', zIndex: 10,
-                    width: '32px', height: '32px', borderRadius: '8px',
-                    backgroundColor: 'rgba(255,255,255,0.9)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: '#374151', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                    textDecoration: 'none'
-                  }}
-                  title="Unduh foto ini"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
-                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
-                  </svg>
-                </a>
-              )}
 
               <div 
                 onClick={() => setPreviewIndex((activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos)).findIndex(p => p.id === photo.id))}
@@ -525,26 +503,7 @@ export default function ClientGallery({ params }) {
                 style={{ height: '160px', width: '100%', position: 'relative', background: '#e5e7eb', cursor: 'zoom-in' }}
                 title="Klik untuk perbesar"
               >
-                {/* Individual Download Button (Always on for Edited photos) */}
-                <a 
-                  href={`/api/proxy?url=${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${photo.id}`)}`}
-                  download={photo.name}
-                  onClick={(e) => e.stopPropagation()}
-                  style={{
-                    position: 'absolute', top: '12px', right: '12px', zIndex: 10,
-                    width: '32px', height: '32px', borderRadius: '8px',
-                    backgroundColor: 'rgba(255,255,255,0.9)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: '#059669', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                    textDecoration: 'none'
-                  }}
-                  title="Unduh hasil edit ini"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
-                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
-                  </svg>
-                </a>
+
                 <img 
                   src={photo.thumbnailLink ? `/api/proxy?url=${encodeURIComponent(photo.thumbnailLink.replace('=s220', '=w600'))}` : ''}
                   onError={(e) => { 
