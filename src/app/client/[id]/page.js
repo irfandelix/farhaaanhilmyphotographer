@@ -620,8 +620,9 @@ export default function ClientGallery({ params }) {
               gap: '8px',
               zIndex: 100000
             }}>
-              ? Terpilih
+              ✓ Terpilih
             </div>
+          )}
           {typeof document !== 'undefined' && createPortal(
             <div style={{ 
               position: 'fixed', 
