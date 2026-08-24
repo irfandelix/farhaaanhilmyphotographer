@@ -201,6 +201,12 @@ export default function AdminDashboard() {
                             }
                             return <span style={{ fontSize: '0.8rem', backgroundColor: '#f3f4f6', color: '#374151', padding: '2px 8px', borderRadius: '12px', fontWeight: '500' }}>📤 Belum Upload Original</span>;
                           })()}
+                          {project.selectedPhotos && project.selectedPhotos.length > 0 && (
+                            <>
+                              <span>•</span>
+                              <span style={{ fontSize: '0.85rem', fontWeight: '500', color: '#4f46e5' }}>{project.selectedPhotos.length} Terpilih</span>
+                            </>
+                          )}
                         </div>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', justifyContent: 'space-between', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
