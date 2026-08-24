@@ -222,6 +222,20 @@ export default function ClientGallery({ params }) {
   };
 
 
+  const getSortedEditedPhotos = () => {
+    let sorted = [...editedPhotos];
+    if (sortOrder === 'name') {
+      sorted.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+    } else if (sortOrder === 'time') {
+      sorted.sort((a, b) => {
+        const timeA = new Date(a.createdTime || 0).getTime();
+        const timeB = new Date(b.createdTime || 0).getTime();
+        return timeA - timeB; // Oldest first
+      });
+    }
+    return sorted;
+  };
+
   const getSortedPhotos = () => {
     let sorted = [...photos];
     if (sortOrder === 'name') {
@@ -244,8 +258,9 @@ export default function ClientGallery({ params }) {
   };
 
   const sortedPhotos = getSortedPhotos();
+  const sortedEditedPhotos = getSortedEditedPhotos();
   const selectedPhotoObjects = sortedPhotos.filter(p => selectedPhotos.includes(p.name));
-  const currentList = activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos);
+  const currentList = activeTab === 'edited' ? sortedEditedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos);
 
   if (loading) return <main style={{ padding: '40px', textAlign: 'center' }}>Loading Gallery...</main>;
   if (error) return <main style={{ padding: '40px', textAlign: 'center', color: '#991b1b' }}>{error}</main>;
@@ -540,75 +555,178 @@ export default function ClientGallery({ params }) {
       {/* Render Edited Photos (Download Mode) */}
       {activeTab === 'edited' && (
         <>
-          <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
-            {sessions.length > 0 && project.paymentStatus === 'Lunas' && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '16px' }}>
+            {/* Left Controls: Download */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
               <button 
-                onClick={handleDownloadRawZip}
+                onClick={handleDownloadZip}
                 disabled={downloadingZip}
-                className="btn-secondary" 
-                style={{ padding: '6px 14px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid #d1d5db', backgroundColor: 'white', color: '#4b5563', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}
-                title="Hanya tersedia untuk klien yang sudah Lunas"
+                className="btn-primary" 
+                style={{ padding: '6px 14px', fontSize: '0.9rem', backgroundColor: '#059669', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '8px', border: 'none', color: 'white', cursor: 'pointer', fontWeight: '600' }}
               >
-                {downloadingZip ? `⏳ Mengemas ZIP... ${downloadProgress}%` : `📥 Unduh Mentahan Sesi Ini`}
+                {downloadingZip ? `⏳ Mengemas ZIP... ${downloadProgress}%` : '📥 Unduh Editan (ZIP)'}
               </button>
-            )}
-            <button 
-              onClick={handleDownloadZip}
-              disabled={downloadingZip}
-              className="btn-primary" 
-              style={{ padding: '6px 14px', fontSize: '0.9rem', backgroundColor: '#059669', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '8px', border: 'none', color: 'white', cursor: 'pointer', fontWeight: '600' }}
-            >
-              {downloadingZip ? `⏳ Mengemas ZIP... ${downloadProgress}%` : '📥 Unduh Editan (ZIP)'}
-            </button>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
-          {editedPhotos.map((photo) => (
-            <div 
-              key={photo.id}
-              className="glass-panel"
-              style={{
-                overflow: 'hidden',
-                transition: 'all 0.2s',
-                border: '1px solid var(--glass-border)',
-                display: 'flex',
-                flexDirection: 'column',
-                position: 'relative',
-                backgroundColor: 'var(--glass-bg)'
-              }}
-            >
-              <div 
-                onClick={() => setPreviewIndex((activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos)).findIndex(p => p.id === photo.id))}
-                style={{ height: '160px', width: '100%', position: 'relative', background: '#e5e7eb', cursor: 'zoom-in' }}
-                title="Klik untuk perbesar"
-              >
+            </div>
 
-                <img 
-                  src={photo.thumbnailLink ? `/api/proxy?url=${encodeURIComponent(photo.thumbnailLink.replace('=s220', '=w600'))}` : ''}
-                  onError={(e) => { 
-                    e.target.onerror = null; 
-                    e.target.src = `/api/proxy?url=${encodeURIComponent(`https://drive.google.com/thumbnail?id=${photo.id}&sz=w600`)}`; 
-                  }}
-                  alt={photo.name} 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                />
-              </div>
-              <div style={{ padding: '12px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ fontSize: '0.85rem', fontWeight: '500', wordBreak: 'break-all', color: '#4b5563' }}>
-                  {photo.name}
-                </div>
-                <a 
-                  href={photo.webContentLink || `https://drive.google.com/uc?export=download&id=${photo.id}`} 
-                  target="_blank" rel="noopener noreferrer"
-                  style={{ width: '100%', display: 'block', textDecoration: 'none' }}
+            {/* Right Controls: Filters */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#e5e7eb', padding: '4px', borderRadius: '8px' }}>
+                <button 
+                  onClick={() => setViewFormat('grid')}
+                  style={{ padding: '6px 12px', borderRadius: '6px', border: 'none', cursor: 'pointer', background: viewFormat === 'grid' ? 'white' : 'transparent', color: viewFormat === 'grid' ? '#111827' : '#4b5563', boxShadow: viewFormat === 'grid' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', fontWeight: viewFormat === 'grid' ? '600' : '400', fontSize: '0.85rem' }}
                 >
-                  <button style={{ width: '100%', padding: '6px', background: '#e0e7ff', color: '#4f46e5', border: 'none', borderRadius: '4px', fontWeight: '600', cursor: 'pointer', fontSize: '0.85rem' }}>
-                    ⬇️ Download
-                  </button>
-                </a>
+                  Grid
+                </button>
+                <button 
+                  onClick={() => setViewFormat('list')}
+                  style={{ padding: '6px 12px', borderRadius: '6px', border: 'none', cursor: 'pointer', background: viewFormat === 'list' ? 'white' : 'transparent', color: viewFormat === 'list' ? '#111827' : '#4b5563', boxShadow: viewFormat === 'list' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', fontWeight: viewFormat === 'list' ? '600' : '400', fontSize: '0.85rem' }}
+                >
+                  List
+                </button>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <label style={{ fontSize: '0.9rem', color: '#4b5563', fontWeight: '500' }}>Urutkan:</label>
+                <select 
+                  value={sortOrder} 
+                  onChange={(e) => setSortOrder(e.target.value)}
+                  style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #d1d5db', background: 'white', color: '#111827', fontSize: '0.9rem', cursor: 'pointer' }}
+                >
+                  <option value="name">Nama (A-Z)</option>
+                  <option value="time">Waktu Diunggah</option>
+                </select>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+          
+          {viewFormat === 'list' ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr 1fr 1fr 1fr 120px', gap: '16px', padding: '12px 16px', backgroundColor: '#f3f4f6', borderRadius: '8px', fontWeight: '600', fontSize: '0.85rem', color: '#4b5563' }}>
+                <div>Foto</div>
+                <div>Nama File</div>
+                <div>Resolusi</div>
+                <div>Ukuran</div>
+                <div>Tanggal Diunggah</div>
+                <div style={{ textAlign: 'center' }}>Aksi</div>
+              </div>
+              {sortedEditedPhotos.map((photo, index) => {
+                const fileSizeBytes = parseInt(photo.size || '0');
+                const fileSizeMB = (fileSizeBytes / (1024 * 1024)).toFixed(2) + ' MB';
+                const width = photo.imageMediaMetadata?.width || '?';
+                const height = photo.imageMediaMetadata?.height || '?';
+                
+                let dateStr = '-';
+                if (photo.createdTime) {
+                   const d = new Date(photo.createdTime);
+                   if (!isNaN(d.getTime())) {
+                     dateStr = d.toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                   }
+                }
+
+                return (
+                  <div 
+                    key={photo.id}
+                    style={{ 
+                      display: 'grid', gridTemplateColumns: '80px 1fr 1fr 1fr 1fr 120px', gap: '16px', padding: '8px 16px', 
+                      backgroundColor: 'white', 
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px', alignItems: 'center', transition: 'all 0.2s'
+                    }}
+                  >
+                    <div 
+                      onClick={() => setPreviewIndex(currentList.findIndex(p => p.id === photo.id))}
+                      style={{ width: '80px', height: '50px', backgroundColor: '#f3f4f6', borderRadius: '6px', overflow: 'hidden', cursor: 'zoom-in', flexShrink: 0 }}
+                    >
+                      <img 
+                        src={photo.thumbnailLink ? `/api/proxy?url=${encodeURIComponent(photo.thumbnailLink)}` : ''} 
+                        onError={(e) => { 
+                          e.target.onerror = null; 
+                          e.target.src = `/api/proxy?url=${encodeURIComponent(`https://drive.google.com/thumbnail?id=${photo.id}&sz=w200`)}`; 
+                        }}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                        alt={photo.name} 
+                      />
+                    </div>
+                    
+                    <div style={{ fontSize: '0.85rem', fontWeight: '500', color: '#111827', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={photo.name}>
+                      {photo.name}
+                    </div>
+                    
+                    <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>
+                      {width} x {height}
+                    </div>
+                    
+                    <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>
+                      {fileSizeMB}
+                    </div>
+                    
+                    <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>
+                      {dateStr}
+                    </div>
+                    
+                    <div>
+                      <a 
+                        href={photo.webContentLink || `https://drive.google.com/uc?export=download&id=${photo.id}`} 
+                        target="_blank" rel="noopener noreferrer"
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <button style={{ width: '100%', padding: '6px 12px', background: '#e0e7ff', color: '#4f46e5', border: 'none', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '0.8rem' }}>
+                          ⬇️ Unduh
+                        </button>
+                      </a>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
+              {sortedEditedPhotos.map((photo) => (
+                <div 
+                  key={photo.id}
+                  className="glass-panel"
+                  style={{
+                    overflow: 'hidden',
+                    transition: 'all 0.2s',
+                    border: '1px solid var(--glass-border)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    position: 'relative',
+                    backgroundColor: 'var(--glass-bg)'
+                  }}
+                >
+                  <div 
+                    onClick={() => setPreviewIndex(currentList.findIndex(p => p.id === photo.id))}
+                    style={{ height: '160px', width: '100%', position: 'relative', background: '#e5e7eb', cursor: 'zoom-in' }}
+                    title="Klik untuk perbesar"
+                  >
+                    <img 
+                      src={photo.thumbnailLink ? `/api/proxy?url=${encodeURIComponent(photo.thumbnailLink.replace('=s220', '=w600'))}` : ''}
+                      onError={(e) => { 
+                        e.target.onerror = null; 
+                        e.target.src = `/api/proxy?url=${encodeURIComponent(`https://drive.google.com/thumbnail?id=${photo.id}&sz=w600`)}`; 
+                      }}
+                      alt={photo.name} 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    />
+                  </div>
+                  <div style={{ padding: '12px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ fontSize: '0.85rem', fontWeight: '500', wordBreak: 'break-all', color: '#4b5563' }}>
+                      {photo.name}
+                    </div>
+                    <a 
+                      href={photo.webContentLink || `https://drive.google.com/uc?export=download&id=${photo.id}`} 
+                      target="_blank" rel="noopener noreferrer"
+                      style={{ width: '100%', display: 'block', textDecoration: 'none' }}
+                    >
+                      <button style={{ width: '100%', padding: '6px', background: '#e0e7ff', color: '#4f46e5', border: 'none', borderRadius: '4px', fontWeight: '600', cursor: 'pointer', fontSize: '0.85rem' }}>
+                        ⬇️ Download
+                      </button>
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </>
       )}
 
