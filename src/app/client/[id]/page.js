@@ -607,7 +607,12 @@ export default function ClientGallery({ params }) {
               }}
               styles={{
                 root: {
-                  '--yarl__carousel_padding_px': '80'
+                  '--yarl__carousel_padding_px': '0',
+                  backgroundColor: 'rgba(0,0,0,1)' // Ensure full screen backdrop
+                },
+                container: {
+                  bottom: '80px',
+                  backgroundColor: 'transparent' // Let root handle backdrop
                 }
               }}
             />
