@@ -605,18 +605,25 @@ export default function ClientGallery({ params }) {
               on={{
                 view: ({ index }) => setPreviewIndex(index),
               }}
+              styles={{
+                root: {
+                  '--yarl__carousel_padding_px': '80'
+                }
+              }}
             />
             
             {typeof document !== 'undefined' && createPortal(
               <div style={{
                 position: 'fixed',
-                bottom: '30px',
+                bottom: 0,
                 left: 0,
                 right: 0,
                 zIndex: 9999999,
                 display: 'flex',
                 justifyContent: 'center',
+                alignItems: 'center',
                 gap: '12px',
+                padding: '16px 24px',
                 pointerEvents: 'none'
               }}>
                 {activeTab === 'raw' && !project?.isLocked && (
