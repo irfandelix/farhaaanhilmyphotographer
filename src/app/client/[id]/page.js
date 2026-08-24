@@ -636,32 +636,6 @@ export default function ClientGallery({ params }) {
             <div style={{ pointerEvents: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', maxWidth: '300px', padding: '0 20px' }}>
               {activeTab === 'raw' ? (
                 <>
-                  {project.paymentStatus === 'Lunas' && (
-                    <a 
-                      href={`https://drive.google.com/uc?export=download&id=${(activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ 
-                        padding: '10px 24px', 
-                        fontSize: '0.95rem',
-                        fontWeight: 'bold',
-                        width: '100%',
-                        boxShadow: '0 4px 15px rgba(59,130,246,0.3)',
-                        backgroundColor: '#3b82f6',
-                        border: 'none',
-                        color: 'white',
-                        borderRadius: '100px',
-                        cursor: 'pointer',
-                        pointerEvents: 'auto',
-                        textDecoration: 'none',
-                        display: 'block',
-                        textAlign: 'center',
-                        boxSizing: 'border-box'
-                      }}
-                    >
-                      📥 Unduh Mentahan
-                    </a>
-                  )}
                   {!project?.isLocked ? (
                     <>
                       <button 
@@ -732,6 +706,32 @@ export default function ClientGallery({ params }) {
                         Tutup
                       </button>
                     </>
+                  )}
+                  {project.paymentStatus === 'Lunas' && (
+                    <a 
+                      href={`https://drive.google.com/uc?export=download&id=${(activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ 
+                        padding: '10px 24px', 
+                        fontSize: '0.95rem',
+                        fontWeight: 'bold',
+                        width: '100%',
+                        boxShadow: '0 4px 15px rgba(59,130,246,0.3)',
+                        backgroundColor: '#3b82f6',
+                        border: 'none',
+                        color: 'white',
+                        borderRadius: '100px',
+                        cursor: 'pointer',
+                        pointerEvents: 'auto',
+                        textDecoration: 'none',
+                        display: 'block',
+                        textAlign: 'center',
+                        boxSizing: 'border-box'
+                      }}
+                    >
+                      📥 Unduh Mentahan
+                    </a>
                   )}
                 </>
               ) : (
