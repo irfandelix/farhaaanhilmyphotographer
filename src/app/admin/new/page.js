@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createProject } from '@/lib/projectService';
+import { createProject, getProjects } from '@/lib/projectService';
 
 export default function NewClientPage() {
   const router = useRouter();
@@ -12,7 +12,8 @@ export default function NewClientPage() {
     whatsapp: '',
     photoType: 'Foto Produk',
     shootDate: '',
-    shootTime: '',
+    startTime: '',
+    endTime: '',
     dpAmount: '',
     paymentAmount: '', 
     description: '',   
@@ -54,11 +55,76 @@ export default function NewClientPage() {
 
   const totalPaymentAmount = items.reduce((sum, item) => sum + (Number(item.qty || 0) * Number(item.price || 0)), 0);
 
+  const parseShootDateTime = (dateStr, timeStr) => {
+    if (!dateStr) return { date: 0, start: 0, end: 0 };
+    const monthMap = {
+      'januari': 'January', 'februari': 'February', 'maret': 'March', 'april': 'April',
+      'mei': 'May', 'juni': 'June', 'juli': 'July', 'agustus': 'August',
+      'september': 'September', 'oktober': 'October', 'november': 'November', 'desember': 'December'
+    };
+    let parsedDateStr = dateStr.toLowerCase();
+    Object.keys(monthMap).forEach(idMonth => {
+      parsedDateStr = parsedDateStr.replace(new RegExp(idMonth, 'g'), monthMap[idMonth]);
+    });
+    
+    const d = new Date(parsedDateStr);
+    if (isNaN(d.getTime())) return { date: 0, start: 0, end: 0 };
+    
+    let start = 0, end = 0;
+    if (timeStr) {
+      let cleanTime = timeStr.replace(/WIB|WITA|WIT/gi, '').trim().replace(/\./g, ':');
+      if (cleanTime.includes('-')) {
+        const parts = cleanTime.split('-');
+        const ds = new Date(parsedDateStr + ' ' + parts[0].trim());
+        const de = new Date(parsedDateStr + ' ' + parts[1].trim());
+        start = isNaN(ds.getTime()) ? 0 : ds.getTime();
+        end = isNaN(de.getTime()) ? 0 : de.getTime();
+      } else {
+        const ds = new Date(parsedDateStr + ' ' + cleanTime);
+        start = isNaN(ds.getTime()) ? 0 : ds.getTime();
+        end = start + (2 * 60 * 60 * 1000); // assume 2 hours if no end
+      }
+    }
+    return { date: d.setHours(0,0,0,0), start, end };
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    let payload = { ...formData };
+    const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    const d = new Date(formData.shootDate);
+    const formattedDate = `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+    const formattedTime = `${formData.startTime} - ${formData.endTime}`;
+
+    const newTiming = parseShootDateTime(formattedDate, formattedTime);
+    if (newTiming.date !== 0 && newTiming.start !== 0) {
+      const existingProjects = await getProjects();
+      const overlaps = existingProjects.filter(p => {
+        const pTiming = parseShootDateTime(p.shootDate, p.shootTime);
+        if (pTiming.date !== newTiming.date) return false;
+        if (pTiming.start === 0 || pTiming.end === 0) return false;
+        return (newTiming.start < pTiming.end && newTiming.end > pTiming.start);
+      });
+
+      if (overlaps.length > 0) {
+        const confirmMsg = `PERINGATAN BENTROK JADWAL!\n\nJadwal ini bentrok dengan klien berikut:\n` + 
+          overlaps.map(o => `- ${o.clientName} (${o.shootTime})`).join('\n') + 
+          `\n\nApakah Anda tetap ingin menyimpan jadwal ini?`;
+        if (!window.confirm(confirmMsg)) {
+          setLoading(false);
+          return;
+        }
+      }
+    }
+
+    let payload = { 
+      ...formData,
+      shootDate: formattedDate,
+      shootTime: formattedTime
+    };
+    delete payload.startTime;
+    delete payload.endTime;
     
     if (formData.photoType === 'Foto Produk') {
       payload.items = items.filter(item => item.name && item.price);
@@ -146,15 +212,19 @@ export default function NewClientPage() {
             </div>
           )}
 
+          <div className="form-group">
+            <label className="form-label">Tanggal Pemotretan</label>
+            <input required type="date" name="shootDate" className="input-field" value={formData.shootDate} onChange={handleChange} />
+          </div>
+          
           <div style={{ display: 'flex', gap: '12px' }}>
             <div className="form-group" style={{ flex: 1 }}>
-              <label className="form-label">Tanggal Pemotretan</label>
-              <input required type="text" name="shootDate" className="input-field" value={formData.shootDate} onChange={handleChange} placeholder="Cth: 12 Agustus 2026" />
+              <label className="form-label">Jam Mulai</label>
+              <input required type="time" name="startTime" className="input-field" value={formData.startTime} onChange={handleChange} />
             </div>
-            
             <div className="form-group" style={{ flex: 1 }}>
-              <label className="form-label">Jam / Sesi</label>
-              <input required type="text" name="shootTime" className="input-field" value={formData.shootTime} onChange={handleChange} placeholder="Cth: 14:00 atau Sesi Pagi" />
+              <label className="form-label">Jam Selesai</label>
+              <input required type="time" name="endTime" className="input-field" value={formData.endTime} onChange={handleChange} />
             </div>
           </div>
 
