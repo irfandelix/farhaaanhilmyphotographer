@@ -585,7 +585,9 @@ export default function AdminClientDetail({ params }) {
                       style={{ padding: '8px' }}
                     />
                   </div>
+                  </div>
                 </div>
+              </>
             ) : (
               <>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
@@ -602,7 +604,7 @@ export default function AdminClientDetail({ params }) {
                 
                 {project.lunasAmount > 0 && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', color: '#166534' }}>
-                    <span>Pelunasan {project.lunasDate ? `(${new Date(project.lunasDate).toLocaleDateString('id-ID', {day: '2-digit', month:'2-digit', year:'numeric'}).replace(/\//g, '-')})` : ''}:</span>
+                    <span>Pelunasan {project.lunasDate ? `(${new Date(project.lunasDate).toLocaleDateString('id-ID', {day: '2-digit', month:'2-digit', year:'numeric'}).split('/').join('-')})` : ''}:</span>
                     <span style={{ fontWeight: '600' }}>- Rp {project.lunasAmount.toLocaleString('id-ID')}</span>
                   </div>
                 )}
