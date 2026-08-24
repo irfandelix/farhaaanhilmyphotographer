@@ -600,6 +600,7 @@ export default function ClientGallery({ params }) {
               slides={(activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos)).map(photo => ({
                 src: photo.thumbnailLink ? '/api/proxy?url=' + encodeURIComponent(photo.thumbnailLink.replace('=s220', '=w600')) : '',
                 alt: photo.name,
+                photo: photo // Pass original photo object
               }))}
               plugins={[Zoom]}
               on={{
@@ -608,93 +609,98 @@ export default function ClientGallery({ params }) {
               styles={{
                 root: {
                   '--yarl__carousel_padding_px': '0',
-                  backgroundColor: 'rgba(0,0,0,1)' // Ensure full screen backdrop
+                  backgroundColor: 'rgba(0,0,0,1)'
                 },
                 container: {
-                  bottom: '80px',
-                  backgroundColor: 'transparent' // Let root handle backdrop
+                  backgroundColor: 'transparent'
+                }
+              }}
+              render={{
+                slideFooter: ({ slide }) => {
+                  if (!slide || !slide.photo) return null;
+                  const currentPhoto = slide.photo;
+                  const isSelected = selectedPhotos.includes(currentPhoto.name);
+                  
+                  return (
+                    <div style={{
+                      position: 'absolute',
+                      bottom: '30px',
+                      left: 0,
+                      right: 0,
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '16px 24px',
+                      pointerEvents: 'none' // Allow swipe through the gap
+                    }}>
+                      {activeTab === 'raw' && !project?.isLocked && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleSelect(currentPhoto.name);
+                          }}
+                          style={{
+                            padding: '12px 24px',
+                            fontSize: '1rem',
+                            fontWeight: 'bold',
+                            backgroundColor: isSelected ? '#ef4444' : 'var(--primary)',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                            border: 'none',
+                            color: 'white',
+                            borderRadius: '100px',
+                            cursor: 'pointer',
+                            pointerEvents: 'auto'
+                          }}
+                        >
+                          {isSelected ? '✓ Terpilih (Batal)' : 'Pilih Foto Ini'}
+                        </button>
+                      )}
+                      
+                      {activeTab === 'raw' && project?.isLocked && (
+                        <div style={{
+                          padding: '12px 24px',
+                          fontSize: '1rem',
+                          fontWeight: 'bold',
+                          backgroundColor: '#dcfce3',
+                          color: '#166534',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                          borderRadius: '100px',
+                          pointerEvents: 'auto'
+                        }}>
+                          🔒 Dikunci
+                        </div>
+                      )}
+                      
+                      {project?.paymentStatus === 'Lunas' && (
+                        <a
+                          href={`/api/proxy?url=${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${currentPhoto.id}`)}`}
+                          download={currentPhoto.name}
+                          onClick={(e) => e.stopPropagation()}
+                          style={{
+                            padding: '12px 24px',
+                            fontSize: '1rem',
+                            fontWeight: 'bold',
+                            backgroundColor: '#3b82f6',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                            border: 'none',
+                            color: 'white',
+                            borderRadius: '100px',
+                            cursor: 'pointer',
+                            textDecoration: 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            pointerEvents: 'auto'
+                          }}
+                        >
+                          📥 Unduh
+                        </a>
+                      )}
+                    </div>
+                  );
                 }
               }}
             />
-            
-            {typeof document !== 'undefined' && createPortal(
-              <div style={{
-                position: 'fixed',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                zIndex: 9999999,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '16px 24px',
-                pointerEvents: 'none'
-              }}>
-                {activeTab === 'raw' && !project?.isLocked && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleSelect(currentPhoto.name);
-                    }}
-                    style={{
-                      padding: '12px 24px',
-                      fontSize: '1rem',
-                      fontWeight: 'bold',
-                      backgroundColor: isSelected ? '#ef4444' : 'var(--primary)',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
-                      border: 'none',
-                      color: 'white',
-                      borderRadius: '100px',
-                      cursor: 'pointer',
-                      pointerEvents: 'auto'
-                    }}
-                  >
-                    {isSelected ? '✓ Terpilih (Batal)' : 'Pilih Foto Ini'}
-                  </button>
-                )}
-                
-                {activeTab === 'raw' && project?.isLocked && (
-                  <div style={{
-                    padding: '12px 24px',
-                    fontSize: '1rem',
-                    fontWeight: 'bold',
-                    backgroundColor: '#dcfce3',
-                    color: '#166534',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
-                    borderRadius: '100px',
-                    pointerEvents: 'auto'
-                  }}>
-                    🔒 Dikunci
-                  </div>
-                )}
-                
-                {project?.paymentStatus === 'Lunas' && (
-                  <a
-                    href={`/api/proxy?url=${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${currentPhoto?.id}`)}`}
-                    download={currentPhoto?.name}
-                    style={{
-                      padding: '12px 24px',
-                      fontSize: '1rem',
-                      fontWeight: 'bold',
-                      backgroundColor: '#3b82f6',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
-                      border: 'none',
-                      color: 'white',
-                      borderRadius: '100px',
-                      cursor: 'pointer',
-                      textDecoration: 'none',
-                      display: 'flex',
-                      alignItems: 'center',
-                      pointerEvents: 'auto'
-                    }}
-                  >
-                    📥 Unduh
-                  </a>
-                )}
-              </div>,
-              document.body
-            )}
           </>
         );
       })()}
