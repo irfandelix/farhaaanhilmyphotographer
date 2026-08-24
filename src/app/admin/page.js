@@ -85,10 +85,11 @@ export default function AdminDashboard() {
             {upcomingProjects.map(p => (
               <div key={`alert-${p.id}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff', padding: '12px 16px', borderRadius: '8px', border: '1px solid #fde68a' }}>
                 <div>
-                  <strong style={{ display: 'block', color: '#111827', fontSize: '1rem' }}>{p.clientName} ({p.photoType})</strong>
-                  <span style={{ color: '#6b7280', fontSize: '0.9rem' }}>
-                    Tanggal: {p.shootDate} {p.shootTime && <span style={{ whiteSpace: 'nowrap' }}>&bull; Jam: {p.shootTime}</span>}
-                  </span>
+                  <div style={{ color: '#92400e', fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>
+                    {p.shootDate} {p.shootTime && `• ${p.shootTime}`}
+                  </div>
+                  <strong style={{ display: 'block', color: '#111827', fontSize: '1rem', marginBottom: '2px' }}>{p.clientName}</strong>
+                  <span style={{ color: '#6b7280', fontSize: '0.85rem' }}>{p.photoType}</span>
                 </div>
                 <Link href={`/admin/client/${p.id}`}>
                   <button style={{ backgroundColor: '#f59e0b', color: 'white', padding: '6px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '600', border: 'none', cursor: 'pointer' }}>
@@ -122,17 +123,21 @@ export default function AdminDashboard() {
                   <div className="glass-panel animate-fade-in" style={{ padding: '20px', cursor: 'pointer', transition: 'transform 0.2s', ':hover': { transform: 'translateY(-4px)' } }}>
                     <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
                       <div>
-                        <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '8px', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                        {project.shootDate && (
+                          <div style={{ color: '#4f46e5', fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.05em' }}>
+                            {project.shootDate} {project.shootTime && `• ${project.shootTime}`}
+                          </div>
+                        )}
+                        <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '6px', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px', color: '#111827' }}>
                           {project.clientName}
-                          {project.gdriveEditedLink 
-                            ? <span style={{ fontSize: '0.8rem', backgroundColor: '#dbeafe', color: '#1e40af', padding: '2px 8px', borderRadius: '12px', fontWeight: 'normal' }}>✓ Foto Terkirim</span>
-                            : <span style={{ fontSize: '0.8rem', backgroundColor: '#fef3c7', color: '#92400e', padding: '2px 8px', borderRadius: '12px', fontWeight: 'normal' }}>⏳ Belum Upload Edit</span>
-                          }
                         </h3>
-                        <div style={{ color: '#6b7280', fontSize: '0.9rem', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <div style={{ color: '#6b7280', fontSize: '0.9rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                           <span>{project.photoType}</span>
-                          <span>Tanggal: {project.shootDate}</span>
-                          {project.shootTime && <span>Waktu: {project.shootTime}</span>}
+                          <span>•</span>
+                          {project.gdriveEditedLink 
+                            ? <span style={{ fontSize: '0.8rem', backgroundColor: '#dbeafe', color: '#1e40af', padding: '2px 8px', borderRadius: '12px', fontWeight: '500' }}>✓ Foto Terkirim</span>
+                            : <span style={{ fontSize: '0.8rem', backgroundColor: '#fef3c7', color: '#92400e', padding: '2px 8px', borderRadius: '12px', fontWeight: '500' }}>⏳ Belum Upload Edit</span>
+                          }
                         </div>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', justifyContent: 'space-between', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
