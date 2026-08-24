@@ -627,18 +627,15 @@ export default function ClientGallery({ params }) {
             <div style={{ 
               position: 'fixed', 
               bottom: '24px', 
-            left: 0,
-            right: 0, 
-            zIndex: 999999, 
-            display: 'flex', 
-            justifyContent: 'center',
-            width: '100%',
-            padding: '0 16px',
-            boxSizing: 'border-box',
-            pointerEvents: 'none'
-          }}>
-            <div style={{ 
-              pointerEvents: 'auto', 
+              left: 0,
+              right: 0, 
+              margin: '0 auto',
+              width: 'max-content',
+              maxWidth: '90%',
+              zIndex: 9999999, 
+              display: 'flex',
+            }}>
+              <div style={{ 
               display: 'flex', 
               flexDirection: 'row', 
               gap: '8px', 
