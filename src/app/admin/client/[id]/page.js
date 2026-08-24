@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getProjectById, updatePaymentStatus, updateGDriveLink, updateGDriveEditedLink, unlockClientSelection, updateProjectFinancials, updateGDriveSessions, deleteProject } from '@/lib/projectService';
+import { getProjectById, updatePaymentStatus, updateGDriveLink, updateGDriveEditedLink, updateProjectFinancials, updateGDriveSessions, deleteProject } from '@/lib/projectService';
 
 export default function AdminClientDetail({ params }) {
   const router = useRouter();
@@ -303,20 +303,8 @@ export default function AdminClientDetail({ params }) {
     setDownloadingZip(false);
   };
 
-  const handleUnlock = async () => {
-    if (confirm("Yakin ingin membuka kunci pilihan? Klien akan bisa mengubah dan menghapus pilihan fotonya lagi.")) {
-      const success = await unlockClientSelection(id);
-      if (success) {
-        setProject({ ...project, isLocked: false });
-        alert("Kunci berhasil dibuka.");
-      } else {
-        alert("Gagal membuka kunci.");
-      }
-    }
-  };
-
   const handleDeleteProject = async () => {
-    if (confirm("⚠️ PERINGATAN: Anda yakin ingin menghapus project ini secara permanen? Data klien, invoice, dan tagihan akan hilang dan tidak dapat dikembalikan.")) {
+    if (window.confirm(`PERINGATAN: Apakah Anda yakin ingin menghapus project "${project.clientName}" secara permanen?\n\nTindakan ini tidak dapat dibatalkan!`)) {
       const success = await deleteProject(id);
       if (success) {
         alert("Project berhasil dihapus.");
@@ -738,15 +726,9 @@ export default function AdminClientDetail({ params }) {
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', gap: '12px' }}>
             <h2 style={{ fontSize: '1.5rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
               Foto Terpilih ({project.selectedPhotos ? project.selectedPhotos.length : 0})
-              {project.isLocked && <span style={{ fontSize: '0.9rem', padding: '4px 8px', background: '#fee2e2', color: '#991b1b', borderRadius: '4px' }}>🔒 Terkunci</span>}
             </h2>
             
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              {project.isLocked && (
-                <button onClick={handleUnlock} className="btn-secondary" style={{ padding: '10px 20px', fontSize: '0.95rem' }}>
-                  🔓 Buka Kunci
-                </button>
-              )}
               {project.selectedPhotos && project.selectedPhotos.length > 0 && photos.length > 0 && (
                 <button 
                   onClick={handleDownloadZip}

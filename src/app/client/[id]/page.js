@@ -185,10 +185,6 @@ export default function ClientGallery({ params }) {
   };
 
   const toggleSelect = (photoName) => {
-    if (project?.isLocked) {
-      alert("Pilihan Anda sudah dikunci dan tidak dapat diubah lagi. Hubungi fotografer jika ada kesalahan.");
-      return;
-    }
     setSaved(false);
     setSelectedPhotos(prev => 
       prev.includes(photoName) 
@@ -198,16 +194,15 @@ export default function ClientGallery({ params }) {
   };
 
   const saveSelection = async () => {
-    if (!window.confirm("Apakah Anda yakin dengan pilihan ini?\n\nSetelah dikirim, foto akan langsung diproses dan pilihan tidak dapat diubah lagi.")) {
+    if (!window.confirm("Apakah Anda yakin dengan pilihan ini?\n\nSetelah dikirim, foto akan langsung diproses.")) {
       return;
     }
 
     setSaving(true);
-    const success = await updateSelectedPhotos(id, selectedPhotos, true);
+    const success = await updateSelectedPhotos(id, selectedPhotos, false);
     setSaving(false);
     if (success) {
       setSaved(true);
-      setProject({ ...project, isLocked: true });
       // Construct WhatsApp URL
       const waNumber = "6281234567890"; // In real app, this should come from project or admin settings
       let message = `Halo, saya ${project.clientName}!\nSaya sudah selesai memilih ${selectedPhotos.length} foto untuk diedit:\n\n`;
@@ -651,20 +646,14 @@ export default function ClientGallery({ params }) {
         <div style={{ fontWeight: '600', fontSize: '0.95rem' }}>
           Terpilih: <span style={{ color: 'var(--primary)', fontSize: '1.2rem' }}>{selectedPhotos.length}</span>
         </div>
-        {project?.isLocked ? (
-          <div style={{ padding: '8px 16px', background: '#dcfce3', color: '#166534', borderRadius: '20px', fontSize: '0.9rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            🔒 Terkunci
-          </div>
-        ) : (
-          <button 
-            onClick={saveSelection} 
-            disabled={saving || selectedPhotos.length === 0}
-            className="btn-primary"
-            style={{ padding: '12px 20px', fontSize: '0.95rem', opacity: (saving || selectedPhotos.length === 0) ? 0.7 : 1 }}
-          >
-            {saving ? 'Menyimpan...' : saved ? 'Tersimpan ✓' : 'Kirim Pilihan'}
-          </button>
-        )}
+        <button 
+          onClick={saveSelection} 
+          disabled={saving || selectedPhotos.length === 0}
+          className="btn-primary"
+          style={{ padding: '12px 20px', fontSize: '0.95rem', opacity: (saving || selectedPhotos.length === 0) ? 0.7 : 1 }}
+        >
+          {saving ? 'Menyimpan...' : saved ? 'Tersimpan ✓' : 'Kirim Pilihan'}
+        </button>
       </div>
       )}
 
@@ -716,7 +705,7 @@ export default function ClientGallery({ params }) {
                       padding: '16px 24px',
                       pointerEvents: 'none' // Allow swipe through the gap
                     }}>
-                      {activeTab === 'raw' && !project?.isLocked && (
+                      {activeTab === 'raw' && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -739,23 +728,6 @@ export default function ClientGallery({ params }) {
                         >
                           {isSelected ? 'Terpilih (Batal)' : 'Pilih Foto'}
                         </button>
-                      )}
-                      
-                      {activeTab === 'raw' && project?.isLocked && (
-                        <div style={{
-                          padding: '8px 16px',
-                          fontSize: '0.9rem',
-                          fontWeight: '600',
-                          backgroundColor: '#dcfce3',
-                          color: '#166534',
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                          borderRadius: '100px',
-                          pointerEvents: 'auto',
-                          minWidth: '120px',
-                          textAlign: 'center'
-                        }}>
-                          Dikunci
-                        </div>
                       )}
                       
                       {project?.paymentStatus === 'Lunas' && (
