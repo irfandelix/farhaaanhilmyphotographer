@@ -838,28 +838,15 @@ export default function AdminClientDetail({ params }) {
           {(!project.selectedPhotos || project.selectedPhotos.length === 0) ? (
             <p style={{ color: '#6b7280' }}>Klien belum memilih foto.</p>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '16px' }}>
-              {project.selectedPhotos.map((photoName, i) => {
-                const photoObj = photos.find(p => p.name === photoName);
-                return (
-                  <div key={i} className="glass-panel" style={{ padding: '8px', border: '1px solid var(--border-color)', borderRadius: '8px', textAlign: 'center', fontSize: '0.85rem', wordBreak: 'break-all', display: 'flex', flexDirection: 'column' }}>
-                    {photoObj ? (
-                      <div style={{ height: '140px', width: '100%', marginBottom: '8px', backgroundColor: '#e5e7eb', borderRadius: '4px', overflow: 'hidden' }}>
-                        <img 
-                          src={`/api/proxy?url=${encodeURIComponent(`https://drive.google.com/thumbnail?id=${photoObj.id}&sz=w400`)}`}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                          alt={photoName}
-                        />
-                      </div>
-                    ) : (
-                      <div style={{ height: '140px', width: '100%', marginBottom: '8px', backgroundColor: '#f3f4f6', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>
-                        Memuat...
-                      </div>
-                    )}
-                    <div style={{ padding: '4px' }}>{photoName}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', backgroundColor: '#f9fafb', padding: '16px', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
+                {project.selectedPhotos.map((photoName, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: '#374151', padding: '8px 12px', backgroundColor: '#ffffff', border: '1px solid #d1d5db', borderRadius: '6px' }}>
+                    <span style={{ color: '#9ca3af', width: '24px' }}>{i + 1}.</span>
+                    <span style={{ wordBreak: 'break-all', fontWeight: '500' }}>{photoName}</span>
                   </div>
-                );
-              })}
+                ))}
+              </div>
             </div>
           )}
         </div>
