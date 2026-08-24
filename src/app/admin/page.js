@@ -147,8 +147,25 @@ export default function AdminDashboard() {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
-            const upcomingProjects = projects.filter(p => !isFinished(p) && new Date(p.shootDate) > today);
-            const progressProjects = projects.filter(p => !isFinished(p) && new Date(p.shootDate) <= today);
+            const parseIndonesianDate = (dateStr) => {
+              if (!dateStr) return new Date(0);
+              const months = ['JANUARI', 'FEBRUARI', 'MARET', 'APRIL', 'MEI', 'JUNI', 'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER'];
+              const parts = dateStr.split(' ');
+              if (parts.length === 3) {
+                const day = parseInt(parts[0]);
+                const monthIdx = months.indexOf(parts[1].toUpperCase());
+                const year = parseInt(parts[2]);
+                if (!isNaN(day) && monthIdx !== -1 && !isNaN(year)) {
+                  return new Date(year, monthIdx, day);
+                }
+              }
+              // Fallback for valid non-Indonesian dates or invalid dates
+              const fallback = new Date(dateStr);
+              return isNaN(fallback.getTime()) ? new Date(0) : fallback;
+            };
+
+            const upcomingProjects = projects.filter(p => !isFinished(p) && parseIndonesianDate(p.shootDate) > today);
+            const progressProjects = projects.filter(p => !isFinished(p) && parseIndonesianDate(p.shootDate) <= today);
             const completedProjects = projects.filter(p => isFinished(p));
 
             const renderProjectCard = (project) => {
