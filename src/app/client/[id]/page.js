@@ -586,180 +586,80 @@ export default function ClientGallery({ params }) {
       </div>
       )}
 
-            {/* Lightbox / Preview Modal */}
-      <Lightbox
-        open={previewIndex >= 0}
-        index={previewIndex >= 0 ? previewIndex : 0}
-        close={() => setPreviewIndex(-1)}
-        slides={(activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos)).map(photo => ({
-          src: photo.thumbnailLink ? '/api/proxy?url=' + encodeURIComponent(photo.thumbnailLink.replace('=s220', '=w600')) : '',
-          alt: photo.name,
-        }))}
-        plugins={[Zoom]}
-        on={{
-          view: ({ index }) => setPreviewIndex(index),
-        }}
-      />
-
-      {previewIndex >= 0 && (activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex] && (
-        <>
-          {activeTab === 'raw' && selectedPhotos.includes((activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].name) && (
-            <div style={{
-              position: 'fixed',
-              top: '20px',
-              left: '20px',
-              backgroundColor: 'var(--primary)',
-              color: 'white',
-              padding: '8px 16px',
-              borderRadius: '20px',
-              fontWeight: 'bold',
-              fontSize: '1rem',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              zIndex: 100000
-            }}>
-              ✓ Terpilih
-            </div>
-          )}
-          {typeof document !== 'undefined' && createPortal(
-            <div style={{ 
-              position: 'fixed', 
-              bottom: '24px', 
-              left: 0,
-              right: 0, 
-              margin: '0 auto',
-              width: 'max-content',
-              maxWidth: '90%',
-              zIndex: 9999999, 
-              display: 'flex',
-            }}>
-              <div style={{ 
-              display: 'flex', 
-              flexDirection: 'row', 
-              gap: '8px', 
-              width: '100%', 
-              maxWidth: '600px',
-              justifyContent: 'center',
-              backgroundColor: 'rgba(255, 255, 255, 0.15)',
-              backdropFilter: 'blur(12px)',
-              padding: '12px',
-              borderRadius: '16px',
-              border: '1px solid rgba(255, 255, 255, 0.2)'
-            }}>
-              {activeTab === 'raw' ? (
-                <>
-                  {!project?.isLocked ? (
-                    <>
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleSelect((activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].name);
-                        }}
-                        style={{ 
-                          padding: '10px 16px', 
-                          fontSize: '0.9rem',
-                          fontWeight: 'bold',
-                          flex: 1,
-                          boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
-                          backgroundColor: selectedPhotos.includes((activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].name) ? '#ef4444' : 'var(--primary)',
-                          border: 'none',
-                          color: 'white',
-                          borderRadius: '8px',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        {selectedPhotos.includes((activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].name) ? 'Batal Pilih' : 'Pilih Foto'}
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setPreviewIndex(-1);
-                        }}
-                        style={{
-                          padding: '10px 16px', 
-                          fontSize: '0.9rem',
-                          fontWeight: '600',
-                          flex: 1,
-                          backgroundColor: 'rgba(0,0,0,0.6)',
-                          border: 'none',
-                          color: 'white',
-                          borderRadius: '8px',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        Tutup
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <div style={{ padding: '10px 16px', background: '#dcfce3', color: '#166534', borderRadius: '8px', fontWeight: '600', textAlign: 'center', flex: 1, fontSize: '0.9rem' }}>
-                        🔒 Dikunci
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setPreviewIndex(-1);
-                        }}
-                        style={{
-                          padding: '10px 16px', 
-                          fontSize: '0.9rem',
-                          fontWeight: '600',
-                          flex: 1,
-                          backgroundColor: 'rgba(0,0,0,0.6)',
-                          border: 'none',
-                          color: 'white',
-                          borderRadius: '8px',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        Tutup
-                      </button>
-                    </>
-                  )}
-                  {project.paymentStatus === 'Lunas' && (
-                    <a 
-                      href={`/api/proxy?url=${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${(activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].id}`)}`}
-                      download={(activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].name}
-                      style={{ 
-                        padding: '10px 16px', 
-                        fontSize: '0.9rem',
-                        fontWeight: 'bold',
-                        flex: 1,
-                        boxShadow: '0 4px 15px rgba(59,130,246,0.3)',
-                        backgroundColor: '#3b82f6',
-                        border: 'none',
-                        color: 'white',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        pointerEvents: 'auto',
-                        textDecoration: 'none',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        boxSizing: 'border-box'
-                      }}
-                    >
-                      📥 Unduh
-                    </a>
-                  )}
-                </>
-              ) : (
-                <a 
-                  href={`/api/proxy?url=${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${(activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].id}`)}`}
-                  download={(activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex].name}
-                  className="btn-primary" 
-                  style={{ width: '100%', padding: '12px 24px', fontSize: '1rem', fontWeight: 'bold', backgroundColor: '#059669', boxShadow: '0 4px 15px rgba(5,150,105,0.3)', borderRadius: '8px', border: 'none', color: 'white', cursor: 'pointer', textDecoration: 'none', textAlign: 'center', display: 'block', boxSizing: 'border-box' }}
-                >
-                  📥 Download Foto
-                </a>
-              )}
-            </div>
-          </div>
-          , document.body)}
-        </>
-      )}
+      {/* Lightbox / Preview Modal */}
+      {previewIndex >= 0 && (() => {
+        const currentPhoto = (activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex];
+        const isSelected = selectedPhotos.includes(currentPhoto?.name);
+        
+        return (
+          <Lightbox
+            open={true}
+            index={previewIndex}
+            close={() => setPreviewIndex(-1)}
+            slides={(activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos)).map(photo => ({
+              src: photo.thumbnailLink ? '/api/proxy?url=' + encodeURIComponent(photo.thumbnailLink.replace('=s220', '=w600')) : '',
+              alt: photo.name,
+            }))}
+            plugins={[Zoom]}
+            on={{
+              view: ({ index }) => setPreviewIndex(index),
+            }}
+            toolbar={{
+              buttons: [
+                activeTab === 'raw' && !project?.isLocked ? (
+                  <button
+                    key="pilih-btn"
+                    onClick={() => toggleSelect(currentPhoto.name)}
+                    style={{
+                      padding: '6px 14px',
+                      fontSize: '0.9rem',
+                      fontWeight: 'bold',
+                      backgroundColor: isSelected ? '#ef4444' : 'var(--primary)',
+                      border: 'none',
+                      color: 'white',
+                      borderRadius: '100px',
+                      cursor: 'pointer',
+                      marginRight: '8px'
+                    }}
+                  >
+                    {isSelected ? '✓ Terpilih (Batal)' : 'Pilih Foto Ini'}
+                  </button>
+                ) : null,
+                activeTab === 'raw' && project?.isLocked ? (
+                  <div key="locked" style={{ padding: '6px 14px', background: '#dcfce3', color: '#166534', borderRadius: '100px', fontWeight: 'bold', fontSize: '0.9rem', marginRight: '8px' }}>
+                    🔒 Dikunci
+                  </div>
+                ) : null,
+                project?.paymentStatus === 'Lunas' ? (
+                  <a
+                    key="unduh-btn"
+                    href={`/api/proxy?url=${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${currentPhoto?.id}`)}`}
+                    download={currentPhoto?.name}
+                    style={{
+                      padding: '6px 14px',
+                      fontSize: '0.9rem',
+                      fontWeight: 'bold',
+                      backgroundColor: '#3b82f6',
+                      border: 'none',
+                      color: 'white',
+                      borderRadius: '100px',
+                      cursor: 'pointer',
+                      textDecoration: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      marginRight: '8px'
+                    }}
+                  >
+                    📥 Unduh
+                  </a>
+                ) : null,
+                "zoom",
+                "close"
+              ].filter(Boolean)
+            }}
+          />
+        );
+      })()}
 
     </main>
   );
