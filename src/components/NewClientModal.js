@@ -95,7 +95,7 @@ export default function NewClientModal({ onClose, onSuccess }) {
     const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
     const d = new Date(formData.shootDate);
     const formattedDate = `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
-    const formattedTime = `${formData.startTime} - ${formData.endTime}`;
+    const formattedTime = formData.endTime ? `${formData.startTime} - ${formData.endTime}` : formData.startTime;
 
     const newTiming = parseShootDateTime(formattedDate, formattedTime);
     if (newTiming.date !== 0 && newTiming.start !== 0) {
@@ -234,7 +234,7 @@ export default function NewClientModal({ onClose, onSuccess }) {
             </div>
             <div className="form-group" style={{ flex: 1 }}>
               <label className="form-label">Jam Selesai</label>
-              <input required type="time" name="endTime" className="input-field" value={formData.endTime} onChange={handleChange} />
+              <input type="time" name="endTime" className="input-field" value={formData.endTime} onChange={handleChange} />
             </div>
           </div>
 
