@@ -1,4 +1,5 @@
 'use client';
+import Swal from 'sweetalert2';
 
 import { useEffect, useState, use } from 'react';
 import { createPortal } from 'react-dom';
@@ -138,7 +139,7 @@ export default function ClientGallery({ params }) {
       
     } catch (error) {
       console.error("Download Raw ZIP Error:", error);
-      alert('Terjadi kesalahan saat mengunduh ZIP: ' + error.message);
+      Swal.fire('Terjadi kesalahan saat mengunduh ZIP: ' + error.message);
     }
     
     setDownloadingZip(false);
@@ -194,7 +195,8 @@ export default function ClientGallery({ params }) {
   };
 
   const saveSelection = async () => {
-    if (!window.confirm("Apakah Anda yakin dengan pilihan ini?\n\nSetelah dikirim, foto akan langsung diproses.")) {
+    const result1 = await Swal.fire({ text: "Apakah Anda yakin dengan pilihan ini?\n\nSetelah dikirim, foto akan langsung diproses.", showCancelButton: true, confirmButtonText: 'Ya, Kirim', cancelButtonText: 'Batal' });
+    if (!result1.isConfirmed) {
       return;
     }
 
@@ -213,11 +215,12 @@ export default function ClientGallery({ params }) {
       
       const waLink = `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`;
       
-      if (confirm("Pilihan berhasil disimpan! Apakah Anda ingin mengirim konfirmasi via WhatsApp sekarang?")) {
+      const result2 = await Swal.fire({ text: "Pilihan berhasil disimpan! Apakah Anda ingin mengirim konfirmasi via WhatsApp sekarang?", icon: 'success', showCancelButton: true, confirmButtonText: 'Ya, Kirim WA', cancelButtonText: 'Nanti saja' });
+      if (result2.isConfirmed) {
         window.open(waLink, '_blank');
       }
     } else {
-      alert("Gagal menyimpan pilihan. Silakan coba lagi.");
+      Swal.fire("Gagal menyimpan pilihan. Silakan coba lagi.");
     }
   };
 

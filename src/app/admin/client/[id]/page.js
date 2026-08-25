@@ -1,4 +1,5 @@
 'use client';
+import Swal from 'sweetalert2';
 
 import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
@@ -132,7 +133,7 @@ export default function AdminClientDetail({ params }) {
     // Validasi basic
     for (let s of sessions) {
       if (!s.name || !s.link) {
-        alert("Nama sesi dan Link Google Drive tidak boleh kosong.");
+        Swal.fire("Nama sesi dan Link Google Drive tidak boleh kosong.");
         return;
       }
     }
@@ -142,7 +143,7 @@ export default function AdminClientDetail({ params }) {
     setSavingLink(false);
     
     if (success) {
-      alert('Sesi & Link Google Drive (Original) berhasil disimpan!');
+      Swal.fire('Sesi & Link Google Drive (Original) berhasil disimpan!');
       // Force refresh data
       const updatedData = await getProjectById(id);
       if (updatedData) {
@@ -150,7 +151,7 @@ export default function AdminClientDetail({ params }) {
         setSessions(updatedData.sessions || []);
       }
     } else {
-      alert('Gagal menyimpan link. Pastikan formatnya benar.');
+      Swal.fire('Gagal menyimpan link. Pastikan formatnya benar.');
     }
   };
 
@@ -175,14 +176,14 @@ export default function AdminClientDetail({ params }) {
     setSavingEditedLink(false);
     if (success) {
       if (!linkToSave || linkToSave.trim() === '') {
-        alert('Link Google Drive (Hasil Edit) berhasil dihapus!');
+        Swal.fire('Link Google Drive (Hasil Edit) berhasil dihapus!');
       } else {
-        alert('Link Google Drive (Hasil Edit) berhasil disimpan!');
+        Swal.fire('Link Google Drive (Hasil Edit) berhasil disimpan!');
       }
       setProject({ ...project, gdriveEditedLink: linkToSave, gdriveEditedFolderId: linkToSave ? 'updated' : '' });
       setGdriveEditedLink(linkToSave);
     } else {
-      alert('Gagal menyimpan link. Pastikan formatnya benar.');
+      Swal.fire('Gagal menyimpan link. Pastikan formatnya benar.');
     }
   };
 
@@ -237,7 +238,8 @@ export default function AdminClientDetail({ params }) {
         const confirmMsg = `PERINGATAN BENTROK JADWAL!\n\nJadwal ini bentrok dengan klien berikut:\n` + 
           overlaps.map(o => `- ${o.clientName} (${o.shootTime})`).join('\n') + 
           `\n\nApakah Anda tetap ingin menyimpan jadwal ini?`;
-        if (!window.confirm(confirmMsg)) {
+        const result = await Swal.fire({ text: confirmMsg, showCancelButton: true, confirmButtonText: 'Ya, Simpan', cancelButtonText: 'Batal' });
+        if (!result.isConfirmed) {
           return;
         }
       }
@@ -297,7 +299,7 @@ export default function AdminClientDetail({ params }) {
       }
       setIsEditingFinance(false);
     } else {
-      alert("Gagal memperbarui info project.");
+      Swal.fire("Gagal memperbarui info project.");
     }
   };
 
@@ -377,20 +379,21 @@ export default function AdminClientDetail({ params }) {
       
     } catch (error) {
       console.error("Download ZIP Error:", error);
-      alert('Terjadi kesalahan saat mengunduh ZIP. Pastikan koneksi stabil.');
+      Swal.fire('Terjadi kesalahan saat mengunduh ZIP. Pastikan koneksi stabil.');
     }
     
     setDownloadingZip(false);
   };
 
   const handleDeleteProject = async () => {
-    if (window.confirm(`PERINGATAN: Apakah Anda yakin ingin menghapus project "${project.clientName}" secara permanen?\n\nTindakan ini tidak dapat dibatalkan!`)) {
+    const result = await Swal.fire({ title: 'PERINGATAN', text: `Apakah Anda yakin ingin menghapus project "${project.clientName}" secara permanen? Tindakan ini tidak dapat dibatalkan!`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal', confirmButtonColor: '#d33' });
+    if (result.isConfirmed) {
       const success = await deleteProject(id);
       if (success) {
-        alert("Project berhasil dihapus.");
+        Swal.fire("Project berhasil dihapus.");
         router.push('/admin');
       } else {
-        alert("Gagal menghapus project.");
+        Swal.fire("Gagal menghapus project.");
       }
     }
   };
@@ -743,8 +746,9 @@ export default function AdminClientDetail({ params }) {
               />
               {project.gdriveEditedLink && (
                 <button 
-                  onClick={() => {
-                    if (confirm("Yakin ingin menghapus link folder hasil edit ini?")) {
+                  onClick={async () => {
+                    const result = await Swal.fire({ text: "Yakin ingin menghapus link folder hasil edit ini?", showCancelButton: true, confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal', confirmButtonColor: '#d33' });
+                    if (result.isConfirmed) {
                       handleSaveGDriveEditedLink('');
                     }
                   }}
@@ -772,7 +776,7 @@ export default function AdminClientDetail({ params }) {
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button className="btn-primary" style={{ flex: 1 }} onClick={() => {
                   navigator.clipboard.writeText(clientLink);
-                  alert('Link disalin!');
+                  Swal.fire('Link disalin!');
                 }}>Copy</button>
                 <Link href={`/client/${id}`} target="_blank" style={{ flex: 1 }}>
                   <button className="btn-secondary" style={{ width: '100%' }}>Buka</button>
@@ -801,7 +805,7 @@ export default function AdminClientDetail({ params }) {
             <div style={{ display: 'flex', gap: '8px' }}>
               <button className="btn-primary" style={{ flex: 1, backgroundColor: '#2563eb' }} onClick={() => {
                 navigator.clipboard.writeText(`${clientLink}/invoice?type=${status === 'Lunas' ? 'receipt' : status === 'DP' ? 'receipt_dp' : 'invoice'}`);
-                alert('Link Invoice disalin!');
+                Swal.fire('Link Invoice disalin!');
               }}>Copy</button>
               <Link href={`${clientLink}/invoice?type=${status === 'Lunas' ? 'receipt' : status === 'DP' ? 'receipt_dp' : 'invoice'}`} target="_blank" style={{ flex: 1 }}>
                 <button className="btn-secondary" style={{ width: '100%' }}>Buka</button>

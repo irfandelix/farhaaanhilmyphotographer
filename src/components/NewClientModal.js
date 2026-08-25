@@ -1,4 +1,5 @@
 'use client';
+import Swal from 'sweetalert2';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -111,7 +112,8 @@ export default function NewClientModal({ onClose, onSuccess }) {
         const confirmMsg = `PERINGATAN BENTROK JADWAL!\n\nJadwal ini bentrok dengan klien berikut:\n` + 
           overlaps.map(o => `- ${o.clientName} (${o.shootTime})`).join('\n') + 
           `\n\nApakah Anda tetap ingin menyimpan jadwal ini?`;
-        if (!window.confirm(confirmMsg)) {
+        const result = await Swal.fire({ text: confirmMsg, showCancelButton: true, confirmButtonText: 'Ya, Simpan', cancelButtonText: 'Batal' });
+        if (!result.isConfirmed) {
           setLoading(false);
           return;
         }
@@ -139,7 +141,7 @@ export default function NewClientModal({ onClose, onSuccess }) {
       if (onSuccess) onSuccess();
       if (onClose) onClose();
     } else {
-      alert("Gagal membuat proyek: " + result.error);
+      Swal.fire("Gagal membuat proyek: " + result.error);
       setLoading(false);
     }
   };

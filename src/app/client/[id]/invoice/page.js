@@ -1,4 +1,5 @@
 'use client';
+import Swal from 'sweetalert2';
 
 import { useState, useEffect, use } from 'react';
 import { getProjectById } from '@/lib/projectService';
@@ -108,7 +109,7 @@ export default function InvoicePage({ params }) {
 
     } catch (error) {
       console.error('Error generating PDF:', error);
-      alert('Gagal membuat PDF.');
+      Swal.fire('Gagal membuat PDF.');
       const btn = document.getElementById('btn-download-pdf');
       if(btn) btn.innerHTML = '📄 Unduh / Bagikan PDF';
     }
