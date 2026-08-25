@@ -186,26 +186,26 @@ export default function AdminDashboard() {
                         <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '6px', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px', color: '#111827' }}>
                           {project.clientName}
                         </h3>
-                        <div style={{ color: '#6b7280', fontSize: '0.9rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                        <div style={{ color: '#6b7280', fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                           <span>{project.photoType}</span>
-                          <span>•</span>
-                          {(() => {
-                            if (project.gdriveEditedLink) {
-                              return <span style={{ fontSize: '0.8rem', backgroundColor: '#dcfce3', color: '#166534', padding: '2px 8px', borderRadius: '12px', fontWeight: '500' }}>✅ Selesai (Foto Terkirim)</span>;
-                            }
-                            if (project.selectedPhotos && project.selectedPhotos.length > 0) {
-                              return <span style={{ fontSize: '0.8rem', backgroundColor: '#fef3c7', color: '#92400e', padding: '2px 8px', borderRadius: '12px', fontWeight: '500' }}>⏳ Belum Upload Edit</span>;
-                            }
-                            if (project.gdriveLink || (project.sessions && project.sessions.length > 0)) {
-                              return <span style={{ fontSize: '0.8rem', backgroundColor: '#fee2e2', color: '#991b1b', padding: '2px 8px', borderRadius: '12px', fontWeight: '500' }}>📸 Belum Pilih Foto</span>;
-                            }
-                            return <span style={{ fontSize: '0.8rem', backgroundColor: '#f3f4f6', color: '#374151', padding: '2px 8px', borderRadius: '12px', fontWeight: '500' }}>📤 Belum Upload Original</span>;
-                          })()}
+                          <div>
+                            {(() => {
+                              if (project.gdriveEditedLink) {
+                                return <span style={{ fontSize: '0.8rem', backgroundColor: '#dcfce3', color: '#166534', padding: '4px 10px', borderRadius: '12px', fontWeight: '500', display: 'inline-block' }}>✅ Selesai (Foto Terkirim)</span>;
+                              }
+                              if (project.selectedPhotos && project.selectedPhotos.length > 0) {
+                                return <span style={{ fontSize: '0.8rem', backgroundColor: '#fef3c7', color: '#92400e', padding: '4px 10px', borderRadius: '12px', fontWeight: '500', display: 'inline-block' }}>⏳ Belum Upload Edit</span>;
+                              }
+                              if (project.gdriveLink || (project.sessions && project.sessions.length > 0)) {
+                                return <span style={{ fontSize: '0.8rem', backgroundColor: '#fee2e2', color: '#991b1b', padding: '4px 10px', borderRadius: '12px', fontWeight: '500', display: 'inline-block' }}>📸 Belum Pilih Foto</span>;
+                              }
+                              return <span style={{ fontSize: '0.8rem', backgroundColor: '#f3f4f6', color: '#374151', padding: '4px 10px', borderRadius: '12px', fontWeight: '500', display: 'inline-block' }}>📤 Belum Upload Original</span>;
+                            })()}
+                          </div>
                           {project.selectedPhotos && project.selectedPhotos.length > 0 && (
-                            <>
-                              <span>•</span>
-                              <span style={{ fontSize: '0.85rem', fontWeight: '500', color: '#4f46e5' }}>{project.selectedPhotos.length} Terpilih</span>
-                            </>
+                            <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#4f46e5' }}>
+                              {project.selectedPhotos.length} Foto Terpilih
+                            </span>
                           )}
                         </div>
                       </div>
