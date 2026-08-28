@@ -166,9 +166,25 @@ export default function AdminDashboard() {
               return isNaN(fallback.getTime()) ? new Date(0) : fallback;
             };
 
-            const upcomingProjects = projects.filter(p => !isFinished(p) && parseIndonesianDate(p.shootDate) > today);
-            const progressProjects = projects.filter(p => !isFinished(p) && parseIndonesianDate(p.shootDate) <= today);
-            const completedProjects = projects.filter(p => isFinished(p));
+            const getSortValue = (p) => {
+              const d = parseIndonesianDate(p.shootDate);
+              if (isNaN(d.getTime())) return 0;
+              let timeOffset = 0;
+              if (p.shootTime) {
+                const timeStr = p.shootTime.split('-')[0].trim().replace(/\./g, ':').replace(/WIB|WITA|WIT/gi, '');
+                const [hours, minutes] = timeStr.split(':');
+                if (!isNaN(parseInt(hours)) && !isNaN(parseInt(minutes))) {
+                  timeOffset = (parseInt(hours) * 60 + parseInt(minutes)) * 60 * 1000;
+                }
+              }
+              return d.getTime() + timeOffset;
+            };
+
+            const sortedProjects = [...projects].sort((a, b) => getSortValue(a) - getSortValue(b));
+
+            const upcomingProjects = sortedProjects.filter(p => !isFinished(p) && parseIndonesianDate(p.shootDate) > today);
+            const progressProjects = sortedProjects.filter(p => !isFinished(p) && parseIndonesianDate(p.shootDate) <= today);
+            const completedProjects = sortedProjects.filter(p => isFinished(p));
 
             const renderProjectCard = (project) => {
               const statusColor = project.paymentStatus === 'Lunas' ? '#dcfce3' : project.paymentStatus === 'DP' ? '#fef3c7' : '#fee2e2';
