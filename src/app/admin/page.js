@@ -181,10 +181,11 @@ export default function AdminDashboard() {
             };
 
             const sortedProjects = [...projects].sort((a, b) => getSortValue(a) - getSortValue(b));
+            const sortedProjectsDesc = [...projects].sort((a, b) => getSortValue(b) - getSortValue(a));
 
             const upcomingProjects = sortedProjects.filter(p => !isFinished(p) && parseIndonesianDate(p.shootDate) > today);
-            const progressProjects = sortedProjects.filter(p => !isFinished(p) && parseIndonesianDate(p.shootDate) <= today);
-            const completedProjects = sortedProjects.filter(p => isFinished(p));
+            const progressProjects = sortedProjectsDesc.filter(p => !isFinished(p) && parseIndonesianDate(p.shootDate) <= today);
+            const completedProjects = sortedProjectsDesc.filter(p => isFinished(p));
 
             const renderProjectCard = (project) => {
               const statusColor = project.paymentStatus === 'Lunas' ? '#dcfce3' : project.paymentStatus === 'DP' ? '#fef3c7' : '#fee2e2';
