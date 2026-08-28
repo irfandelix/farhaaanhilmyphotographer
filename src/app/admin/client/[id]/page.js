@@ -846,7 +846,7 @@ export default function AdminClientDetail({ params }) {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', backgroundColor: '#f9fafb', padding: '16px', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
-                {project.selectedPhotos.map((photoName, i) => (
+                {[...project.selectedPhotos].sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).map((photoName, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: '#374151', padding: '8px 12px', backgroundColor: '#ffffff', border: '1px solid #d1d5db', borderRadius: '6px' }}>
                     <span style={{ color: '#9ca3af', width: '24px' }}>{i + 1}.</span>
                     <span style={{ wordBreak: 'break-all', fontWeight: '500' }}>{photoName}</span>

@@ -208,7 +208,7 @@ export default function ClientGallery({ params }) {
       // Construct WhatsApp URL
       const waNumber = "6281234567890"; // In real app, this should come from project or admin settings
       let message = `Halo, saya ${project.clientName}!\nSaya sudah selesai memilih ${selectedPhotos.length} foto untuk diedit:\n\n`;
-      selectedPhotos.forEach((photo, idx) => {
+      [...selectedPhotos].sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).forEach((photo, idx) => {
         message += `${idx + 1}. ${photo}\n`;
       });
       message += `\nMohon segera diproses. Terima kasih!`;
