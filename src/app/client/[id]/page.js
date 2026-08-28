@@ -471,7 +471,7 @@ export default function ClientGallery({ params }) {
                         </div>
                         
                         <div 
-                          onClick={() => setPreviewIndex((activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos)).findIndex(p => p.id === photo.id))}
+                          onClick={() => setPreviewIndex(currentList.findIndex(p => p.id === photo.id))}
                           style={{ width: '60px', height: '40px', background: '#e5e7eb', cursor: 'zoom-in', borderRadius: '4px', overflow: 'hidden' }}
                         >
                           <img 
@@ -525,7 +525,7 @@ export default function ClientGallery({ params }) {
                         </div>
 
                         <div 
-                          onClick={() => setPreviewIndex((activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos)).findIndex(p => p.id === photo.id))}
+                          onClick={() => setPreviewIndex(currentList.findIndex(p => p.id === photo.id))}
                           style={{ height: '160px', width: '100%', position: 'relative', background: '#e5e7eb', cursor: 'zoom-in' }}
                           title="Klik untuk perbesar"
                         >
@@ -780,7 +780,7 @@ export default function ClientGallery({ params }) {
 
       {/* Lightbox / Preview Modal */}
       {previewIndex >= 0 && (() => {
-        const currentPhoto = (activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos))[previewIndex];
+        const currentPhoto = currentList[previewIndex];
         const isSelected = selectedPhotos.includes(currentPhoto?.name);
         
         return (
@@ -789,7 +789,7 @@ export default function ClientGallery({ params }) {
               open={true}
               index={previewIndex}
               close={() => setPreviewIndex(-1)}
-              slides={(activeTab === 'edited' ? editedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos)).map(photo => ({
+              slides={currentList.map(photo => ({
                 src: photo.thumbnailLink ? '/api/proxy?url=' + encodeURIComponent(photo.thumbnailLink.replace('=s220', '=w600')) : '',
                 alt: photo.name,
                 photo: photo // Pass original photo object
