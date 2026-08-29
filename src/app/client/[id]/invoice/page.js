@@ -29,7 +29,12 @@ export default function InvoicePage({ params }) {
 
   const total = project.paymentAmount || 0;
   const dp = project.dpAmount || 0;
-  const lunas = project.lunasAmount || 0;
+  let lunas = project.lunasAmount || 0;
+  
+  if (type === 'receipt' && lunas === 0) {
+    lunas = total - dp;
+  }
+  
   const sisa = total - dp - lunas;
   
   // Logic Status & Titles
@@ -293,7 +298,7 @@ export default function InvoicePage({ params }) {
                 gap: '12px'
               }}>
                 <span style={{ fontWeight: '700', fontSize: '0.95rem', color: '#111827', whiteSpace: 'nowrap' }}>
-                  {type === 'receipt_dp' ? 'SISA TAGIHAN:' : 'TOTAL TAGIHAN:'}
+                  {type === 'receipt_dp' || type === 'receipt' ? 'SISA TAGIHAN:' : 'TOTAL TAGIHAN:'}
                 </span>
                 <span style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--primary)', whiteSpace: 'nowrap', textAlign: 'right' }}>
                   {type === 'receipt' ? formatRp(0) : formatRp(sisa)}
