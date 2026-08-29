@@ -281,7 +281,7 @@ export default function InvoicePage({ params }) {
                 </div>
               )}
 
-              {type === 'receipt' && lunas > 0 && (
+              {lunas > 0 && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
                   <span style={{ color: '#6b7280' }}>Telah dibayar (Pelunasan) {project.lunasDate ? `[${new Date(project.lunasDate).toLocaleDateString('id-ID', {day: '2-digit', month: '2-digit', year: 'numeric'}).replace(/\//g, '-')}]` : ''}:</span>
                   <span style={{ fontWeight: '600', color: '#1d4ed8' }}>({formatRp(lunas)})</span>
