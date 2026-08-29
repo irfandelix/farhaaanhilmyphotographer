@@ -276,15 +276,15 @@ export default function InvoicePage({ params }) {
               
               {dp > 0 && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <span style={{ color: '#6b7280' }}>Telah dibayar (DP):</span>
-                  <span style={{ fontWeight: '600', color: '#1d4ed8' }}>({formatRp(dp)})</span>
+                  <span style={{ color: '#6b7280' }}>Uang Muka (DP):</span>
+                  <span style={{ fontWeight: '600', color: '#1d4ed8', whiteSpace: 'nowrap' }}>({formatRp(dp)})</span>
                 </div>
               )}
 
               {lunas > 0 && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <span style={{ color: '#6b7280' }}>Telah dibayar (Pelunasan) {project.lunasDate ? `[${new Date(project.lunasDate).toLocaleDateString('id-ID', {day: '2-digit', month: '2-digit', year: 'numeric'}).replace(/\//g, '-')}]` : ''}:</span>
-                  <span style={{ fontWeight: '600', color: '#1d4ed8' }}>({formatRp(lunas)})</span>
+                  <span style={{ color: '#6b7280' }}>Pelunasan {project.lunasDate ? `(${new Date(project.lunasDate).toLocaleDateString('id-ID', {day: '2-digit', month: '2-digit', year: 'numeric'}).replace(/\//g, '-')})` : ''}:</span>
+                  <span style={{ fontWeight: '600', color: '#1d4ed8', whiteSpace: 'nowrap' }}>({formatRp(lunas)})</span>
                 </div>
               )}
 
