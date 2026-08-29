@@ -272,7 +272,7 @@ export default function InvoicePage({ params }) {
                 <span style={{ fontWeight: '600' }}>{formatRp(total)}</span>
               </div>
               
-              {type !== 'invoice' && dp > 0 && (
+              {dp > 0 && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
                   <span style={{ color: '#6b7280' }}>Telah dibayar (DP):</span>
                   <span style={{ fontWeight: '600', color: '#166534' }}>({formatRp(dp)})</span>
