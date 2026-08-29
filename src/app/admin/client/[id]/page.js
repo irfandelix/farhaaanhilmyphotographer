@@ -646,14 +646,14 @@ export default function AdminClientDetail({ params }) {
             
             <div style={{ display: 'flex', gap: '8px', marginTop: '20px', flexDirection: 'column' }}>
               <div style={{ display: 'flex', gap: '8px' }}>
-                <Link href={`/admin/client/${id}/invoice?type=dp`} target="_blank" style={{ flex: 1 }}>
-                  <button className="btn-secondary" style={{ width: '100%', fontSize: '0.85rem', padding: '10px 8px' }}>🖨️ Cetak (Web)</button>
-                </Link>
-                <a href={`/admin/client/${id}/invoice?type=invoice`} target="_blank" rel="noopener noreferrer" style={{ flex: 1 }}>
-                  <button className="btn-primary" style={{ width: '100%', fontSize: '0.85rem', padding: '10px 8px', backgroundColor: '#2563eb' }}>📄 Cetak Invoice (Web)</button>
-                </a>
+
+                {status !== 'Lunas' && (
+                  <a href={`/admin/client/${id}/invoice?type=invoice`} target="_blank" rel="noopener noreferrer" style={{ flex: 1 }}>
+                    <button className="btn-primary" style={{ width: '100%', fontSize: '0.85rem', padding: '10px 8px', backgroundColor: '#2563eb' }}>📄 Cetak Invoice (Web)</button>
+                  </a>
+                )}
                 
-                {status === 'DP' && (
+                {status !== 'Lunas' && (
                   <a href={`/admin/client/${id}/invoice?type=receipt_dp`} target="_blank" rel="noopener noreferrer" style={{ flex: 1 }}>
                     <button className="btn-primary" style={{ width: '100%', fontSize: '0.85rem', padding: '10px 8px', backgroundColor: '#ca8a04' }}>📄 Cetak DP (Web)</button>
                   </a>
