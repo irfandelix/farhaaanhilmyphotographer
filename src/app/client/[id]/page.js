@@ -475,7 +475,7 @@ export default function ClientGallery({ params }) {
                           style={{ width: '60px', height: '40px', background: '#e5e7eb', cursor: 'zoom-in', borderRadius: '4px', overflow: 'hidden' }}
                         >
                           <img 
-                            src={photo.thumbnailLink ? `/api/proxy?url=${encodeURIComponent(photo.thumbnailLink.replace('=s220', '=w100'))}` : ''}
+                            src={photo.thumbnailLink ? photo.thumbnailLink.replace('=s220', '=w100') : ''}
                             alt={photo.name} 
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                           />
@@ -530,10 +530,10 @@ export default function ClientGallery({ params }) {
                           title="Klik untuk perbesar"
                         >
                           <img 
-                            src={photo.thumbnailLink ? `/api/proxy?url=${encodeURIComponent(photo.thumbnailLink.replace('=s220', '=w600'))}` : ''}
+                            src={photo.thumbnailLink ? photo.thumbnailLink.replace('=s220', '=w600') : ''}
                             onError={(e) => { 
                               e.target.onerror = null; 
-                              e.target.src = `/api/proxy?url=${encodeURIComponent(`https://drive.google.com/thumbnail?id=${photo.id}&sz=w600`)}`; 
+                              e.target.src = `https://drive.google.com/thumbnail?id=${photo.id}&sz=w600`; 
                             }}
                             alt={photo.name} 
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
@@ -640,10 +640,10 @@ export default function ClientGallery({ params }) {
                       style={{ width: '80px', height: '50px', backgroundColor: '#f3f4f6', borderRadius: '6px', overflow: 'hidden', cursor: 'zoom-in', flexShrink: 0 }}
                     >
                       <img 
-                        src={photo.thumbnailLink ? `/api/proxy?url=${encodeURIComponent(photo.thumbnailLink)}` : ''} 
+                        src={photo.thumbnailLink ? photo.thumbnailLink : ''} 
                         onError={(e) => { 
                           e.target.onerror = null; 
-                          e.target.src = `/api/proxy?url=${encodeURIComponent(`https://drive.google.com/thumbnail?id=${photo.id}&sz=w200`)}`; 
+                          e.target.src = `https://drive.google.com/thumbnail?id=${photo.id}&sz=w200`; 
                         }}
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                         alt={photo.name} 
@@ -703,10 +703,10 @@ export default function ClientGallery({ params }) {
                     title="Klik untuk perbesar"
                   >
                     <img 
-                      src={photo.thumbnailLink ? `/api/proxy?url=${encodeURIComponent(photo.thumbnailLink.replace('=s220', '=w600'))}` : ''}
+                      src={photo.thumbnailLink ? photo.thumbnailLink.replace('=s220', '=w600') : ''}
                       onError={(e) => { 
                         e.target.onerror = null; 
-                        e.target.src = `/api/proxy?url=${encodeURIComponent(`https://drive.google.com/thumbnail?id=${photo.id}&sz=w600`)}`; 
+                        e.target.src = `https://drive.google.com/thumbnail?id=${photo.id}&sz=w600`; 
                       }}
                       alt={photo.name} 
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
@@ -790,7 +790,7 @@ export default function ClientGallery({ params }) {
               index={previewIndex}
               close={() => setPreviewIndex(-1)}
               slides={currentList.map(photo => ({
-                src: photo.thumbnailLink ? '/api/proxy?url=' + encodeURIComponent(photo.thumbnailLink.replace('=s220', '=w600')) : '',
+                src: photo.thumbnailLink ? photo.thumbnailLink.replace('=s220', '=w600') : '',
                 alt: photo.name,
                 photo: photo // Pass original photo object
               }))}
@@ -853,7 +853,7 @@ export default function ClientGallery({ params }) {
                       
                       {project?.paymentStatus === 'Lunas' && (
                         <a
-                          href={`/api/proxy?url=${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${currentPhoto.id}`)}`}
+                          href={`https://drive.google.com/uc?export=download&id=${currentPhoto.id}`}
                           download={currentPhoto.name}
                           onClick={(e) => e.stopPropagation()}
                           style={{
