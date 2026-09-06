@@ -22,6 +22,7 @@ export default function NewClientModal({ onClose, onSuccess }) {
   });
   
   const [items, setItems] = useState([{ name: '', qty: 1, price: '' }]);
+  const [additionalSchedules, setAdditionalSchedules] = useState([]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -55,6 +56,10 @@ export default function NewClientModal({ onClose, onSuccess }) {
   };
 
   const totalPaymentAmount = items.reduce((sum, item) => sum + (Number(item.qty || 0) * Number(item.price || 0)), 0);
+
+  const addSchedule = () => setAdditionalSchedules([...additionalSchedules, { shootDate: '', startTime: '', endTime: '', title: '' }]);
+  const updateSchedule = (index, field, value) => { const arr = [...additionalSchedules]; arr[index][field] = value; setAdditionalSchedules(arr); };
+  const removeSchedule = (index) => { const arr = [...additionalSchedules]; arr.splice(index, 1); setAdditionalSchedules(arr); };
 
   const parseShootDateTime = (dateStr, timeStr) => {
     if (!dateStr) return { date: 0, start: 0, end: 0 };
@@ -98,6 +103,16 @@ export default function NewClientModal({ onClose, onSuccess }) {
     const formattedDate = `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
     const formattedTime = formData.endTime ? `${formData.startTime} - ${formData.endTime}` : formData.startTime;
 
+    const formattedAdditionalSchedules = additionalSchedules.map(sch => {
+      if (!sch.shootDate) return null;
+      const sd = new Date(sch.shootDate);
+      return {
+        title: sch.title || 'Acara Tambahan',
+        shootDate: `${sd.getDate()} ${months[sd.getMonth()]} ${sd.getFullYear()}`,
+        shootTime: sch.endTime ? `${sch.startTime} - ${sch.endTime}` : sch.startTime
+      };
+    }).filter(Boolean);
+
     const newTiming = parseShootDateTime(formattedDate, formattedTime);
     if (newTiming.date !== 0 && newTiming.start !== 0) {
       const existingProjects = await getProjects();
@@ -123,7 +138,8 @@ export default function NewClientModal({ onClose, onSuccess }) {
     let payload = { 
       ...formData,
       shootDate: formattedDate,
-      shootTime: formattedTime
+      shootTime: formattedTime,
+      additionalSchedules: formattedAdditionalSchedules
     };
     delete payload.startTime;
     delete payload.endTime;
@@ -229,7 +245,7 @@ export default function NewClientModal({ onClose, onSuccess }) {
             <input required type="date" name="shootDate" className="input-field" value={formData.shootDate} onChange={handleChange} />
           </div>
           
-          <div style={{ display: 'flex', gap: '12px' }}>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end' }}>
             <div className="form-group" style={{ flex: 1 }}>
               <label className="form-label">Jam Mulai</label>
               <input required type="time" name="startTime" className="input-field" value={formData.startTime} onChange={handleChange} />
@@ -238,7 +254,47 @@ export default function NewClientModal({ onClose, onSuccess }) {
               <label className="form-label">Jam Selesai</label>
               <input type="time" name="endTime" className="input-field" value={formData.endTime} onChange={handleChange} />
             </div>
+            <button 
+              type="button" 
+              onClick={() => setFormData({...formData, startTime: '', endTime: ''})} 
+              className="btn-secondary" 
+              style={{ padding: '10px', height: '42px', color: '#4b5563' }}
+              title="Reset Jam"
+            >
+              🔄 Reset
+            </button>
           </div>
+
+          {additionalSchedules.map((sch, index) => (
+            <div key={index} style={{ background: '#f9fafb', padding: '16px', borderRadius: '8px', border: '1px solid #e5e7eb', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label className="form-label" style={{ margin: 0 }}>Jadwal Acara Tambahan #{index + 1}</label>
+                <button type="button" onClick={() => removeSchedule(index)} style={{ color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.85rem' }}>Hapus</button>
+              </div>
+              <input type="text" className="input-field" placeholder="Nama Acara (Cth: Resepsi, Unduh Mantu, dll)" value={sch.title} onChange={(e) => updateSchedule(index, 'title', e.target.value)} />
+              
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label" style={{ fontSize: '0.85rem' }}>Tanggal</label>
+                <input required type="date" className="input-field" value={sch.shootDate} onChange={(e) => updateSchedule(index, 'shootDate', e.target.value)} />
+              </div>
+              
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end' }}>
+                <div style={{ flex: 1 }}>
+                  <label className="form-label" style={{ fontSize: '0.85rem' }}>Mulai</label>
+                  <input required type="time" className="input-field" value={sch.startTime} onChange={(e) => updateSchedule(index, 'startTime', e.target.value)} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label className="form-label" style={{ fontSize: '0.85rem' }}>Selesai</label>
+                  <input type="time" className="input-field" value={sch.endTime} onChange={(e) => updateSchedule(index, 'endTime', e.target.value)} />
+                </div>
+                <button type="button" onClick={() => { updateSchedule(index, 'startTime', ''); updateSchedule(index, 'endTime', ''); }} className="btn-secondary" style={{ padding: '10px', height: '42px', color: '#4b5563' }}>🔄</button>
+              </div>
+            </div>
+          ))}
+          
+          <button type="button" onClick={addSchedule} className="btn-secondary" style={{ width: '100%', padding: '8px', fontSize: '0.9rem', color: '#4b5563', borderStyle: 'dashed' }}>
+            + Tambah Tanggal/Sesi Acara
+          </button>
 
           {formData.photoType === 'Foto Produk' ? (
             <div className="form-group">

@@ -30,6 +30,7 @@ export default function AdminClientDetail({ params }) {
   const [editShootDate, setEditShootDate] = useState('');
   const [editStartTime, setEditStartTime] = useState('');
   const [editEndTime, setEditEndTime] = useState('');
+  const [additionalSchedules, setAdditionalSchedules] = useState([]);
   
   // GDrive Link State
   const [savingLink, setSavingLink] = useState(false);
@@ -81,6 +82,29 @@ export default function AdminClientDetail({ params }) {
         }
         setEditStartTime(st);
         setEditEndTime(et);
+
+        if (data.additionalSchedules) {
+          // Convert back from formatted string to input values
+          const monthMapRev = {'Januari': '01', 'Februari': '02', 'Maret': '03', 'April': '04', 'Mei': '05', 'Juni': '06', 'Juli': '07', 'Agustus': '08', 'September': '09', 'Oktober': '10', 'November': '11', 'Desember': '12'};
+          const parsedSch = data.additionalSchedules.map(sch => {
+            let d = '';
+            if (sch.shootDate) {
+              const p = sch.shootDate.split(' ');
+              if (p.length === 3) d = `${p[2]}-${monthMapRev[p[1]]}-${p[0].padStart(2, '0')}`;
+            }
+            let st = '', et = '';
+            if (sch.shootTime) {
+              if (sch.shootTime.includes('-')) {
+                const p = sch.shootTime.split('-');
+                st = p[0].trim(); et = p[1].trim();
+              } else {
+                st = sch.shootTime.trim();
+              }
+            }
+            return { title: sch.title || '', shootDate: d, startTime: st, endTime: et };
+          });
+          setAdditionalSchedules(parsedSch);
+        }
         
         // Handle sessions (if empty, fallback to legacy gdriveLink)
         if (data.sessions && data.sessions.length > 0) {
@@ -187,6 +211,10 @@ export default function AdminClientDetail({ params }) {
     }
   };
 
+  const addSchedule = () => setAdditionalSchedules([...additionalSchedules, { shootDate: '', startTime: '', endTime: '', title: '' }]);
+  const updateSchedule = (index, field, value) => { const arr = [...additionalSchedules]; arr[index][field] = value; setAdditionalSchedules(arr); };
+  const removeSchedule = (index) => { const arr = [...additionalSchedules]; arr.splice(index, 1); setAdditionalSchedules(arr); };
+
   const parseShootDateTime = (dateStr, timeStr) => {
     if (!dateStr) return { date: 0, start: 0, end: 0 };
     const monthMap = { 'januari': 'January', 'februari': 'February', 'maret': 'March', 'april': 'April', 'mei': 'May', 'juni': 'June', 'juli': 'July', 'agustus': 'August', 'september': 'September', 'oktober': 'October', 'november': 'November', 'desember': 'December' };
@@ -280,6 +308,16 @@ export default function AdminClientDetail({ params }) {
           lunasDate: editLunasDate,
           shootDate: formattedDate,
           shootTime: formattedTime,
+          additionalSchedules: additionalSchedules.map(sch => {
+            if (!sch.shootDate) return null;
+            const sd = new Date(sch.shootDate);
+            const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+            return {
+              title: sch.title || 'Acara Tambahan',
+              shootDate: `${sd.getDate()} ${months[sd.getMonth()]} ${sd.getFullYear()}`,
+              shootTime: sch.endTime ? `${sch.startTime} - ${sch.endTime}` : sch.startTime
+            };
+          }).filter(Boolean),
           whatsapp: editWhatsapp 
         });
       } else {
@@ -294,6 +332,16 @@ export default function AdminClientDetail({ params }) {
           lunasDate: editLunasDate,
           shootDate: formattedDate,
           shootTime: formattedTime,
+          additionalSchedules: additionalSchedules.map(sch => {
+            if (!sch.shootDate) return null;
+            const sd = new Date(sch.shootDate);
+            const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+            return {
+              title: sch.title || 'Acara Tambahan',
+              shootDate: `${sd.getDate()} ${months[sd.getMonth()]} ${sd.getFullYear()}`,
+              shootTime: sch.endTime ? `${sch.startTime} - ${sch.endTime}` : sch.startTime
+            };
+          }).filter(Boolean),
           whatsapp: editWhatsapp
         });
       }
@@ -590,7 +638,48 @@ export default function AdminClientDetail({ params }) {
                       style={{ padding: '8px' }}
                     />
                   </div>
+                  <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                    <button 
+                      type="button" 
+                      onClick={() => { setEditStartTime(''); setEditEndTime(''); }}
+                      className="btn-secondary"
+                      style={{ padding: '8px', height: '40px', color: '#4b5563' }}
+                      title="Reset Jam"
+                    >
+                      🔄 Reset
+                    </button>
                   </div>
+                  </div>
+                  {additionalSchedules.map((sch, index) => (
+                    <div key={index} style={{ background: '#f9fafb', padding: '12px', borderRadius: '8px', border: '1px solid #e5e7eb', marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <label style={{ fontSize: '0.85rem', color: '#6b7280', margin: 0 }}>Jadwal Tambahan #{index + 1}</label>
+                        <button type="button" onClick={() => removeSchedule(index)} style={{ color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.85rem' }}>Hapus</button>
+                      </div>
+                      <input type="text" className="input-field" style={{ padding: '8px' }} placeholder="Nama Acara (Cth: Resepsi)" value={sch.title} onChange={(e) => updateSchedule(index, 'title', e.target.value)} />
+                      
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <div style={{ flex: 1 }}>
+                          <label style={{ fontSize: '0.85rem', color: '#6b7280', display: 'block', marginBottom: '4px' }}>Tanggal</label>
+                          <input required type="date" className="input-field" style={{ padding: '8px' }} value={sch.shootDate} onChange={(e) => updateSchedule(index, 'shootDate', e.target.value)} />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <label style={{ fontSize: '0.85rem', color: '#6b7280', display: 'block', marginBottom: '4px' }}>Mulai</label>
+                          <input required type="time" className="input-field" style={{ padding: '8px' }} value={sch.startTime} onChange={(e) => updateSchedule(index, 'startTime', e.target.value)} />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <label style={{ fontSize: '0.85rem', color: '#6b7280', display: 'block', marginBottom: '4px' }}>Selesai</label>
+                          <input type="time" className="input-field" style={{ padding: '8px' }} value={sch.endTime} onChange={(e) => updateSchedule(index, 'endTime', e.target.value)} />
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                          <button type="button" onClick={() => { updateSchedule(index, 'startTime', ''); updateSchedule(index, 'endTime', ''); }} className="btn-secondary" style={{ padding: '8px', height: '40px', color: '#4b5563' }}>🔄</button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <button type="button" onClick={addSchedule} className="btn-secondary" style={{ width: '100%', padding: '8px', marginTop: '8px', fontSize: '0.85rem', borderStyle: 'dashed' }}>
+                    + Tambah Tanggal/Sesi Acara
+                  </button>
                 </div>
             ) : (
               <>
