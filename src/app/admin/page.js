@@ -60,45 +60,75 @@ export default function AdminDashboard() {
     const currentMonth = monthNames[today.getMonth()];
     const nextMonth = monthNames[(today.getMonth() + 1) % 12];
     
-    return projects.filter(p => {
-      if (!p.shootDate) return false;
-      
-      // Jika sudah ada link gdrive original, berarti pemotretan sudah selesai
-      const hasLegacyLink = !!p.gdriveLink;
-      const hasSessionLink = p.sessions && p.sessions.length > 0 && p.sessions.some(s => s.link);
-      if (hasLegacyLink || hasSessionLink) return false;
+    const monthMap = {
+      'januari': 'January', 'februari': 'February', 'maret': 'March', 'april': 'April',
+      'mei': 'May', 'juni': 'June', 'juli': 'July', 'agustus': 'August',
+      'september': 'September', 'oktober': 'October', 'november': 'November', 'desember': 'December'
+    };
 
-      // Konversi nama bulan Indonesia ke Inggris agar bisa diparse oleh new Date()
-      const monthMap = {
-        'januari': 'January', 'februari': 'February', 'maret': 'March', 'april': 'April',
-        'mei': 'May', 'juni': 'June', 'juli': 'July', 'agustus': 'August',
-        'september': 'September', 'oktober': 'October', 'november': 'November', 'desember': 'December'
-      };
-      
-      let parsedDateStr = p.shootDate;
+    const parseDateToMs = (dateStr) => {
+      if (!dateStr) return 9999999999999;
+      let parsedDateStr = dateStr;
       Object.keys(monthMap).forEach(idMonth => {
         const regex = new RegExp(idMonth, "gi");
         parsedDateStr = parsedDateStr.replace(regex, monthMap[idMonth]);
       });
-
-      // Coba parse tanggal
       const d = new Date(parsedDateStr);
-      if (!isNaN(d.getTime())) {
-        const diffTime = d.getTime() - today.getTime();
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        // Tampilkan jika jadwalnya hari ini s.d 14 hari ke depan, atau baru lewat 2 hari tapi belum diupload
+      return isNaN(d.getTime()) ? 9999999999999 : d.getTime();
+    };
+
+    const isUpcoming = (dateStr) => {
+      if (!dateStr) return false;
+      const t = parseDateToMs(dateStr);
+      if (t !== 9999999999999) {
+        const diffDays = Math.ceil((t - today.getTime()) / (1000 * 60 * 60 * 24));
         return diffDays >= -2 && diffDays <= 14; 
       }
-      
-      // Jika format teks ("12-13 Agustus")
-      const text = p.shootDate.toLowerCase();
+      const text = dateStr.toLowerCase();
       if (text.includes(currentMonth) || text.includes(nextMonth)) {
          return true;
       }
-      
       return false;
+    };
+
+    const upcomingList = [];
+
+    projects.forEach(p => {
+      const hasLegacyLink = !!p.gdriveLink;
+      const hasSessionLink = p.sessions && p.sessions.length > 0 && p.sessions.some(s => s.link);
+      if (hasLegacyLink || hasSessionLink) return;
+
+      if (isUpcoming(p.shootDate)) {
+        upcomingList.push({
+          ...p,
+          scheduleTitle: p.shootTitle || '',
+          scheduleDate: p.shootDate,
+          scheduleTime: p.shootTime,
+          isPrimary: true,
+          uniqueKey: `${p.id}-primary`
+        });
+      }
+
+      if (p.additionalSchedules && p.additionalSchedules.length > 0) {
+        p.additionalSchedules.forEach((sch, index) => {
+          if (isUpcoming(sch.shootDate)) {
+            upcomingList.push({
+              ...p,
+              scheduleTitle: sch.title || `Tambahan #${index + 1}`,
+              scheduleDate: sch.shootDate,
+              scheduleTime: sch.shootTime,
+              isPrimary: false,
+              uniqueKey: `${p.id}-sch-${index}`
+            });
+          }
+        });
+      }
     });
+
+    upcomingList.sort((a, b) => parseDateToMs(a.scheduleDate) - parseDateToMs(b.scheduleDate));
+    return upcomingList;
   };
+
 
   const upcomingProjects = getUpcomingProjects(projects);
 
@@ -116,10 +146,10 @@ export default function AdminDashboard() {
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {upcomingProjects.map(p => (
-              <div key={`alert-${p.id}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff', padding: '12px 16px', borderRadius: '8px', border: '1px solid #fde68a' }}>
+              <div key={p.uniqueKey} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff', padding: '12px 16px', borderRadius: '8px', border: '1px solid #fde68a' }}>
                 <div>
                   <div style={{ color: '#92400e', fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>
-                    {p.shootDate} {p.shootTime && `• ${p.shootTime}`}
+                    {p.scheduleTitle ? <span style={{ color: '#92400e' }}>{p.scheduleTitle}: </span> : ''}{p.scheduleDate} {p.scheduleTime && `• ${p.scheduleTime}`}
                   </div>
                   <strong style={{ display: 'block', color: '#111827', fontSize: '1rem', marginBottom: '2px' }}>{p.clientName}</strong>
                   <span style={{ color: '#6b7280', fontSize: '0.85rem' }}>{p.photoType}</span>
