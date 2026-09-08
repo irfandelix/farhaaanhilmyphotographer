@@ -197,7 +197,7 @@ export default function AdminDashboard() {
                       <div>
                         {project.shootDate && (
                           <div style={{ color: '#4f46e5', fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.05em' }}>
-                            {project.shootDate} {project.shootTime && `• ${project.shootTime}`}
+                            {project.shootTitle ? <span style={{ color: '#374151' }}>{project.shootTitle}: </span> : ''}{project.shootDate} {project.shootTime && `• ${project.shootTime}`}
                           </div>
                         )}
                         <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '6px', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px', color: '#111827' }}>

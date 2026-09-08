@@ -28,6 +28,7 @@ export default function AdminClientDetail({ params }) {
   const [editDescription, setEditDescription] = useState('');
   const [editWhatsapp, setEditWhatsapp] = useState('');
   const [editShootDate, setEditShootDate] = useState('');
+  const [editShootTitle, setEditShootTitle] = useState('');
   const [editStartTime, setEditStartTime] = useState('');
   const [editEndTime, setEditEndTime] = useState('');
   const [additionalSchedules, setAdditionalSchedules] = useState([]);
@@ -58,6 +59,8 @@ export default function AdminClientDetail({ params }) {
         setEditLunasAmount(data.lunasAmount || '');
         setEditLunasDate(data.lunasDate || '');
         let initDate = '';
+        setEditShootTitle(data.shootTitle || '');
+
         if (data.shootDate) {
           const monthMap = { 'Januari': '01', 'Februari': '02', 'Maret': '03', 'April': '04', 'Mei': '05', 'Juni': '06', 'Juli': '07', 'Agustus': '08', 'September': '09', 'Oktober': '10', 'November': '11', 'Desember': '12' };
           const parts = data.shootDate.split(' ');
@@ -273,6 +276,17 @@ export default function AdminClientDetail({ params }) {
       }
     }
 
+    const formattedAdditionalSchedules = additionalSchedules.map(sch => {
+      if (!sch.shootDate) return null;
+      const sd = new Date(sch.shootDate);
+      const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+      return {
+        title: sch.title || 'Acara Tambahan',
+        shootDate: `${sd.getDate()} ${months[sd.getMonth()]} ${sd.getFullYear()}`,
+        shootTime: sch.endTime ? `${sch.startTime} - ${sch.endTime}` : sch.startTime
+      };
+    }).filter(Boolean);
+
     let payload = { 
       dpAmount: editDpAmount, 
       clientName: editClientName,
@@ -280,8 +294,11 @@ export default function AdminClientDetail({ params }) {
       whatsapp: editWhatsapp,
       lunasAmount: editLunasAmount,
       lunasDate: editLunasDate,
-      shootDate: formattedDate,
-      shootTime: formattedTime
+      shootTitle: editShootTitle,
+      shootTitle: editShootTitle,
+          shootDate: formattedDate,
+          shootTime: formattedTime,
+      additionalSchedules: formattedAdditionalSchedules
     };
     
     if (editPhotoType === 'Foto Produk') {
@@ -306,6 +323,8 @@ export default function AdminClientDetail({ params }) {
           dpAmount: Number(editDpAmount),
           lunasAmount: Number(editLunasAmount),
           lunasDate: editLunasDate,
+          shootTitle: editShootTitle,
+      shootTitle: editShootTitle,
           shootDate: formattedDate,
           shootTime: formattedTime,
           additionalSchedules: additionalSchedules.map(sch => {
@@ -330,6 +349,8 @@ export default function AdminClientDetail({ params }) {
           dpAmount: Number(editDpAmount),
           lunasAmount: Number(editLunasAmount),
           lunasDate: editLunasDate,
+          shootTitle: editShootTitle,
+      shootTitle: editShootTitle,
           shootDate: formattedDate,
           shootTime: formattedTime,
           additionalSchedules: additionalSchedules.map(sch => {
@@ -463,7 +484,7 @@ export default function AdminClientDetail({ params }) {
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', marginBottom: '24px' }}>
           <div style={{ width: '100%' }}>
             <h1 style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)', fontWeight: '700', marginBottom: '4px' }}>{project.clientName}</h1>
-            <p style={{ color: '#4b5563', fontSize: '0.9rem' }}>{project.photoType} &bull; {project.shootDate} {project.shootTime ? `• ${project.shootTime}` : ''}</p>
+            <p style={{ color: '#4b5563', fontSize: '0.9rem' }}>{project.photoType} &bull; {project.shootTitle ? <span style={{ fontWeight: '500' }}>{project.shootTitle}: </span> : ''}{project.shootDate} {project.shootTime ? `• ${project.shootTime}` : ''}</p>
           </div>
           <div style={{ width: '100%', background: '#f9fafb', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
             
@@ -608,9 +629,20 @@ export default function AdminClientDetail({ params }) {
                   />
                 </div>
 
-                <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ fontSize: '0.85rem', color: '#6b7280', display: 'block', marginBottom: '4px' }}>Tanggal</label>
+                <div style={{ marginTop: '12px' }}>
+                    <label style={{ fontSize: '0.85rem', color: '#6b7280', display: 'block', marginBottom: '4px' }}>Nama Acara Utama (Opsional)</label>
+                    <input 
+                      type="text" 
+                      value={editShootTitle}
+                      onChange={(e) => setEditShootTitle(e.target.value)}
+                      className="input-field"
+                      style={{ padding: '8px' }}
+                      placeholder="Cth: Akad Nikah"
+                    />
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ fontSize: '0.85rem', color: '#6b7280', display: 'block', marginBottom: '4px' }}>Tanggal</label>
                     <input 
                       type="date" 
                       value={editShootDate}

@@ -12,6 +12,7 @@ export default function NewClientModal({ onClose, onSuccess }) {
     clientName: '',
     whatsapp: '',
     photoType: 'Foto Produk',
+    shootTitle: '',
     shootDate: '',
     startTime: '',
     endTime: '',
@@ -240,6 +241,11 @@ export default function NewClientModal({ onClose, onSuccess }) {
               />
             </div>
           )}
+
+          <div className="form-group">
+            <label className="form-label">Nama Acara Utama (Opsional)</label>
+            <input type="text" name="shootTitle" className="input-field" value={formData.shootTitle} onChange={handleChange} placeholder="Cth: Akad Nikah" />
+          </div>
 
           <div className="form-group">
             <label className="form-label">Tanggal Pemotretan</label>
