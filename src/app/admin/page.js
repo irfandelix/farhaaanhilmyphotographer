@@ -217,6 +217,79 @@ export default function AdminDashboard() {
             const progressProjects = sortedProjectsDesc.filter(p => !isFinished(p) && parseIndonesianDate(p.shootDate) <= today);
             const completedProjects = sortedProjectsDesc.filter(p => isFinished(p));
 
+            const formatProjectDates = (project) => {
+              if (!project.shootDate) return null;
+              
+              const schedules = [];
+              if (project.shootDate) schedules.push(project.shootDate);
+              if (project.additionalSchedules && project.additionalSchedules.length > 0) {
+                project.additionalSchedules.forEach(s => {
+                  if (s.shootDate) schedules.push(s.shootDate);
+                });
+              }
+
+              if (schedules.length === 1) {
+                return (
+                  <>
+                    {project.shootTitle ? <span style={{ color: '#374151' }}>{project.shootTitle}: </span> : ''}
+                    {project.shootDate} {project.shootTime && `• ${project.shootTime}`}
+                  </>
+                );
+              }
+
+              const parsed = schedules.map(d => {
+                const parts = d.split(' ');
+                if (parts.length === 3) {
+                  return { day: parseInt(parts[0]), month: parts[1], year: parseInt(parts[2]), original: d };
+                }
+                return { original: d };
+              });
+
+              if (parsed.some(p => !p.day)) {
+                 return <>{schedules.length} Sesi Terjadwal</>;
+              }
+              
+              const grouped = {};
+              parsed.forEach(p => {
+                const key = `${p.month} ${p.year}`;
+                if (!grouped[key]) grouped[key] = [];
+                if (!grouped[key].includes(p.day)) grouped[key].push(p.day);
+              });
+              
+              const resultStrs = [];
+              for (const key in grouped) {
+                 const days = grouped[key].sort((a,b) => a - b);
+                 const ranges = [];
+                 let currentStart = days[0];
+                 let currentEnd = days[0];
+                 
+                 for (let i = 1; i < days.length; i++) {
+                   if (days[i] === currentEnd + 1) {
+                     currentEnd = days[i];
+                   } else if (days[i] > currentEnd + 1) {
+                     if (currentStart === currentEnd) ranges.push(`${currentStart}`);
+                     else if (currentEnd === currentStart + 1) ranges.push(`${currentStart}, ${currentEnd}`);
+                     else ranges.push(`${currentStart}-${currentEnd}`);
+                     
+                     currentStart = days[i];
+                     currentEnd = days[i];
+                   }
+                 }
+                 if (currentStart === currentEnd) ranges.push(`${currentStart}`);
+                 else if (currentEnd === currentStart + 1) ranges.push(`${currentStart}, ${currentEnd}`);
+                 else ranges.push(`${currentStart}-${currentEnd}`);
+                 
+                 resultStrs.push(`${ranges.join(', ')} ${key}`);
+              }
+              
+              return (
+                 <>
+                   {project.shootTitle ? <span style={{ color: '#374151' }}>{project.shootTitle} (+{schedules.length - 1}): </span> : ''}
+                   {resultStrs.join(' & ')}
+                 </>
+              );
+            };
+
             const renderProjectCard = (project) => {
               const statusColor = project.paymentStatus === 'Lunas' ? '#dcfce3' : project.paymentStatus === 'DP' ? '#fef3c7' : '#fee2e2';
               const statusTextColor = project.paymentStatus === 'Lunas' ? '#166534' : project.paymentStatus === 'DP' ? '#92400e' : '#991b1b';
@@ -227,7 +300,7 @@ export default function AdminDashboard() {
                       <div>
                         {project.shootDate && (
                           <div style={{ color: '#4f46e5', fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.05em' }}>
-                            {project.shootTitle ? <span style={{ color: '#374151' }}>{project.shootTitle}: </span> : ''}{project.shootDate} {project.shootTime && `• ${project.shootTime}`}
+                            {formatProjectDates(project)}
                           </div>
                         )}
                         <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '6px', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px', color: '#111827' }}>
