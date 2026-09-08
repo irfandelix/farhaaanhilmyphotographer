@@ -144,6 +144,8 @@ export const updateProjectFinancials = async (id, data) => {
     if (data.shootDate !== undefined) updatePayload.shootDate = data.shootDate;
     if (data.shootTime !== undefined) updatePayload.shootTime = data.shootTime;
     if (data.description !== undefined) updatePayload.description = data.description;
+    if (data.additionalSchedules !== undefined) updatePayload.additionalSchedules = data.additionalSchedules;
+    if (data.shootTitle !== undefined) updatePayload.shootTitle = data.shootTitle;
 
     if (data.items) {
       updatePayload.items = data.items;

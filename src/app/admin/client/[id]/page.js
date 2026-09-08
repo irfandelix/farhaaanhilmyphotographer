@@ -252,7 +252,7 @@ export default function AdminClientDetail({ params }) {
         formattedDate = `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
       }
     }
-    const formattedTime = `${editStartTime} - ${editEndTime}`;
+    const formattedTime = editEndTime ? `${editStartTime} - ${editEndTime}` : editStartTime;
 
     const newTiming = parseShootDateTime(formattedDate, formattedTime);
     if (newTiming.date !== 0 && newTiming.start !== 0) {
