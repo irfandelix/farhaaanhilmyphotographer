@@ -1,7 +1,12 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { cookies } from 'next/headers';
 
-export default function Header() {
+export default async function Header() {
+  const cookieStore = await cookies();
+  const isAdmin = cookieStore.get('admin_token')?.value === 'authenticated';
+  const targetHref = isAdmin ? "/admin" : "/";
+
   return (
     <header className="no-print" style={{
       backgroundColor: 'var(--primary)',
@@ -15,7 +20,7 @@ export default function Header() {
       zIndex: 50,
       borderBottom: '4px solid var(--accent)'
     }}>
-      <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
+      <Link href={targetHref} style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
         <div style={{ background: 'white', borderRadius: '8px', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Image src="/logo.png" alt="Logo" width={36} height={36} style={{ borderRadius: '4px' }} />
         </div>
