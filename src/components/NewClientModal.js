@@ -17,6 +17,9 @@ export default function NewClientModal({ onClose, onSuccess }) {
     startTime: '',
     endTime: '',
     dpAmount: '',
+    dpDate: '',
+    lunasAmount: '',
+    lunasDate: '',
     paymentAmount: '', 
     description: '',   
     paymentStatus: 'Belum Bayar'
@@ -334,6 +337,28 @@ export default function NewClientModal({ onClose, onSuccess }) {
               value={formData.dpAmount ? Number(formData.dpAmount).toLocaleString('id-ID') : ''} 
               onChange={handleChange} 
               placeholder="Kosongkan jika tidak ada DP" 
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Tanggal Pembayaran DP</label>
+            <input 
+              type="date" 
+              name="dpDate" 
+              className="input-field" 
+              value={formData.dpDate} 
+              onChange={handleChange} 
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Tanggal Pelunasan</label>
+            <input 
+              type="date" 
+              name="lunasDate" 
+              className="input-field" 
+              value={formData.lunasDate} 
+              onChange={handleChange} 
             />
           </div>
 

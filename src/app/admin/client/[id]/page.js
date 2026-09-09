@@ -599,7 +599,7 @@ export default function AdminClientDetail({ params }) {
                 </div>
 
                   <div style={{ marginTop: '8px' }}>
-                    <label style={{ fontSize: '0.85rem', color: '#4b5563', display: 'block', marginBottom: '4px' }}>Tanggal Bayar DP</label>
+                    <label style={{ fontSize: '0.85rem', color: '#4b5563', display: 'block', marginBottom: '4px' }}>Tanggal Pembayaran DP</label>
                     <input 
                       type="date" 
                       className="input-field" 
