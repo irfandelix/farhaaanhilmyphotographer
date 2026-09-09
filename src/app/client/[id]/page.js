@@ -40,6 +40,7 @@ export default function ClientGallery({ params }) {
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [downloadState, setDownloadState] = useState('idle'); // idle, downloading, paused
   const cancelDownloadRef = useRef(false);
+  const abortControllerRef = useRef(null);
   const pauseDownloadRef = useRef(false);
 
   useEffect(() => {
@@ -110,6 +111,10 @@ export default function ClientGallery({ params }) {
     
     setDownloadingZip(true);
     setDownloadProgress(0);
+    setDownloadState('downloading');
+    cancelDownloadRef.current = false;
+    pauseDownloadRef.current = false;
+    abortControllerRef.current = new AbortController();
     
     try {
       const zip = new JSZip();
@@ -120,9 +125,17 @@ export default function ClientGallery({ params }) {
       const sessionName = currentSession ? currentSession.name : 'Sesi';
       
       for (let i = 0; i < totalFilesToDownload; i++) {
+        if (cancelDownloadRef.current) throw new Error("Download dibatalkan oleh pengguna.");
+        while (pauseDownloadRef.current) {
+          await new Promise(r => setTimeout(r, 500));
+          if (cancelDownloadRef.current) throw new Error("Download dibatalkan oleh pengguna.");
+        }
+
         const photo = photos[i];
         if (photo.id) {
-          const res = await fetch(`/api/proxy?url=${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${photo.id}`)}`);
+          // fetch directly to avoid proxy timeout/bandwidth
+          const directUrl = `https://www.googleapis.com/drive/v3/files/${photo.id}?alt=media&key=${process.env.NEXT_PUBLIC_FIREBASE_API_KEY}`;
+          const res = await fetch(directUrl, { signal: abortControllerRef.current.signal });
           
           if (res.ok) {
             const blob = await res.blob();
@@ -136,16 +149,22 @@ export default function ClientGallery({ params }) {
       
       if (successCount === 0) throw new Error("Tidak ada foto original yang berhasil diunduh.");
       
+      setDownloadState('packing');
       setDownloadProgress(100); 
       const content = await zip.generateAsync({ type: 'blob' });
       saveAs(content, `${project.clientName} - Original ${sessionName}.zip`);
       
     } catch (error) {
-      console.error("Download Raw ZIP Error:", error);
-      Swal.fire('Terjadi kesalahan saat mengunduh ZIP: ' + error.message);
+      if (error.name === 'AbortError' || (error.message && error.message.includes('dibatalkan'))) {
+         Swal.fire('Info', 'Download ZIP dibatalkan.', 'info');
+      } else {
+         console.error("Download Raw ZIP Error:", error);
+         Swal.fire('Terjadi kesalahan saat mengunduh ZIP: ' + error.message);
+      }
     }
     
     setDownloadingZip(false);
+    setDownloadState('idle');
   };
 
   const handleDownloadZip = async () => {
@@ -153,6 +172,10 @@ export default function ClientGallery({ params }) {
     
     setDownloadingZip(true);
     setDownloadProgress(0);
+    setDownloadState('downloading');
+    cancelDownloadRef.current = false;
+    pauseDownloadRef.current = false;
+    abortControllerRef.current = new AbortController();
     
     try {
       const zip = new JSZip();
@@ -160,9 +183,16 @@ export default function ClientGallery({ params }) {
       let successCount = 0;
       
       for (let i = 0; i < total; i++) {
+        if (cancelDownloadRef.current) throw new Error("Download dibatalkan oleh pengguna.");
+        while (pauseDownloadRef.current) {
+          await new Promise(r => setTimeout(r, 500));
+          if (cancelDownloadRef.current) throw new Error("Download dibatalkan oleh pengguna.");
+        }
+
         const photo = editedPhotos[i];
         if (photo.id) {
-          const res = await fetch(`/api/proxy?url=${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${photo.id}`)}`);
+          const directUrl = `https://www.googleapis.com/drive/v3/files/${photo.id}?alt=media&key=${process.env.NEXT_PUBLIC_FIREBASE_API_KEY}`;
+          const res = await fetch(directUrl, { signal: abortControllerRef.current.signal });
           
           if (res.ok) {
             const blob = await res.blob();
@@ -176,16 +206,22 @@ export default function ClientGallery({ params }) {
       
       if (successCount === 0) throw new Error("Tidak ada foto yang berhasil diunduh.");
       
+      setDownloadState('packing');
       setDownloadProgress(100); 
       const content = await zip.generateAsync({ type: 'blob' });
       saveAs(content, `${project.clientName} - Hasil Edit Final.zip`);
       
     } catch (error) {
-      console.error("Download ZIP Error:", error);
-      alert('Terjadi kesalahan saat mengunduh ZIP. Pastikan koneksi internet stabil.');
+      if (error.name === 'AbortError' || (error.message && error.message.includes('dibatalkan'))) {
+         Swal.fire('Info', 'Download ZIP dibatalkan.', 'info');
+      } else {
+         console.error("Download ZIP Error:", error);
+         Swal.fire('Terjadi kesalahan saat mengunduh ZIP. Pastikan koneksi stabil.');
+      }
     }
     
     setDownloadingZip(false);
+    setDownloadState('idle');
   };
 
   const toggleSelect = (photoName) => {
@@ -393,6 +429,7 @@ export default function ClientGallery({ params }) {
                                  onClick={(e) => {
                                    e.stopPropagation();
                                    cancelDownloadRef.current = true;
+                                   if (abortControllerRef.current) abortControllerRef.current.abort();
                                  }} 
                                  style={{ flex: 1, padding: '8px', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '500' }}
                                >
@@ -644,6 +681,7 @@ export default function ClientGallery({ params }) {
                                  onClick={(e) => {
                                    e.stopPropagation();
                                    cancelDownloadRef.current = true;
+                                   if (abortControllerRef.current) abortControllerRef.current.abort();
                                  }} 
                                  style={{ flex: 1, padding: '8px', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '500' }}
                                >
