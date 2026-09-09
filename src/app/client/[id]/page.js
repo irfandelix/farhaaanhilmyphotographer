@@ -353,7 +353,8 @@ export default function ClientGallery({ params }) {
                   </div>
                   
                   {project.paymentStatus === 'Lunas' && sessions.length > 0 && viewMode === 'all' && (
-                    <button 
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+<button 
                       onClick={handleDownloadRawZip}
                       disabled={downloadingZip}
                       className="btn-primary" 
@@ -362,6 +363,46 @@ export default function ClientGallery({ params }) {
                     >
                       {downloadingZip ? '⏳ Mengemas ZIP...' : '📥 Unduh Original Sesi Ini'}
                     </button>
+
+                        {downloadingZip && (
+                          <div style={{ marginTop: '12px', background: '#f3f4f6', borderRadius: '8px', padding: '12px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem' }}>
+                               <span style={{ fontWeight: '600', color: 'black' }}>Proses Download: {downloadProgress}%</span>
+                               <span style={{ color: '#6b7280' }}>{downloadState === 'paused' ? 'Jeda' : 'Berjalan'}</span>
+                            </div>
+                            <div style={{ width: '100%', backgroundColor: '#e5e7eb', height: '8px', borderRadius: '4px', marginBottom: '12px', overflow: 'hidden' }}>
+                              <div style={{ width: `${downloadProgress}%`, backgroundColor: downloadState === 'paused' ? '#f59e0b' : '#3b82f6', height: '100%', transition: 'width 0.3s' }}></div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                               <button 
+                                 onClick={(e) => { 
+                                   e.stopPropagation(); 
+                                   if (downloadState === 'paused') {
+                                     pauseDownloadRef.current = false;
+                                     setDownloadState('downloading');
+                                   } else {
+                                     pauseDownloadRef.current = true;
+                                     setDownloadState('paused');
+                                   }
+                                 }} 
+                                 style={{ flex: 1, padding: '8px', backgroundColor: downloadState === 'paused' ? '#10b981' : '#f59e0b', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '500' }}
+                               >
+                                 {downloadState === 'paused' ? '▶ Lanjutkan' : '⏸ Jeda'}
+                               </button>
+                               <button 
+                                 onClick={(e) => {
+                                   e.stopPropagation();
+                                   cancelDownloadRef.current = true;
+                                 }} 
+                                 style={{ flex: 1, padding: '8px', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '500' }}
+                               >
+                                 ⏹ Batal
+                               </button>
+                            </div>
+                          </div>
+                        )}
+
+</div>
                   )}
                 </div>
 
@@ -564,7 +605,8 @@ export default function ClientGallery({ params }) {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '16px' }}>
             {/* Left Controls: Download */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-              <button 
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', maxWidth: '300px' }}>
+<button 
                 onClick={handleDownloadZip}
                 disabled={downloadingZip}
                 className="btn-primary" 
@@ -572,6 +614,46 @@ export default function ClientGallery({ params }) {
               >
                 {downloadingZip ? '⏳ Mengemas ZIP...' : '📥 Unduh Editan (ZIP)'}
               </button>
+
+                        {downloadingZip && (
+                          <div style={{ marginTop: '12px', background: '#f3f4f6', borderRadius: '8px', padding: '12px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem' }}>
+                               <span style={{ fontWeight: '600', color: 'black' }}>Proses Download: {downloadProgress}%</span>
+                               <span style={{ color: '#6b7280' }}>{downloadState === 'paused' ? 'Jeda' : 'Berjalan'}</span>
+                            </div>
+                            <div style={{ width: '100%', backgroundColor: '#e5e7eb', height: '8px', borderRadius: '4px', marginBottom: '12px', overflow: 'hidden' }}>
+                              <div style={{ width: `${downloadProgress}%`, backgroundColor: downloadState === 'paused' ? '#f59e0b' : '#3b82f6', height: '100%', transition: 'width 0.3s' }}></div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                               <button 
+                                 onClick={(e) => { 
+                                   e.stopPropagation(); 
+                                   if (downloadState === 'paused') {
+                                     pauseDownloadRef.current = false;
+                                     setDownloadState('downloading');
+                                   } else {
+                                     pauseDownloadRef.current = true;
+                                     setDownloadState('paused');
+                                   }
+                                 }} 
+                                 style={{ flex: 1, padding: '8px', backgroundColor: downloadState === 'paused' ? '#10b981' : '#f59e0b', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '500' }}
+                               >
+                                 {downloadState === 'paused' ? '▶ Lanjutkan' : '⏸ Jeda'}
+                               </button>
+                               <button 
+                                 onClick={(e) => {
+                                   e.stopPropagation();
+                                   cancelDownloadRef.current = true;
+                                 }} 
+                                 style={{ flex: 1, padding: '8px', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '500' }}
+                               >
+                                 ⏹ Batal
+                               </button>
+                            </div>
+                          </div>
+                        )}
+
+</div>
             </div>
 
             {/* Right Controls: Filters */}
