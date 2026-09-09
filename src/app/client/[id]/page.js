@@ -1,7 +1,7 @@
 'use client';
 import Swal from 'sweetalert2';
 
-import { useEffect, useState, use } from 'react';
+import { useEffect, useState, use, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { getProjectById, updateSelectedPhotos } from '@/lib/projectService';
 import JSZip from 'jszip';
@@ -38,6 +38,9 @@ export default function ClientGallery({ params }) {
   // State untuk Download ZIP
   const [downloadingZip, setDownloadingZip] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
+  const [downloadState, setDownloadState] = useState('idle'); // idle, downloading, paused
+  const cancelDownloadRef = useRef(false);
+  const pauseDownloadRef = useRef(false);
 
   useEffect(() => {
     async function loadData() {
@@ -357,7 +360,7 @@ export default function ClientGallery({ params }) {
                       style={{ padding: '6px 14px', fontSize: '0.9rem', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '8px', border: 'none', color: 'white', cursor: 'pointer', fontWeight: '600' }}
                       title="Hanya tersedia untuk klien yang sudah Lunas"
                     >
-                      {downloadingZip ? `⏳ Mengemas ZIP... ${downloadProgress}%` : '📥 Unduh Original Sesi Ini'}
+                      downloadingZip ? '⏳ Mengemas ZIP...' : '📥 Unduh Original Sesi Ini'
                     </button>
                   )}
                 </div>
@@ -567,7 +570,7 @@ export default function ClientGallery({ params }) {
                 className="btn-primary" 
                 style={{ padding: '6px 14px', fontSize: '0.9rem', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '8px', border: 'none', color: 'white', cursor: 'pointer', fontWeight: '600' }}
               >
-                {downloadingZip ? `⏳ Mengemas ZIP... ${downloadProgress}%` : '📥 Unduh Editan (ZIP)'}
+                downloadingZip ? '⏳ Mengemas ZIP...' : '📥 Unduh Editan (ZIP)'
               </button>
             </div>
 
