@@ -141,6 +141,7 @@ export const updateProjectFinancials = async (id, data) => {
     if (data.whatsapp !== undefined) updatePayload.whatsapp = data.whatsapp;
     if (data.lunasAmount !== undefined) updatePayload.lunasAmount = Number(data.lunasAmount);
     if (data.lunasDate !== undefined) updatePayload.lunasDate = data.lunasDate;
+    if (data.dpDate !== undefined) updatePayload.dpDate = data.dpDate;
     if (data.shootDate !== undefined) updatePayload.shootDate = data.shootDate;
     if (data.shootTime !== undefined) updatePayload.shootTime = data.shootTime;
     if (data.description !== undefined) updatePayload.description = data.description;

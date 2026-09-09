@@ -22,6 +22,7 @@ export default function AdminClientDetail({ params }) {
   const [isEditingFinance, setIsEditingFinance] = useState(false);
   const [editItems, setEditItems] = useState([]);
   const [editDpAmount, setEditDpAmount] = useState('');
+  const [editDpDate, setEditDpDate] = useState('');
   const [editPaymentAmount, setEditPaymentAmount] = useState('');
   const [editClientName, setEditClientName] = useState('');
   const [editPhotoType, setEditPhotoType] = useState('');
@@ -53,6 +54,7 @@ export default function AdminClientDetail({ params }) {
         setEditClientName(data.clientName || '');
         setEditPhotoType(data.photoType || '');
         setEditDpAmount(data.dpAmount || '');
+        setEditDpDate(data.dpDate || '');
         setEditPaymentAmount(data.paymentAmount || '');
         setEditDescription(data.description || '');
         setEditWhatsapp(data.whatsapp || '');
@@ -288,7 +290,8 @@ export default function AdminClientDetail({ params }) {
     }).filter(Boolean);
 
     let payload = { 
-      dpAmount: editDpAmount, 
+      dpAmount: editDpAmount,
+      dpDate: editDpDate, 
       clientName: editClientName,
       photoType: editPhotoType,
       whatsapp: editWhatsapp,
@@ -321,6 +324,8 @@ export default function AdminClientDetail({ params }) {
           items: validItems,
           paymentAmount: validItems.reduce((sum, item) => sum + (Number(item.qty) * Number(item.price)), 0),
           dpAmount: Number(editDpAmount),
+          dpDate: editDpDate,
+          dpDate: editDpDate,
           lunasAmount: Number(editLunasAmount),
           lunasDate: editLunasDate,
           shootTitle: editShootTitle,
@@ -347,6 +352,7 @@ export default function AdminClientDetail({ params }) {
           paymentAmount: Number(editPaymentAmount),
           description: editDescription,
           dpAmount: Number(editDpAmount),
+          dpDate: editDpDate,
           lunasAmount: Number(editLunasAmount),
           lunasDate: editLunasDate,
           shootTitle: editShootTitle,
@@ -591,6 +597,17 @@ export default function AdminClientDetail({ params }) {
                     style={{ padding: '8px' }}
                   />
                 </div>
+
+                  <div style={{ marginTop: '8px' }}>
+                    <label style={{ fontSize: '0.85rem', color: '#4b5563', display: 'block', marginBottom: '4px' }}>Tanggal Bayar DP</label>
+                    <input 
+                      type="date" 
+                      className="input-field" 
+                      value={editDpDate}
+                      onChange={(e) => setEditDpDate(e.target.value)}
+                      style={{ padding: '8px', width: '100%' }}
+                    />
+                  </div>
                 
                 <div style={{ marginTop: '12px' }}>
                   <label style={{ fontSize: '0.85rem', color: '#4b5563', display: 'block', marginBottom: '4px' }}>Nominal Pelunasan (Rp)</label>

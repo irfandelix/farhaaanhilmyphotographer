@@ -57,6 +57,30 @@ export default function InvoicePage({ params }) {
 
   const formatRp = (angka) => 'Rp ' + angka.toLocaleString('id-ID');
 
+  
+  // Tentukan Tanggal Cetak
+  let printDateLabel = 'Tanggal Terbit';
+  let printDateValue = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+  
+  const formatDateStr = (dateStr) => {
+    if (!dateStr) return null;
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return null;
+    return d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+  };
+
+  if (type === 'receipt_dp') {
+    printDateLabel = 'Tanggal Pembayaran DP';
+    if (project.dpDate) {
+      printDateValue = formatDateStr(project.dpDate) || printDateValue;
+    }
+  } else if (type === 'receipt') {
+    printDateLabel = 'Tanggal Pelunasan';
+    if (project.lunasDate) {
+      printDateValue = formatDateStr(project.lunasDate) || printDateValue;
+    }
+  }
+
   const seqStr = String(project.invoiceSeq || 1).padStart(3, '0');
   const invoiceNumber = `INV-${seqStr}`;
   
@@ -180,10 +204,10 @@ export default function InvoicePage({ params }) {
           <table style={{ borderCollapse: 'collapse' }}>
             <tbody>
               <tr>
-                <td style={{ padding: '4px 0', width: '160px', color: '#4b5563', fontSize: '1rem' }}>Tanggal Terbit</td>
+                <td style={{ padding: '4px 0', width: '200px', color: '#4b5563', fontSize: '1rem' }}>{printDateLabel}</td>
                 <td style={{ padding: '4px 16px 4px 8px', color: '#111827', fontSize: '1rem' }}>:</td>
                 <td style={{ padding: '4px 0', fontWeight: '600', fontSize: '1rem' }}>
-                  {new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-')}
+                  {printDateValue}
                 </td>
               </tr>
               <tr>
