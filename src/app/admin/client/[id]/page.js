@@ -740,7 +740,7 @@ export default function AdminClientDetail({ params }) {
                 
                 {project.dpAmount > 0 && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', color: '#166534' }}>
-                    <span>Uang Muka (DP):</span>
+                    <span>Uang Muka (DP) {project.dpDate ? `(${new Date(project.dpDate).toLocaleDateString('id-ID', {day: '2-digit', month: '2-digit', year: 'numeric'}).replace(/\\//g, '-')})` : ''}:</span>
                     <span style={{ fontWeight: '600' }}>- Rp {project.dpAmount.toLocaleString('id-ID')}</span>
                   </div>
                 )}
