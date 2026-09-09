@@ -360,7 +360,7 @@ export default function ClientGallery({ params }) {
                       style={{ padding: '6px 14px', fontSize: '0.9rem', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '8px', border: 'none', color: 'white', cursor: 'pointer', fontWeight: '600' }}
                       title="Hanya tersedia untuk klien yang sudah Lunas"
                     >
-                      downloadingZip ? '⏳ Mengemas ZIP...' : '📥 Unduh Original Sesi Ini'
+                      {downloadingZip ? '⏳ Mengemas ZIP...' : '📥 Unduh Original Sesi Ini'}
                     </button>
                   )}
                 </div>
@@ -570,7 +570,7 @@ export default function ClientGallery({ params }) {
                 className="btn-primary" 
                 style={{ padding: '6px 14px', fontSize: '0.9rem', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '8px', border: 'none', color: 'white', cursor: 'pointer', fontWeight: '600' }}
               >
-                downloadingZip ? '⏳ Mengemas ZIP...' : '📥 Unduh Editan (ZIP)'
+                {downloadingZip ? '⏳ Mengemas ZIP...' : '📥 Unduh Editan (ZIP)'}
               </button>
             </div>
 
