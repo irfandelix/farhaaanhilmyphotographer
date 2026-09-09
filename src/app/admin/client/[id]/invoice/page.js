@@ -60,13 +60,13 @@ export default function InvoicePage({ params }) {
   
   // Tentukan Tanggal Cetak
   let printDateLabel = 'Tanggal Terbit';
-  let printDateValue = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+  let printDateValue = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).split('/').join('-');
   
   const formatDateStr = (dateStr) => {
     if (!dateStr) return null;
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return null;
-    return d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+    return d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).split('/').join('-');
   };
 
   if (type === 'receipt_dp') {
@@ -303,14 +303,14 @@ export default function InvoicePage({ params }) {
               
               {dp > 0 && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <span style={{ color: '#6b7280' }}>Uang Muka (DP) {project.dpDate ? `(${new Date(project.dpDate).toLocaleDateString('id-ID', {day: '2-digit', month: '2-digit', year: 'numeric'}).replace(/\\//g, '-')})` : ''}:</span>
+                  <span style={{ color: '#6b7280' }}>Uang Muka (DP) {project.dpDate ? `(${new Date(project.dpDate).toLocaleDateString('id-ID', {day: '2-digit', month: '2-digit', year: 'numeric'}).split('/').join('-')})` : ''}:</span>
                   <span style={{ fontWeight: '600', color: '#166534', whiteSpace: 'nowrap' }}>({formatRp(dp)})</span>
                 </div>
               )}
 
               {lunas > 0 && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <span style={{ color: '#6b7280' }}>Pelunasan {project.lunasDate ? `(${new Date(project.lunasDate).toLocaleDateString('id-ID', {day: '2-digit', month: '2-digit', year: 'numeric'}).replace(/\//g, '-')})` : ''}:</span>
+                  <span style={{ color: '#6b7280' }}>Pelunasan {project.lunasDate ? `(${new Date(project.lunasDate).toLocaleDateString('id-ID', {day: '2-digit', month: '2-digit', year: 'numeric'}).split('/').join('-')})` : ''}:</span>
                   <span style={{ fontWeight: '600', color: '#166534', whiteSpace: 'nowrap' }}>({formatRp(lunas)})</span>
                 </div>
               )}
