@@ -10,7 +10,10 @@ import {
   serverTimestamp,
   query,
   orderBy,
-  limit
+  limit,
+  onSnapshot,
+  arrayUnion,
+  arrayRemove
 } from 'firebase/firestore';
 
 const COLLECTION_NAME = 'projects';
@@ -276,6 +279,31 @@ export async function deleteProject(id) {
     return true;
   } catch (error) {
     console.error("Error deleting project: ", error);
+    return false;
+  }
+}
+
+
+export function subscribeToProject(id, callback) {
+  const docRef = doc(db, COLLECTION_NAME, id);
+  return onSnapshot(docRef, (docSnap) => {
+    if (docSnap.exists()) {
+      callback({ id: docSnap.id, ...docSnap.data() });
+    } else {
+      callback(null);
+    }
+  });
+}
+
+export async function togglePhotoSelectionDB(id, photoName, isSelected) {
+  try {
+    const docRef = doc(db, COLLECTION_NAME, id);
+    await updateDoc(docRef, {
+      selectedPhotos: isSelected ? arrayUnion(photoName) : arrayRemove(photoName)
+    });
+    return true;
+  } catch (error) {
+    console.error("Error toggling photo selection: ", error);
     return false;
   }
 }

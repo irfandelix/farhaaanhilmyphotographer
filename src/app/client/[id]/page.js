@@ -3,7 +3,7 @@ import Swal from 'sweetalert2';
 
 import { useEffect, useState, use, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { getProjectById, updateSelectedPhotos } from '@/lib/projectService';
+import { getProjectById, updateSelectedPhotos, subscribeToProject, togglePhotoSelectionDB } from '@/lib/projectService';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import Lightbox from "yet-another-react-lightbox";
@@ -83,6 +83,16 @@ export default function ClientGallery({ params }) {
       setLoading(false);
     }
     loadData();
+
+    // Subscribe to real-time changes
+    const unsubscribe = subscribeToProject(id, (proj) => {
+      if (proj) {
+        setProject(proj);
+        setSelectedPhotos(proj.selectedPhotos || []);
+      }
+    });
+
+    return () => unsubscribe();
   }, [id]);
 
   const fetchSessionPhotos = async (folderId) => {
@@ -286,42 +296,49 @@ export default function ClientGallery({ params }) {
     setDownloadState('idle');
   };
 
-  const toggleSelect = (photoName) => {
-    setSaved(false);
+  const toggleSelect = async (photoName) => {
+    if (project?.isLocked) return;
+    
+    // Optimistic UI Update
+    const isCurrentlySelected = selectedPhotos.includes(photoName);
+    const willBeSelected = !isCurrentlySelected;
+    
     setSelectedPhotos(prev => 
-      prev.includes(photoName) 
-        ? prev.filter(p => p !== photoName)
-        : [...prev, photoName]
+      willBeSelected
+        ? [...prev, photoName]
+        : prev.filter(p => p !== photoName)
     );
+    setSaved(false);
+
+    // Sync to Firestore immediately
+    await togglePhotoSelectionDB(id, photoName, willBeSelected);
   };
 
   const saveSelection = async () => {
-    const result1 = await Swal.fire({ text: "Apakah Anda yakin dengan pilihan ini?\n\nSetelah dikirim, foto akan langsung diproses.", showCancelButton: true, confirmButtonText: 'Ya, Kirim', cancelButtonText: 'Batal' });
-    if (!result1.isConfirmed) {
+    if (selectedPhotos.length === 0) {
+      Swal.fire('Pilih Foto', 'Anda belum memilih foto apapun.', 'info');
       return;
     }
 
-    setSaving(true);
-    const success = await updateSelectedPhotos(id, selectedPhotos, false);
-    setSaving(false);
-    if (success) {
-      setSaved(true);
-      // Construct WhatsApp URL
-      const waNumber = "6281234567890"; // In real app, this should come from project or admin settings
-      let message = `Halo, saya ${project.clientName}!\nSaya sudah selesai memilih ${selectedPhotos.length} foto untuk diedit:\n\n`;
-      [...selectedPhotos].sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).forEach((photo, idx) => {
-        message += `${idx + 1}. ${photo}\n`;
-      });
-      message += `\nMohon segera diproses. Terima kasih!`;
-      
-      const waLink = `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`;
-      
-      const result2 = await Swal.fire({ text: "Pilihan berhasil disimpan! Apakah Anda ingin mengirim konfirmasi via WhatsApp sekarang?", icon: 'success', showCancelButton: true, confirmButtonText: 'Ya, Kirim WA', cancelButtonText: 'Nanti saja' });
-      if (result2.isConfirmed) {
-        window.open(waLink, '_blank');
-      }
-    } else {
-      Swal.fire("Gagal menyimpan pilihan. Silakan coba lagi.");
+    const result1 = await Swal.fire({ title: 'Selesai Memilih?', text: "Apakah Anda yakin sudah selesai memilih foto? Jika ya, silakan konfirmasi ke fotografer.", icon: 'question', showCancelButton: true, confirmButtonText: 'Ya, Selesai', cancelButtonText: 'Belum' });
+    if (!result1.isConfirmed) {
+      return;
+    }
+    
+    setSaved(true);
+    // Construct WhatsApp URL
+    const waNumber = "6281234567890"; // In real app, this should come from project or admin settings
+    let message = `Halo, saya ${project.clientName}!\nSaya sudah selesai memilih ${selectedPhotos.length} foto untuk diedit:\n\n`;
+    [...selectedPhotos].sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).forEach((photo, idx) => {
+      message += `${idx + 1}. ${photo}\n`;
+    });
+    message += `\nMohon segera diproses. Terima kasih!`;
+    
+    const waLink = `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`;
+    
+    const result2 = await Swal.fire({ text: "Sistem sudah sinkron! Apakah Anda ingin mengirim pesan konfirmasi ke fotografer via WhatsApp sekarang?", icon: 'success', showCancelButton: true, confirmButtonText: 'Buka WhatsApp', cancelButtonText: 'Nanti saja' });
+    if (result2.isConfirmed) {
+      window.open(waLink, '_blank');
     }
   };
 
