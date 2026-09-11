@@ -145,7 +145,7 @@ export default function ClientGallery({ params }) {
         if (photo.id) {
           // fetch directly to avoid proxy timeout/bandwidth
           const directUrl = `https://www.googleapis.com/drive/v3/files/${photo.id}?alt=media&key=${process.env.NEXT_PUBLIC_FIREBASE_API_KEY}`;
-          const res = await fetch(`/api/proxy?url=${encodeURIComponent(directUrl)}`, { signal: abortControllerRef.current.signal });
+          const res = await fetch(directUrl, { signal: abortControllerRef.current.signal });
           
           if (res.ok) {
             const blob = await res.blob();
@@ -207,7 +207,7 @@ export default function ClientGallery({ params }) {
         const photo = selectedPhotoObjects[i];
         if (photo.id) {
           const directUrl = `https://www.googleapis.com/drive/v3/files/${photo.id}?alt=media&key=${process.env.NEXT_PUBLIC_FIREBASE_API_KEY}`;
-          const res = await fetch(`/api/proxy?url=${encodeURIComponent(directUrl)}`, { signal: abortControllerRef.current.signal });
+          const res = await fetch(directUrl, { signal: abortControllerRef.current.signal });
           
           if (res.ok) {
             const blob = await res.blob();
@@ -264,7 +264,7 @@ export default function ClientGallery({ params }) {
         const photo = editedPhotos[i];
         if (photo.id) {
           const directUrl = `https://www.googleapis.com/drive/v3/files/${photo.id}?alt=media&key=${process.env.NEXT_PUBLIC_FIREBASE_API_KEY}`;
-          const res = await fetch(`/api/proxy?url=${encodeURIComponent(directUrl)}`, { signal: abortControllerRef.current.signal });
+          const res = await fetch(directUrl, { signal: abortControllerRef.current.signal });
           
           if (res.ok) {
             const blob = await res.blob();
