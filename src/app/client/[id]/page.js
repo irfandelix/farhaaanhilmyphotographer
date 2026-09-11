@@ -116,60 +116,13 @@ export default function ClientGallery({ params }) {
     }
   };
 
-  const handleDownloadRawZip = async () => {
-    if (!photos || photos.length === 0) return;
-    
-    setDownloadingZip(true);
-    setDownloadProgress(0);
-    setDownloadState('downloading');
-    cancelDownloadRef.current = false;
-    pauseDownloadRef.current = false;
-    
-    try {
-      let successCount = 0;
-      const totalFilesToDownload = photos.length;
-      
-      for (let i = 0; i < totalFilesToDownload; i++) {
-        if (cancelDownloadRef.current) {
-          Swal.fire('Info', 'Download dibatalkan.', 'info');
-          break;
-        }
-        while (pauseDownloadRef.current) {
-          await new Promise(r => setTimeout(r, 500));
-          if (cancelDownloadRef.current) break;
-        }
-        if (cancelDownloadRef.current) break;
-
-        const photo = photos[i];
-        if (photo.id) {
-          const directUrl = `https://www.googleapis.com/drive/v3/files/${photo.id}?alt=media&key=${process.env.NEXT_PUBLIC_FIREBASE_API_KEY}`;
-          
-          const a = document.createElement('a');
-          a.href = directUrl;
-          a.target = '_blank';
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          
-          successCount++;
-          setDownloadProgress(Math.round(((i + 1) / totalFilesToDownload) * 100));
-          
-          // delay to prevent browser blocking multi-downloads
-          await new Promise(r => setTimeout(r, 800));
-        }
-      }
-      
-      if (successCount > 0 && !cancelDownloadRef.current) {
-        Swal.fire('Selesai', `${successCount} foto mulai di-download secara langsung.`, 'success');
-      }
-      
-    } catch (error) {
-      console.error("Download Error:", error);
-      Swal.fire('Terjadi kesalahan saat memulai download: ' + error.message);
+  const handleDownloadRawZip = () => {
+    const currentSession = sessions.find(s => s.id === activeSessionId);
+    if (currentSession && currentSession.folderId) {
+      window.open(`https://drive.google.com/drive/folders/${currentSession.folderId}`, '_blank');
+    } else {
+      Swal.fire('Error', 'Folder Google Drive tidak ditemukan.', 'error');
     }
-    
-    setDownloadingZip(false);
-    setDownloadState('idle');
   };
 
   const handleDownloadSelectedRawZip = async () => {
@@ -232,60 +185,12 @@ export default function ClientGallery({ params }) {
     setDownloadState('idle');
   };
 
-  const handleDownloadZip = async () => {
-    if (!editedPhotos || editedPhotos.length === 0) return;
-    
-    setDownloadingZip(true);
-    setDownloadProgress(0);
-    setDownloadState('downloading');
-    cancelDownloadRef.current = false;
-    pauseDownloadRef.current = false;
-    
-    try {
-      let successCount = 0;
-      const total = editedPhotos.length;
-      
-      for (let i = 0; i < total; i++) {
-        if (cancelDownloadRef.current) {
-          Swal.fire('Info', 'Download dibatalkan.', 'info');
-          break;
-        }
-        while (pauseDownloadRef.current) {
-          await new Promise(r => setTimeout(r, 500));
-          if (cancelDownloadRef.current) break;
-        }
-        if (cancelDownloadRef.current) break;
-
-        const photo = editedPhotos[i];
-        if (photo.id) {
-          const directUrl = `https://www.googleapis.com/drive/v3/files/${photo.id}?alt=media&key=${process.env.NEXT_PUBLIC_FIREBASE_API_KEY}`;
-          
-          const a = document.createElement('a');
-          a.href = directUrl;
-          a.target = '_blank';
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          
-          successCount++;
-          setDownloadProgress(Math.round(((i + 1) / total) * 100));
-          
-          // delay to prevent browser blocking multi-downloads
-          await new Promise(r => setTimeout(r, 800));
-        }
-      }
-      
-      if (successCount > 0 && !cancelDownloadRef.current) {
-        Swal.fire('Selesai', `${successCount} foto mulai di-download secara langsung.`, 'success');
-      }
-      
-    } catch (error) {
-      console.error("Download Error:", error);
-      Swal.fire('Terjadi kesalahan saat memulai download: ' + error.message);
+  const handleDownloadZip = () => {
+    if (project && project.gdriveEditedFolderId) {
+      window.open(`https://drive.google.com/drive/folders/${project.gdriveEditedFolderId}`, '_blank');
+    } else {
+      Swal.fire('Error', 'Folder Google Drive untuk foto edit tidak ditemukan.', 'error');
     }
-    
-    setDownloadingZip(false);
-    setDownloadState('idle');
   };
 
   const toggleSelect = async (photoName) => {
@@ -468,7 +373,7 @@ export default function ClientGallery({ params }) {
                       style={{ padding: '6px 14px', fontSize: '0.9rem', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '8px', border: 'none', color: 'white', cursor: 'pointer', fontWeight: '600' }}
                       title="Hanya tersedia untuk klien yang sudah Lunas"
                     >
-                      {downloadingZip ? '⏳ Memproses Download...' : '📥 Download Semua Original'}
+                      {downloadingZip ? '⏳ Memproses Download...' : '📂 Buka Folder Original'}
                     </button>
 
                         {downloadingZip && (
@@ -775,7 +680,7 @@ export default function ClientGallery({ params }) {
                 className="btn-primary" 
                 style={{ padding: '6px 14px', fontSize: '0.9rem', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '8px', border: 'none', color: 'white', cursor: 'pointer', fontWeight: '600' }}
               >
-                {downloadingZip ? '⏳ Memproses Download...' : '📥 Download Semua Foto Edit'}
+                {downloadingZip ? '⏳ Memproses Download...' : '📂 Buka Folder Foto Edit'}
               </button>
 
                         {downloadingZip && (
