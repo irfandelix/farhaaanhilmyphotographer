@@ -125,74 +125,6 @@ export default function ClientGallery({ params }) {
     }
   };
 
-  const handleDownloadSelectedRawZip = async () => {
-    const selectedPhotoObjects = photos.filter(p => selectedPhotos.includes(p.name));
-    if (selectedPhotoObjects.length === 0) {
-      Swal.fire('Pilih Foto', 'Anda belum memilih foto apapun.', 'info');
-      return;
-    }
-    
-    setDownloadingZip(true);
-    setDownloadProgress(0);
-    setDownloadState('downloading');
-    cancelDownloadRef.current = false;
-    pauseDownloadRef.current = false;
-    abortControllerRef.current = new AbortController();
-    
-    try {
-      const zip = new JSZip();
-      let successCount = 0;
-      const total = selectedPhotoObjects.length;
-      
-      const currentSession = sessions.find(s => s.id === activeSessionId);
-      const sessionName = currentSession ? currentSession.name : 'Sesi';
-      
-      for (let i = 0; i < total; i++) {
-        if (cancelDownloadRef.current) throw new Error("Download dibatalkan oleh pengguna.");
-        while (pauseDownloadRef.current) {
-          await new Promise(r => setTimeout(r, 500));
-          if (cancelDownloadRef.current) throw new Error("Download dibatalkan oleh pengguna.");
-        }
-
-        const photo = selectedPhotoObjects[i];
-        if (photo.id) {
-          const directUrl = `https://www.googleapis.com/drive/v3/files/${photo.id}?alt=media&key=${process.env.NEXT_PUBLIC_FIREBASE_API_KEY}`;
-          
-          // Use proxy to bypass CORS for JSZip
-          const res = await fetch(`/api/proxy?url=${encodeURIComponent(directUrl)}`, { signal: abortControllerRef.current.signal });
-          
-          if (res.ok) {
-            const blob = await res.blob();
-            zip.file(photo.name, blob);
-            successCount++;
-          } else {
-            console.warn(`Failed to fetch ${photo.name}`);
-          }
-          
-          setDownloadProgress(Math.round(((i + 1) / total) * 100));
-        }
-      }
-      
-      if (successCount === 0) throw new Error("Tidak ada foto original yang berhasil diunduh.");
-      
-      setDownloadState('packing');
-      setDownloadProgress(100); 
-      const content = await zip.generateAsync({ type: 'blob' });
-      saveAs(content, `${project.clientName} - Original Pilihan ${sessionName}.zip`);
-      
-    } catch (error) {
-      if (error.name === 'AbortError' || (error.message && error.message.includes('dibatalkan'))) {
-         Swal.fire('Info', 'Download ZIP dibatalkan.', 'info');
-      } else {
-         console.error("Download Selected Raw ZIP Error:", error);
-         Swal.fire('Terjadi kesalahan saat mengunduh ZIP: ' + error.message);
-      }
-    }
-    
-    setDownloadingZip(false);
-    setDownloadState('idle');
-  };
-
   const handleDownloadZip = () => {
     if (project && project.gdriveEditedFolderId) {
       window.open(`https://drive.google.com/drive/folders/${project.gdriveEditedFolderId}`, '_blank');
@@ -426,57 +358,6 @@ export default function ClientGallery({ params }) {
 
 </div>
                   )}
-                  {project.paymentStatus === 'Lunas' && sessions.length > 0 && viewMode === 'selected' && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-<button 
-                      onClick={handleDownloadSelectedRawZip}
-                      disabled={downloadingZip}
-                      className="btn-primary" 
-                      style={{ padding: '6px 14px', fontSize: '0.9rem', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '8px', border: 'none', color: 'white', cursor: 'pointer', fontWeight: '600' }}
-                      title="Hanya tersedia untuk klien yang sudah Lunas"
-                    >
-                      {downloadingZip ? '⏳ Memproses ZIP...' : '📥 Download Pilihan Original (ZIP)'}
-                    </button>
-
-                        {downloadingZip && (
-                           <div style={{ display: 'flex', alignItems: 'center', background: '#f3f4f6', borderRadius: '8px', padding: '6px 12px', gap: '12px' }}>
-                             <div style={{ display: 'flex', flexDirection: 'column', minWidth: '130px' }}>
-                               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '0.8rem' }}>
-                                  <span style={{ fontWeight: '600', color: 'black' }}>{downloadProgress}% {downloadState === 'packing' ? '(Mengemas)' : ''}</span>
-                               </div>
-                               <div style={{ width: '100%', backgroundColor: '#e5e7eb', height: '6px', borderRadius: '3px', overflow: 'hidden' }}>
-                                 <div style={{ width: `${downloadProgress}%`, backgroundColor: downloadState === 'paused' ? '#f59e0b' : '#3b82f6', height: '100%', transition: 'width 0.3s' }}></div>
-                               </div>
-                             </div>
-                             <div style={{ display: 'flex', gap: '4px' }}>
-                                <button 
-                                  onClick={(e) => { 
-                                    e.stopPropagation(); 
-                                    if (downloadState === 'paused') {
-                                      pauseDownloadRef.current = false;
-                                      setDownloadState('downloading');
-                                    } else {
-                                      pauseDownloadRef.current = true;
-                                      setDownloadState('paused');
-                                    }
-                                  }} 
-                                  style={{ padding: '4px 8px', backgroundColor: downloadState === 'paused' ? '#10b981' : '#f59e0b', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: '500', fontSize: '0.8rem' }}
-                                >
-                                  {downloadState === 'paused' ? '▶ Lanjut' : '⏸ Jeda'}
-                                </button>
-                                <button 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    cancelDownloadRef.current = true;
-                                    if (abortControllerRef.current) abortControllerRef.current.abort();
-                                  }} 
-                                  style={{ padding: '4px 8px', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: '500', fontSize: '0.8rem' }}
-                                >
-                                  ⏹ Batal
-                                </button>
-                             </div>
-                           </div>
-                        )}
 
 </div>
                   )}
