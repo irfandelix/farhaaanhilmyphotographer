@@ -416,50 +416,6 @@ export default function AdminClientDetail({ params }) {
     }
   };
 
-  const handleDownloadZip = async () => {
-    setDownloadingZip(true);
-    setDownloadProgress(0);
-    
-    try {
-      const JSZip = (await import('jszip')).default;
-      const { saveAs } = await import('file-saver');
-      
-      const zip = new JSZip();
-      const total = project.selectedPhotos.length;
-      let successCount = 0;
-      
-      for (let i = 0; i < total; i++) {
-        const photoName = project.selectedPhotos[i];
-        const photoObj = photos.find(p => p.name === photoName);
-        
-        if (photoObj) {
-          const driveUrl = `https://drive.google.com/uc?export=download&id=${photoObj.id}`;
-          const res = await fetch(`/api/proxy?url=${encodeURIComponent(driveUrl)}`);
-          
-          if (res.ok) {
-            const blob = await res.blob();
-            zip.file(photoName, blob);
-            successCount++;
-          }
-          
-          setDownloadProgress(Math.round(((i + 1) / total) * 100));
-        }
-      }
-      
-      if (successCount === 0) throw new Error("Tidak ada foto yang berhasil diunduh.");
-      
-      setDownloadProgress(100); 
-      const content = await zip.generateAsync({ type: 'blob' });
-      saveAs(content, `${project.clientName} - Foto Terpilih.zip`);
-      
-    } catch (error) {
-      console.error("Download ZIP Error:", error);
-      Swal.fire('Terjadi kesalahan saat mengunduh ZIP. Pastikan koneksi stabil.');
-    }
-    
-    setDownloadingZip(false);
-  };
-
   const handleDeleteProject = async () => {
     const result = await Swal.fire({ title: 'PERINGATAN', text: `Apakah Anda yakin ingin menghapus project "${project.clientName}" secara permanen? Tindakan ini tidak dapat dibatalkan!`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal', confirmButtonColor: '#d33' });
     if (result.isConfirmed) {
@@ -961,22 +917,6 @@ export default function AdminClientDetail({ params }) {
             
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               {project.selectedPhotos && project.selectedPhotos.length > 0 && photos.length > 0 && (
-                <button 
-                  onClick={handleDownloadZip}
-                  disabled={downloadingZip}
-                  className="btn-primary" 
-                  style={{ 
-                    padding: '10px 20px', 
-                    fontSize: '0.95rem', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '8px',
-                    backgroundColor: downloadingZip ? '#9ca3af' : 'var(--primary)',
-                    boxShadow: downloadingZip ? 'none' : '0 4px 12px rgba(37,99,235,0.3)'
-                  }}
-                >
-                  {downloadingZip ? `Mempersiapkan ZIP... ${downloadProgress}%` : '📥 Download Semua (ZIP)'}
-                </button>
               )}
             </div>
           </div>
