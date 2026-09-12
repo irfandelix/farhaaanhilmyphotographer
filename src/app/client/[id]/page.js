@@ -137,48 +137,56 @@ export default function ClientGallery({ params }) {
     setDownloadState('downloading');
     cancelDownloadRef.current = false;
     pauseDownloadRef.current = false;
+    abortControllerRef.current = new AbortController();
     
     try {
+      const zip = new JSZip();
       let successCount = 0;
       const total = selectedPhotoObjects.length;
       
+      const currentSession = sessions.find(s => s.id === activeSessionId);
+      const sessionName = currentSession ? currentSession.name : 'Sesi';
+      
       for (let i = 0; i < total; i++) {
-        if (cancelDownloadRef.current) {
-          Swal.fire('Info', 'Download dibatalkan.', 'info');
-          break;
-        }
+        if (cancelDownloadRef.current) throw new Error("Download dibatalkan oleh pengguna.");
         while (pauseDownloadRef.current) {
           await new Promise(r => setTimeout(r, 500));
-          if (cancelDownloadRef.current) break;
+          if (cancelDownloadRef.current) throw new Error("Download dibatalkan oleh pengguna.");
         }
-        if (cancelDownloadRef.current) break;
 
         const photo = selectedPhotoObjects[i];
         if (photo.id) {
           const directUrl = `https://www.googleapis.com/drive/v3/files/${photo.id}?alt=media&key=${process.env.NEXT_PUBLIC_FIREBASE_API_KEY}`;
           
-          const a = document.createElement('a');
-          a.href = directUrl;
-          a.target = '_blank';
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
+          // Use proxy to bypass CORS for JSZip
+          const res = await fetch(`/api/proxy?url=${encodeURIComponent(directUrl)}`, { signal: abortControllerRef.current.signal });
           
-          successCount++;
+          if (res.ok) {
+            const blob = await res.blob();
+            zip.file(photo.name, blob);
+            successCount++;
+          } else {
+            console.warn(`Failed to fetch ${photo.name}`);
+          }
+          
           setDownloadProgress(Math.round(((i + 1) / total) * 100));
-          
-          // delay to prevent browser blocking multi-downloads
-          await new Promise(r => setTimeout(r, 800));
         }
       }
       
-      if (successCount > 0 && !cancelDownloadRef.current) {
-        Swal.fire('Selesai', `${successCount} foto mulai di-download secara langsung.`, 'success');
-      }
+      if (successCount === 0) throw new Error("Tidak ada foto original yang berhasil diunduh.");
+      
+      setDownloadState('packing');
+      setDownloadProgress(100); 
+      const content = await zip.generateAsync({ type: 'blob' });
+      saveAs(content, `${project.clientName} - Original Pilihan ${sessionName}.zip`);
       
     } catch (error) {
-      console.error("Download Error:", error);
-      Swal.fire('Terjadi kesalahan saat memulai download: ' + error.message);
+      if (error.name === 'AbortError' || (error.message && error.message.includes('dibatalkan'))) {
+         Swal.fire('Info', 'Download ZIP dibatalkan.', 'info');
+      } else {
+         console.error("Download Selected Raw ZIP Error:", error);
+         Swal.fire('Terjadi kesalahan saat mengunduh ZIP: ' + error.message);
+      }
     }
     
     setDownloadingZip(false);
@@ -373,7 +381,7 @@ export default function ClientGallery({ params }) {
                       style={{ padding: '6px 14px', fontSize: '0.9rem', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '8px', border: 'none', color: 'white', cursor: 'pointer', fontWeight: '600' }}
                       title="Hanya tersedia untuk klien yang sudah Lunas"
                     >
-                      {downloadingZip ? '⏳ Memproses Download...' : '📂 Buka Folder Original'}
+                      {downloadingZip ? '⏳ Memproses ZIP...' : '📂 Buka Folder Original'}
                     </button>
 
                         {downloadingZip && (
@@ -427,7 +435,7 @@ export default function ClientGallery({ params }) {
                       style={{ padding: '6px 14px', fontSize: '0.9rem', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '8px', border: 'none', color: 'white', cursor: 'pointer', fontWeight: '600' }}
                       title="Hanya tersedia untuk klien yang sudah Lunas"
                     >
-                      {downloadingZip ? '⏳ Memproses Download...' : '📥 Download Pilihan Original'}
+                      {downloadingZip ? '⏳ Memproses ZIP...' : '📥 Download Pilihan Original (ZIP)'}
                     </button>
 
                         {downloadingZip && (
@@ -680,7 +688,7 @@ export default function ClientGallery({ params }) {
                 className="btn-primary" 
                 style={{ padding: '6px 14px', fontSize: '0.9rem', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '8px', border: 'none', color: 'white', cursor: 'pointer', fontWeight: '600' }}
               >
-                {downloadingZip ? '⏳ Memproses Download...' : '📂 Buka Folder Foto Edit'}
+                {downloadingZip ? '⏳ Memproses ZIP...' : '📂 Buka Folder Foto Edit'}
               </button>
 
                         {downloadingZip && (
