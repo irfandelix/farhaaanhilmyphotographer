@@ -916,8 +916,6 @@ export default function AdminClientDetail({ params }) {
             </h2>
             
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              {project.selectedPhotos && project.selectedPhotos.length > 0 && photos.length > 0 && (
-              )}
             </div>
           </div>
           {(!project.selectedPhotos || project.selectedPhotos.length === 0) ? (

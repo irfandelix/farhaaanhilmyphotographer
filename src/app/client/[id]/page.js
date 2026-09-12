@@ -358,9 +358,6 @@ export default function ClientGallery({ params }) {
 
 </div>
                   )}
-
-</div>
-                  )}
                 </div>
 
                 {/* Right Controls: Filters */}
