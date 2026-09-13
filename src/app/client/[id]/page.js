@@ -153,11 +153,11 @@ export default function ClientGallery({ params }) {
 
   const saveSelection = async () => {
     if (selectedPhotos.length === 0) {
-      Swal.fire('Pilih Foto', 'Anda belum memilih foto apapun.', 'info');
+      Swal.fire('Select Photo', "You haven't selected any photos yet.", 'info');
       return;
     }
 
-    const result1 = await Swal.fire({ title: 'Selesai Memilih?', text: "Apakah Anda yakin sudah selesai memilih foto? Jika ya, silakan konfirmasi ke fotografer.", icon: 'question', showCancelButton: true, confirmButtonText: 'Ya, Selesai', cancelButtonText: 'Belum' });
+    const result1 = await Swal.fire({ title: 'Finish Selection?', text: "Are you sure you have finished selecting photos? If so, please confirm with the photographer.", icon: 'question', showCancelButton: true, confirmButtonText: 'Yes, Finish', cancelButtonText: 'Not yet' });
     if (!result1.isConfirmed) {
       return;
     }
@@ -165,15 +165,15 @@ export default function ClientGallery({ params }) {
     setSaved(true);
     // Construct WhatsApp URL
     const waNumber = "6281234567890"; // In real app, this should come from project or admin settings
-    let message = `Halo, saya ${project.clientName}!\nSaya sudah selesai memilih ${selectedPhotos.length} foto untuk diedit:\n\n`;
+    let message = `Hello, I am ${project.clientName}!\nI have finished selecting ${selectedPhotos.length} photos to be edited:\n\n`;
     [...selectedPhotos].sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).forEach((photo, idx) => {
       message += `${idx + 1}. ${photo}\n`;
     });
-    message += `\nMohon segera diproses. Terima kasih!`;
+    message += `\nPlease process them soon. Thank you!`;
     
     const waLink = `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`;
     
-    const result2 = await Swal.fire({ text: "Sistem sudah sinkron! Apakah Anda ingin mengirim pesan konfirmasi ke fotografer via WhatsApp sekarang?", icon: 'success', showCancelButton: true, confirmButtonText: 'Buka WhatsApp', cancelButtonText: 'Nanti saja' });
+    const result2 = await Swal.fire({ text: "System is synced! Do you want to send a confirmation message to the photographer via WhatsApp now?", icon: 'success', showCancelButton: true, confirmButtonText: 'Open WhatsApp', cancelButtonText: 'Later' });
     if (result2.isConfirmed) {
       window.open(waLink, '_blank');
     }
@@ -289,7 +289,7 @@ export default function ClientGallery({ params }) {
                         borderColor: viewMode === 'all' ? '#111827' : '#d1d5db'
                       }}
                     >
-                      Semua Foto ({photos.length})
+                      All Photos ({photos.length})
                     </button>
                     <button 
                       onClick={() => setViewMode('selected')}
@@ -300,7 +300,7 @@ export default function ClientGallery({ params }) {
                         borderColor: viewMode === 'selected' ? '#111827' : '#d1d5db'
                       }}
                     >
-                      Foto Terpilih ({selectedPhotos.length})
+                      Selected Photos ({selectedPhotos.length})
                     </button>
                   </div>
                   
@@ -311,9 +311,9 @@ export default function ClientGallery({ params }) {
                       disabled={downloadingZip}
                       className="btn-primary" 
                       style={{ padding: '6px 14px', fontSize: '0.9rem', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '8px', border: 'none', color: 'white', cursor: 'pointer', fontWeight: '600' }}
-                      title="Hanya tersedia untuk klien yang sudah Lunas"
+                      title="Only available for fully paid clients"
                     >
-                      {downloadingZip ? '⏳ Memproses ZIP...' : '📂 Buka Folder Original'}
+                      {downloadingZip ? '⏳ Processing...' : '📂 Open Original Photo'}
                     </button>
 
                         {downloadingZip && (
@@ -417,18 +417,18 @@ export default function ClientGallery({ params }) {
               
               {viewMode === 'selected' && selectedPhotoObjects.length === 0 ? (
                 <div style={{ padding: '60px 20px', textAlign: 'center', backgroundColor: '#f9fafb', borderRadius: '12px', border: '1px dashed #d1d5db' }}>
-                  <p style={{ color: '#6b7280', fontSize: '1.1rem', marginBottom: '8px' }}>Belum ada foto yang dipilih.</p>
-                  <p style={{ color: '#9ca3af', fontSize: '0.9rem' }}>Silakan kembali ke &quot;Semua Foto&quot; dan klik tanda centang pada foto yang Anda inginkan.</p>
+                  <p style={{ color: '#6b7280', fontSize: '1.1rem', marginBottom: '8px' }}>No photos selected yet.</p>
+                  <p style={{ color: '#9ca3af', fontSize: '0.9rem' }}>Please return to &quot;All Photos&quot; and check the photos you want.</p>
                 </div>
               ) : viewFormat === 'list' ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: 'auto 60px 1fr 1fr 1fr 1fr', gap: '16px', padding: '12px 16px', backgroundColor: '#f3f4f6', borderRadius: '8px', fontWeight: '600', fontSize: '0.85rem', color: '#4b5563' }}>
                     <div style={{ width: '24px' }}></div>
-                    <div>Foto</div>
-                    <div>Nama File</div>
-                    <div>Resolusi</div>
-                    <div>Ukuran</div>
-                    <div>Tanggal Diunggah</div>
+                    <div>Photo</div>
+                    <div>File Name</div>
+                    <div>Resolution</div>
+                    <div>Size</div>
+                    <div>Date Uploaded</div>
                   </div>
                   {(viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos).map((photo, index) => {
                     const isSelected = selectedPhotos.includes(photo.name);
@@ -566,7 +566,7 @@ export default function ClientGallery({ params }) {
                 className="btn-primary" 
                 style={{ padding: '6px 14px', fontSize: '0.9rem', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '8px', border: 'none', color: 'white', cursor: 'pointer', fontWeight: '600' }}
               >
-                {downloadingZip ? '⏳ Memproses ZIP...' : '📂 Buka Folder Foto Edit'}
+                {downloadingZip ? '⏳ Processing...' : '📂 Open Edited Photo'}
               </button>
 
                         {downloadingZip && (
@@ -645,12 +645,12 @@ export default function ClientGallery({ params }) {
           {viewFormat === 'list' ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr 1fr 1fr 1fr 120px', gap: '16px', padding: '12px 16px', backgroundColor: '#f3f4f6', borderRadius: '8px', fontWeight: '600', fontSize: '0.85rem', color: '#4b5563' }}>
-                <div>Foto</div>
-                <div>Nama File</div>
-                <div>Resolusi</div>
-                <div>Ukuran</div>
-                <div>Tanggal Diunggah</div>
-                <div style={{ textAlign: 'center' }}>Aksi</div>
+                <div>Photo</div>
+                <div>File Name</div>
+                <div>Resolution</div>
+                <div>Size</div>
+                <div>Date Uploaded</div>
+                <div style={{ textAlign: 'center' }}>Action</div>
               </div>
               {sortedEditedPhotos.map((photo, index) => {
                 const fileSizeBytes = parseInt(photo.size || '0');
@@ -806,7 +806,7 @@ export default function ClientGallery({ params }) {
         zIndex: 100
       }}>
         <div style={{ fontWeight: '600', fontSize: '0.95rem' }}>
-          Terpilih: <span style={{ color: 'var(--primary)', fontSize: '1.2rem' }}>{selectedPhotos.length}</span>
+          Selected: <span style={{ color: 'var(--primary)', fontSize: '1.2rem' }}>{selectedPhotos.length}</span>
         </div>
         <button 
           onClick={saveSelection} 
@@ -814,7 +814,7 @@ export default function ClientGallery({ params }) {
           className="btn-primary"
           style={{ padding: '12px 20px', fontSize: '0.95rem', opacity: (saving || selectedPhotos.length === 0) ? 0.7 : 1 }}
         >
-          {saving ? 'Menyimpan...' : saved ? 'Tersimpan ✓' : 'Kirim Pilihan'}
+          {saving ? 'Saving...' : saved ? 'Saved ✓' : 'Send Selection'}
         </button>
       </div>
       )}
@@ -888,7 +888,7 @@ export default function ClientGallery({ params }) {
                             textAlign: 'center'
                           }}
                         >
-                          {isSelected ? 'Terpilih (Batal)' : 'Pilih Foto'}
+                          {isSelected ? 'Selected (Batal)' : 'Select Photo'}
                         </button>
                       )}
                       
