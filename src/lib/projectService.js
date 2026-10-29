@@ -64,6 +64,12 @@ export async function createProject(data) {
       shootTime: data.shootTime || "",
       paymentAmount: calculatedPaymentAmount,
       dpAmount: Number(data.dpAmount || 0),
+      dpDate: data.dpDate || "",
+      lunasAmount: Number(data.lunasAmount || 0),
+      lunasDate: data.lunasDate || "",
+      whatsapp: data.whatsapp || "",
+      shootTitle: data.shootTitle || "",
+      additionalSchedules: data.additionalSchedules || [],
       paymentStatus: data.paymentStatus || "Belum Bayar",
       gdriveLink: data.gdriveLink || "",
       gdriveFolderId: folderId,
@@ -136,6 +142,12 @@ export const updateProjectFinancials = async (id, data) => {
     
     const updatePayload = {
       dpAmount: Number(data.dpAmount || 0),
+      dpDate: data.dpDate || "",
+      lunasAmount: Number(data.lunasAmount || 0),
+      lunasDate: data.lunasDate || "",
+      whatsapp: data.whatsapp || "",
+      shootTitle: data.shootTitle || "",
+      additionalSchedules: data.additionalSchedules || [],
       updatedAt: serverTimestamp()
     };
 
@@ -150,6 +162,7 @@ export const updateProjectFinancials = async (id, data) => {
     if (data.description !== undefined) updatePayload.description = data.description;
     if (data.additionalSchedules !== undefined) updatePayload.additionalSchedules = data.additionalSchedules;
     if (data.shootTitle !== undefined) updatePayload.shootTitle = data.shootTitle;
+    if (data.paymentStatus !== undefined) updatePayload.paymentStatus = data.paymentStatus;
 
     if (data.items) {
       updatePayload.items = data.items;

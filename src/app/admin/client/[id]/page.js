@@ -44,6 +44,7 @@ export default function AdminClientDetail({ params }) {
 
   const [editLunasAmount, setEditLunasAmount] = useState('');
   const [editLunasDate, setEditLunasDate] = useState('');
+  const [editPaymentScheme, setEditPaymentScheme] = useState('dp');
 
   useEffect(() => {
     async function fetchProject() {
@@ -61,6 +62,7 @@ export default function AdminClientDetail({ params }) {
         setEditWhatsapp(data.whatsapp || '');
         setEditLunasAmount(data.lunasAmount || '');
         setEditLunasDate(data.lunasDate || '');
+        setEditPaymentScheme((!data.dpAmount && data.paymentStatus === 'Lunas') ? 'lunas' : 'dp');
         let initDate = '';
         setEditShootTitle(data.shootTitle || '');
 
@@ -290,19 +292,27 @@ export default function AdminClientDetail({ params }) {
       };
     }).filter(Boolean);
 
+    const calcTotal = editPhotoType === 'Foto Produk'
+      ? editItems.filter(item => item.name && item.price).reduce((sum, item) => sum + (Number(item.qty) * Number(item.price)), 0)
+      : Number(editPaymentAmount || 0);
+
+    const finalDpAmount = editPaymentScheme === 'lunas' ? 0 : editDpAmount;
+    const finalDpDate = editPaymentScheme === 'lunas' ? '' : editDpDate;
+    const finalLunasAmount = editPaymentScheme === 'lunas' ? (editLunasAmount || calcTotal) : editLunasAmount;
+
     let payload = { 
-      dpAmount: editDpAmount,
-      dpDate: editDpDate, 
+      dpAmount: finalDpAmount,
+      dpDate: finalDpDate, 
       clientName: editClientName,
       photoType: editPhotoType,
       whatsapp: editWhatsapp,
-      lunasAmount: editLunasAmount,
+      lunasAmount: finalLunasAmount,
       lunasDate: editLunasDate,
       shootTitle: editShootTitle,
-      shootTitle: editShootTitle,
-          shootDate: formattedDate,
-          shootTime: formattedTime,
-      additionalSchedules: formattedAdditionalSchedules
+      shootDate: formattedDate,
+      shootTime: formattedTime,
+      additionalSchedules: formattedAdditionalSchedules,
+      ...(editPaymentScheme === 'lunas' ? { paymentStatus: 'Lunas' } : {})
     };
     
     if (editPhotoType === 'Foto Produk') {
@@ -324,10 +334,10 @@ export default function AdminClientDetail({ params }) {
           photoType: editPhotoType,
           items: validItems,
           paymentAmount: validItems.reduce((sum, item) => sum + (Number(item.qty) * Number(item.price)), 0),
-          dpAmount: Number(editDpAmount),
-          dpDate: editDpDate,
-          dpDate: editDpDate,
-          lunasAmount: Number(editLunasAmount),
+          dpAmount: Number(finalDpAmount),
+          dpDate: finalDpDate,
+          lunasAmount: Number(finalLunasAmount),
+          ...(editPaymentScheme === 'lunas' ? { paymentStatus: 'Lunas' } : {}),
           lunasDate: editLunasDate,
           shootTitle: editShootTitle,
       shootTitle: editShootTitle,
@@ -352,9 +362,10 @@ export default function AdminClientDetail({ params }) {
           photoType: editPhotoType,
           paymentAmount: Number(editPaymentAmount),
           description: editDescription,
-          dpAmount: Number(editDpAmount),
-          dpDate: editDpDate,
-          lunasAmount: Number(editLunasAmount),
+          dpAmount: Number(finalDpAmount),
+          dpDate: finalDpDate,
+          lunasAmount: Number(finalLunasAmount),
+          ...(editPaymentScheme === 'lunas' ? { paymentStatus: 'Lunas' } : {}),
           lunasDate: editLunasDate,
           shootTitle: editShootTitle,
       shootTitle: editShootTitle,
@@ -373,6 +384,7 @@ export default function AdminClientDetail({ params }) {
           whatsapp: editWhatsapp
         });
       }
+      if (editPaymentScheme === 'lunas') { setStatus('Lunas'); setEditDpAmount(''); setEditDpDate(''); setEditLunasAmount(String(finalLunasAmount)); }
       setIsEditingFinance(false);
     } else {
       Swal.fire("Gagal memperbarui info project.");
@@ -545,26 +557,98 @@ export default function AdminClientDetail({ params }) {
                 )}
                 
                 <div style={{ marginTop: '12px' }}>
-                  <label style={{ fontSize: '0.85rem', color: '#4b5563', display: 'block', marginBottom: '4px' }}>Uang Muka / DP (Rp)</label>
-                  <input 
-                    type="text" 
-                    name="dpAmount"
-                    className="input-field" 
-                    value={editDpAmount ? Number(editDpAmount).toLocaleString('id-ID') : ''}
-                    onChange={handleFinanceChange}
-                    style={{ padding: '8px' }}
-                  />
+                  <label style={{ fontSize: '0.85rem', color: '#4b5563', display: 'block', marginBottom: '6px' }}>Apakah melakukan DP atau langsung Lunas?</label>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <div
+                      onClick={() => setEditPaymentScheme('dp')}
+                      style={{
+                        flex: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '10px 12px',
+                        borderRadius: '8px',
+                        border: editPaymentScheme === 'dp' ? '2px solid #2563eb' : '1px solid #d1d5db',
+                        backgroundColor: editPaymentScheme === 'dp' ? '#eff6ff' : '#ffffff',
+                        cursor: 'pointer',
+                        fontSize: '0.85rem',
+                        fontWeight: editPaymentScheme === 'dp' ? '600' : '500',
+                        color: editPaymentScheme === 'dp' ? '#1d4ed8' : '#374151',
+                        userSelect: 'none'
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={editPaymentScheme === 'dp'}
+                        readOnly
+                        style={{ width: '16px', height: '16px', accentColor: '#2563eb', pointerEvents: 'none' }}
+                      />
+                      <span>Melakukan DP</span>
+                    </div>
+
+                    <div
+                      onClick={() => {
+                        setEditPaymentScheme('lunas');
+                        setEditDpAmount('');
+                        setEditDpDate('');
+                        const totalVal = editPhotoType === 'Foto Produk'
+                          ? editItems.filter(item => item.name && item.price).reduce((sum, item) => sum + (Number(item.qty) * Number(item.price)), 0)
+                          : editPaymentAmount;
+                        if (totalVal) setEditLunasAmount(String(totalVal));
+                        setStatus('Lunas');
+                      }}
+                      style={{
+                        flex: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '10px 12px',
+                        borderRadius: '8px',
+                        border: editPaymentScheme === 'lunas' ? '2px solid #059669' : '1px solid #d1d5db',
+                        backgroundColor: editPaymentScheme === 'lunas' ? '#ecfdf5' : '#ffffff',
+                        cursor: 'pointer',
+                        fontSize: '0.85rem',
+                        fontWeight: editPaymentScheme === 'lunas' ? '600' : '500',
+                        color: editPaymentScheme === 'lunas' ? '#047857' : '#374151',
+                        userSelect: 'none'
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={editPaymentScheme === 'lunas'}
+                        readOnly
+                        style={{ width: '16px', height: '16px', accentColor: '#059669', pointerEvents: 'none' }}
+                      />
+                      <span>Langsung Lunas</span>
+                    </div>
+                  </div>
                 </div>
 
-                  <div style={{ marginTop: '8px' }}>
-                    <label style={{ fontSize: '0.85rem', color: '#4b5563', display: 'block', marginBottom: '4px' }}>Tanggal Pembayaran DP</label>
-                    <CustomDatePicker 
-                      className="input-field" 
-                      value={editDpDate}
-                      onChange={(e) => setEditDpDate(e.target.value)}
-                      style={{ padding: '8px', width: '100%' }}
-                    />
-                  </div>
+                {editPaymentScheme === 'dp' && (
+                  <>
+                    <div style={{ marginTop: '12px' }}>
+                      <label style={{ fontSize: '0.85rem', color: '#4b5563', display: 'block', marginBottom: '4px' }}>Uang Muka / DP (Rp)</label>
+                      <input 
+                        type="text" 
+                        name="dpAmount"
+                        className="input-field" 
+                        value={editDpAmount ? Number(editDpAmount).toLocaleString('id-ID') : ''}
+                        onChange={handleFinanceChange}
+                        style={{ padding: '8px' }}
+                      />
+                    </div>
+
+                    <div style={{ marginTop: '8px' }}>
+                      <label style={{ fontSize: '0.85rem', color: '#4b5563', display: 'block', marginBottom: '4px' }}>Tanggal Pembayaran DP</label>
+                      <CustomDatePicker 
+                        className="input-field" 
+                        value={editDpDate}
+                        onChange={(e) => setEditDpDate(e.target.value)}
+                        style={{ padding: '8px', width: '100%' }}
+                      />
+                    </div>
+                  </>
+                )}
                 
                 <div style={{ marginTop: '12px' }}>
                   <label style={{ fontSize: '0.85rem', color: '#4b5563', display: 'block', marginBottom: '4px' }}>Nominal Pelunasan (Rp)</label>

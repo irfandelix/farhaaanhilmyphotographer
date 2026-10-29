@@ -9,6 +9,7 @@ import CustomDatePicker from '@/components/CustomDatePicker';
 export default function NewClientModal({ onClose, onSuccess }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [paymentScheme, setPaymentScheme] = useState('dp');
   const [formData, setFormData] = useState({
     clientName: '',
     whatsapp: '',
@@ -28,6 +29,25 @@ export default function NewClientModal({ onClose, onSuccess }) {
   
   const [items, setItems] = useState([{ name: '', qty: 1, price: '' }]);
   const [additionalSchedules, setAdditionalSchedules] = useState([]);
+
+  const handleSchemeChange = (scheme) => {
+    setPaymentScheme(scheme);
+    if (scheme === 'lunas') {
+      setFormData(prev => ({
+        ...prev,
+        dpAmount: '',
+        dpDate: '',
+        paymentStatus: 'Lunas'
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        lunasAmount: '',
+        lunasDate: '',
+        paymentStatus: prev.dpAmount ? 'DP' : 'Belum Bayar'
+      }));
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -154,6 +174,13 @@ export default function NewClientModal({ onClose, onSuccess }) {
       payload.paymentAmount = totalPaymentAmount;
     } else {
       payload.items = []; // Reset items if not Foto Produk
+    }
+
+    if (paymentScheme === 'lunas') {
+      payload.dpAmount = 0;
+      payload.dpDate = '';
+      payload.lunasAmount = formData.photoType === 'Foto Produk' ? totalPaymentAmount : Number(formData.paymentAmount || 0);
+      payload.paymentStatus = 'Lunas';
     }
     
     const result = await createProject(payload);
@@ -331,36 +358,109 @@ export default function NewClientModal({ onClose, onSuccess }) {
           )}
 
           <div className="form-group">
-            <label className="form-label">Jumlah Uang Muka / DP (Rp)</label>
-            <input 
-              type="text" 
-              name="dpAmount" 
-              className="input-field" 
-              value={formData.dpAmount ? Number(formData.dpAmount).toLocaleString('id-ID') : ''} 
-              onChange={handleChange} 
-              placeholder="Kosongkan jika tidak ada DP" 
-            />
+            <label className="form-label">Apakah melakukan DP atau langsung Lunas?</label>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <div
+                onClick={() => handleSchemeChange('dp')}
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '12px 14px',
+                  borderRadius: '10px',
+                  border: paymentScheme === 'dp' ? '2px solid #2563eb' : '1px solid #d1d5db',
+                  backgroundColor: paymentScheme === 'dp' ? '#eff6ff' : '#ffffff',
+                  cursor: 'pointer',
+                  fontWeight: paymentScheme === 'dp' ? '600' : '500',
+                  color: paymentScheme === 'dp' ? '#1d4ed8' : '#374151',
+                  userSelect: 'none'
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={paymentScheme === 'dp'}
+                  readOnly
+                  style={{ width: '18px', height: '18px', accentColor: '#2563eb', pointerEvents: 'none' }}
+                />
+                <span>Melakukan DP</span>
+              </div>
+
+              <div
+                onClick={() => handleSchemeChange('lunas')}
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '12px 14px',
+                  borderRadius: '10px',
+                  border: paymentScheme === 'lunas' ? '2px solid #059669' : '1px solid #d1d5db',
+                  backgroundColor: paymentScheme === 'lunas' ? '#ecfdf5' : '#ffffff',
+                  cursor: 'pointer',
+                  fontWeight: paymentScheme === 'lunas' ? '600' : '500',
+                  color: paymentScheme === 'lunas' ? '#047857' : '#374151',
+                  userSelect: 'none'
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={paymentScheme === 'lunas'}
+                  readOnly
+                  style={{ width: '18px', height: '18px', accentColor: '#059669', pointerEvents: 'none' }}
+                />
+                <span>Langsung Lunas</span>
+              </div>
+            </div>
           </div>
 
-          <div className="form-group">
-            <label className="form-label">Tanggal Pembayaran DP</label>
-            <CustomDatePicker 
-              name="dpDate" 
-              className="input-field" 
-              value={formData.dpDate} 
-              onChange={handleChange} 
-            />
-          </div>
+          {paymentScheme === 'dp' ? (
+            <>
+              <div className="form-group">
+                <label className="form-label">Jumlah Uang Muka / DP (Rp)</label>
+                <input 
+                  type="text" 
+                  name="dpAmount" 
+                  className="input-field" 
+                  value={formData.dpAmount ? Number(formData.dpAmount).toLocaleString('id-ID') : ''} 
+                  onChange={handleChange} 
+                  placeholder="Kosongkan jika tidak ada DP" 
+                />
+              </div>
 
-          <div className="form-group">
-            <label className="form-label">Tanggal Pelunasan</label>
-            <CustomDatePicker 
-              name="lunasDate" 
-              className="input-field" 
-              value={formData.lunasDate} 
-              onChange={handleChange} 
-            />
-          </div>
+              <div className="form-group">
+                <label className="form-label">Tanggal Pembayaran DP</label>
+                <CustomDatePicker 
+                  name="dpDate" 
+                  className="input-field" 
+                  value={formData.dpDate} 
+                  onChange={handleChange} 
+                />
+              </div>
+
+              {formData.paymentStatus === 'Lunas' && (
+                <div className="form-group">
+                  <label className="form-label">Tanggal Pelunasan</label>
+                  <CustomDatePicker 
+                    name="lunasDate" 
+                    className="input-field" 
+                    value={formData.lunasDate} 
+                    onChange={handleChange} 
+                  />
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="form-group">
+              <label className="form-label">Tanggal Pelunasan</label>
+              <CustomDatePicker 
+                name="lunasDate" 
+                className="input-field" 
+                value={formData.lunasDate} 
+                onChange={handleChange} 
+              />
+            </div>
+          )}
 
           <div className="form-group">
             <label className="form-label">Status Pembayaran</label>
