@@ -193,6 +193,7 @@ export default function NewClientModal({ onClose, onSuccess }) {
             <label className="form-label">Jenis Foto</label>
             <select name="photoType" className="input-field" value={formData.photoType} onChange={handleChange}>
               <option value="Graduation">Graduation</option>
+              <option value="Foto Wisuda">Foto Wisuda</option>
               <option value="Foto Studio">Foto Studio</option>
               <option value="Foto Group">Foto Group</option>
               <option value="Family Photoshoot">Family Photoshoot</option>

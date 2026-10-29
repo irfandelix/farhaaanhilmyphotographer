@@ -483,6 +483,7 @@ export default function AdminClientDetail({ params }) {
                       style={{ padding: '8px' }}
                     >
                       <option value="Graduation">Graduation</option>
+                      <option value="Foto Wisuda">Foto Wisuda</option>
                       <option value="Foto Studio">Foto Studio</option>
                       <option value="Foto Group">Foto Group</option>
                       <option value="Family Photoshoot">Family Photoshoot</option>
