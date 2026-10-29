@@ -4,6 +4,7 @@ import Swal from 'sweetalert2';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createProject, getProjects } from '@/lib/projectService';
+import CustomDatePicker from '@/components/CustomDatePicker';
 
 export default function NewClientModal({ onClose, onSuccess }) {
   const router = useRouter();
@@ -253,7 +254,7 @@ export default function NewClientModal({ onClose, onSuccess }) {
 
           <div className="form-group">
             <label className="form-label">Tanggal Pemotretan</label>
-            <input required type="date" name="shootDate" className="input-field" value={formData.shootDate} onChange={handleChange} />
+            <CustomDatePicker required name="shootDate" className="input-field" value={formData.shootDate} onChange={handleChange} />
           </div>
           
           <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end' }}>
@@ -286,7 +287,7 @@ export default function NewClientModal({ onClose, onSuccess }) {
               
               <div className="form-group" style={{ margin: 0 }}>
                 <label className="form-label" style={{ fontSize: '0.85rem' }}>Tanggal</label>
-                <input required type="date" className="input-field" value={sch.shootDate} onChange={(e) => updateSchedule(index, 'shootDate', e.target.value)} />
+                <CustomDatePicker required className="input-field" value={sch.shootDate} onChange={(e) => updateSchedule(index, 'shootDate', e.target.value)} />
               </div>
               
               <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end' }}>
@@ -343,8 +344,7 @@ export default function NewClientModal({ onClose, onSuccess }) {
 
           <div className="form-group">
             <label className="form-label">Tanggal Pembayaran DP</label>
-            <input 
-              type="date" 
+            <CustomDatePicker 
               name="dpDate" 
               className="input-field" 
               value={formData.dpDate} 
@@ -354,8 +354,7 @@ export default function NewClientModal({ onClose, onSuccess }) {
 
           <div className="form-group">
             <label className="form-label">Tanggal Pelunasan</label>
-            <input 
-              type="date" 
+            <CustomDatePicker 
               name="lunasDate" 
               className="input-field" 
               value={formData.lunasDate} 

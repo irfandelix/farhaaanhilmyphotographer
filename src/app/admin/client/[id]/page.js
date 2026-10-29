@@ -4,6 +4,7 @@ import Swal from 'sweetalert2';
 import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import CustomDatePicker from '@/components/CustomDatePicker';
 import { getProjectById, updatePaymentStatus, updateGDriveLink, updateGDriveEditedLink, updateProjectFinancials, updateGDriveSessions, deleteProject, getProjects } from '@/lib/projectService';
 
 export default function AdminClientDetail({ params }) {
@@ -557,8 +558,7 @@ export default function AdminClientDetail({ params }) {
 
                   <div style={{ marginTop: '8px' }}>
                     <label style={{ fontSize: '0.85rem', color: '#4b5563', display: 'block', marginBottom: '4px' }}>Tanggal Pembayaran DP</label>
-                    <input 
-                      type="date" 
+                    <CustomDatePicker 
                       className="input-field" 
                       value={editDpDate}
                       onChange={(e) => setEditDpDate(e.target.value)}
@@ -580,8 +580,7 @@ export default function AdminClientDetail({ params }) {
                 
                 <div style={{ marginTop: '12px' }}>
                   <label style={{ fontSize: '0.85rem', color: '#4b5563', display: 'block', marginBottom: '4px' }}>Tanggal Pelunasan</label>
-                  <input 
-                    type="date" 
+                  <CustomDatePicker 
                     name="lunasDate"
                     className="input-field" 
                     value={editLunasDate}
@@ -617,8 +616,7 @@ export default function AdminClientDetail({ params }) {
                   <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
                     <div style={{ flex: 1 }}>
                       <label style={{ fontSize: '0.85rem', color: '#6b7280', display: 'block', marginBottom: '4px' }}>Tanggal</label>
-                    <input 
-                      type="date" 
+                    <CustomDatePicker 
                       value={editShootDate}
                       onChange={(e) => setEditShootDate(e.target.value)}
                       className="input-field"
@@ -668,7 +666,7 @@ export default function AdminClientDetail({ params }) {
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <div style={{ flex: 1 }}>
                           <label style={{ fontSize: '0.85rem', color: '#6b7280', display: 'block', marginBottom: '4px' }}>Tanggal</label>
-                          <input required type="date" className="input-field" style={{ padding: '8px' }} value={sch.shootDate} onChange={(e) => updateSchedule(index, 'shootDate', e.target.value)} />
+                          <CustomDatePicker required className="input-field" style={{ padding: '8px' }} value={sch.shootDate} onChange={(e) => updateSchedule(index, 'shootDate', e.target.value)} />
                         </div>
                         <div style={{ flex: 1 }}>
                           <label style={{ fontSize: '0.85rem', color: '#6b7280', display: 'block', marginBottom: '4px' }}>Mulai</label>
