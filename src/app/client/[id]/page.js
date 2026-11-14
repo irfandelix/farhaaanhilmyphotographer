@@ -378,14 +378,15 @@ export default function ClientGallery({ params }) {
                     </button>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <label style={{ fontSize: '0.9rem', color: '#4b5563', fontWeight: '500' }}>Urutkan:</label>
+                    <label htmlFor="photo-sort-select" style={{ fontSize: '0.9rem', color: '#4b5563', fontWeight: '500' }}>Sort by:</label>
                     <select 
+                      id="photo-sort-select"
                       value={sortOrder} 
                       onChange={(e) => setSortOrder(e.target.value)}
                       style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #d1d5db', background: 'white', color: '#111827', fontSize: '0.9rem', cursor: 'pointer' }}
                     >
-                      <option value="name">Nama (A-Z)</option>
-                      <option value="time">Waktu Diunggah</option>
+                      <option value="name">Name (A-Z)</option>
+                      <option value="time">Upload Time</option>
                     </select>
                   </div>
                 </div>
@@ -423,7 +424,7 @@ export default function ClientGallery({ params }) {
                 </div>
               ) : viewFormat === 'list' ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'auto 60px 1fr 1fr 1fr 1fr', gap: '16px', padding: '12px 16px', backgroundColor: '#f3f4f6', borderRadius: '8px', fontWeight: '600', fontSize: '0.85rem', color: '#4b5563' }}>
+                  <div className="client-list-header">
                     <div style={{ width: '24px' }}></div>
                     <div>Photo</div>
                     <div>File Name</div>
@@ -449,25 +450,28 @@ export default function ClientGallery({ params }) {
                     return (
                       <div 
                         key={photo.id}
+                        className="client-list-row"
                         style={{ 
-                          display: 'grid', gridTemplateColumns: 'auto 60px 1fr 1fr 1fr 1fr', gap: '16px', padding: '8px 16px', 
-                          backgroundColor: isSelected ? '#eff6ff' : 'white', 
-                          border: isSelected ? '1px solid var(--primary)' : '1px solid #e5e7eb',
-                          borderRadius: '8px', alignItems: 'center', transition: 'all 0.2s'
+                          backgroundColor: isSelected ? 'rgba(21, 16, 58, 0.04)' : 'white', 
+                          border: isSelected ? '1px solid var(--primary)' : '1px solid var(--border-color)'
                         }}
                       >
-                        <div 
+                        <button
+                          type="button"
+                          role="checkbox"
+                          aria-checked={isSelected}
+                          aria-label={`Select ${photo.name}`}
                           onClick={() => toggleSelect(photo.name)}
                           style={{
                             width: '24px', height: '24px', borderRadius: '6px',
                             backgroundColor: isSelected ? 'var(--primary)' : 'white',
-                            border: isSelected ? 'none' : '2px solid #d1d5db',
+                            border: isSelected ? '1px solid var(--primary)' : '2px solid #d1d5db',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: 'white', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 'bold'
+                            color: 'white', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 'bold', padding: 0
                           }}
                         >
-                          {isSelected && <span>✓</span>}
-                        </div>
+                          {isSelected && <span aria-hidden="true">✓</span>}
+                        </button>
                         
                         <div 
                           onClick={() => setPreviewIndex(currentList.findIndex(p => p.id === photo.id))}
@@ -481,9 +485,9 @@ export default function ClientGallery({ params }) {
                         </div>
                         
                         <div onClick={() => toggleSelect(photo.name)} style={{ fontSize: '0.9rem', fontWeight: '500', cursor: 'pointer', wordBreak: 'break-all' }}>{photo.name}</div>
-                        <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>{width} x {height}</div>
-                        <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>{fileSizeMB}</div>
-                        <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>{dateStr}</div>
+                        <div className="client-list-meta-hide-mobile" style={{ fontSize: '0.85rem', color: '#6b7280' }}>{width} x {height}</div>
+                        <div className="client-list-meta-hide-mobile" style={{ fontSize: '0.85rem', color: '#6b7280' }}>{fileSizeMB}</div>
+                        <div className="client-list-meta-hide-mobile" style={{ fontSize: '0.85rem', color: '#6b7280' }}>{dateStr}</div>
                       </div>
                     );
                   })}
@@ -501,7 +505,7 @@ export default function ClientGallery({ params }) {
                           transition: 'all 0.2s',
                           transform: isSelected ? 'scale(0.95)' : 'scale(1)',
                           border: isSelected ? '3px solid var(--primary)' : '1px solid var(--glass-border)',
-                          backgroundColor: isSelected ? '#eff6ff' : 'var(--glass-bg)',
+                          backgroundColor: isSelected ? 'rgba(21, 16, 58, 0.04)' : 'var(--glass-bg)',
                           display: 'flex',
                           flexDirection: 'column',
                           position: 'relative'

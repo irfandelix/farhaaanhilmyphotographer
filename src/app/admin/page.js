@@ -264,36 +264,65 @@ export default function AdminDashboard() {
               const statusColor = project.paymentStatus === 'Lunas' ? '#dcfce3' : project.paymentStatus === 'DP' ? '#fef3c7' : '#fee2e2';
               const statusTextColor = project.paymentStatus === 'Lunas' ? '#166534' : project.paymentStatus === 'DP' ? '#92400e' : '#991b1b';
               return (
-                <Link key={project.id} href={`/admin/client/${project.id}`}>
-                  <div className="glass-panel animate-fade-in" style={{ padding: '20px', cursor: 'pointer', transition: 'transform 0.2s', ':hover': { transform: 'translateY(-4px)' } }}>
+                <Link key={project.id} href={`/admin/client/${project.id}`} style={{ display: 'block' }}>
+                  <div className="studio-card studio-card-interactive animate-fade-in" style={{ padding: '20px' }}>
                     <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
                       <div>
                         {project.shootDate && (
-                          <div style={{ color: '#4f46e5', fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.05em' }}>
+                          <div style={{ color: 'var(--accent-hover)', fontFamily: 'var(--font-mono), monospace', fontSize: '0.78rem', fontWeight: '600', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.04em' }}>
                             {formatProjectDates(project)}
                           </div>
                         )}
-                        <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '6px', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px', color: '#111827' }}>
+                        <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '6px', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px', color: 'var(--text-primary)' }}>
                           {project.clientName}
                         </h3>
-                        <div style={{ color: '#6b7280', fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                           <span>{project.photoType}</span>
                           <div>
                             {(() => {
+                              const badgeBase = {
+                                fontSize: '0.78rem',
+                                padding: '4px 10px',
+                                borderRadius: '6px',
+                                fontWeight: '600',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                              };
                               if (project.gdriveEditedLink) {
-                                return <span style={{ fontSize: '0.8rem', backgroundColor: '#dcfce3', color: '#166534', padding: '4px 10px', borderRadius: '12px', fontWeight: '500', display: 'inline-block' }}>✅ Selesai (Foto Terkirim)</span>;
+                                return (
+                                  <span style={{ ...badgeBase, backgroundColor: '#dcfce3', color: '#166534' }}>
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12" /></svg>
+                                    Selesai (Foto Terkirim)
+                                  </span>
+                                );
                               }
                               if (project.selectedPhotos && project.selectedPhotos.length > 0) {
-                                return <span style={{ fontSize: '0.8rem', backgroundColor: '#fef3c7', color: '#92400e', padding: '4px 10px', borderRadius: '12px', fontWeight: '500', display: 'inline-block' }}>⏳ Belum Upload Edit</span>;
+                                return (
+                                  <span style={{ ...badgeBase, backgroundColor: '#fef3c7', color: '#92400e' }}>
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                                    Belum Upload Edit
+                                  </span>
+                                );
                               }
                               if (project.gdriveLink || (project.sessions && project.sessions.length > 0)) {
-                                return <span style={{ fontSize: '0.8rem', backgroundColor: '#fee2e2', color: '#991b1b', padding: '4px 10px', borderRadius: '12px', fontWeight: '500', display: 'inline-block' }}>📸 Belum Pilih Foto</span>;
+                                return (
+                                  <span style={{ ...badgeBase, backgroundColor: '#fee2e2', color: '#991b1b' }}>
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
+                                    Belum Pilih Foto
+                                  </span>
+                                );
                               }
-                              return <span style={{ fontSize: '0.8rem', backgroundColor: '#f3f4f6', color: '#374151', padding: '4px 10px', borderRadius: '12px', fontWeight: '500', display: 'inline-block' }}>📤 Belum Upload Original</span>;
+                              return (
+                                <span style={{ ...badgeBase, backgroundColor: 'var(--surface-muted)', color: 'var(--text-secondary)' }}>
+                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+                                  Belum Upload Original
+                                </span>
+                              );
                             })()}
                           </div>
                           {project.selectedPhotos && project.selectedPhotos.length > 0 && (
-                            <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#4f46e5' }}>
+                            <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--primary)', fontFamily: 'var(--font-mono), monospace' }}>
                               {project.selectedPhotos.length} Foto Terpilih
                             </span>
                           )}
