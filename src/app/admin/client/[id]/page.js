@@ -1039,18 +1039,58 @@ export default function AdminClientDetail({ params }) {
                   Aktifkan jika link ini dipakai lebih dari 1 orang secara bersamaan. Setiap orang akan diminta mengisi nama, dan foto yang sudah dipilih tidak dapat dipilih ulang oleh orang lain.
                 </div>
               </div>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', borderRadius: '8px', backgroundColor: 'rgba(255, 255, 255, 0.85)', border: '1px solid rgba(22, 101, 52, 0.2)', cursor: togglingMulti ? 'wait' : 'pointer', userSelect: 'none' }}>
-                <input
-                  type="checkbox"
-                  checked={Boolean(project.isMultiSelector)}
-                  onChange={handleToggleMultiSelector}
-                  disabled={togglingMulti}
-                  style={{ width: '18px', height: '18px', accentColor: '#15803d', cursor: 'pointer' }}
-                />
-                <span style={{ fontWeight: '600', fontSize: '0.88rem', color: project.isMultiSelector ? '#15803d' : '#64748b' }}>
-                  {project.isMultiSelector ? 'Aktif' : 'Nonaktif'}
+              <button
+                type="button"
+                role="switch"
+                aria-checked={Boolean(project.isMultiSelector)}
+                aria-label="Toggle Mode Multi-Pemilih"
+                onClick={handleToggleMultiSelector}
+                disabled={togglingMulti}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '6px 12px 6px 8px',
+                  borderRadius: '999px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  border: project.isMultiSelector ? '1.5px solid #16a34a' : '1.5px solid #cbd5e1',
+                  cursor: togglingMulti ? 'wait' : 'pointer',
+                  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.06)',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <span style={{
+                  position: 'relative',
+                  width: '44px',
+                  height: '24px',
+                  borderRadius: '999px',
+                  backgroundColor: project.isMultiSelector ? '#16a34a' : '#cbd5e1',
+                  transition: 'background-color 0.2s ease',
+                  flexShrink: 0
+                }}>
+                  <span style={{
+                    position: 'absolute',
+                    top: '2px',
+                    left: project.isMultiSelector ? '22px' : '2px',
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '50%',
+                    backgroundColor: '#ffffff',
+                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.25)',
+                    transition: 'left 0.2s ease'
+                  }} />
                 </span>
-              </label>
+                <span style={{
+                  fontWeight: '700',
+                  fontSize: '0.82rem',
+                  letterSpacing: '0.03em',
+                  color: project.isMultiSelector ? '#15803d' : '#64748b',
+                  minWidth: '28px',
+                  textAlign: 'left'
+                }}>
+                  {project.isMultiSelector ? 'ON' : 'OFF'}
+                </span>
+              </button>
             </div>
 
             {/* Pembatas & Pengaturan Batas Maksimal Pilihan (Mencolok) */}
