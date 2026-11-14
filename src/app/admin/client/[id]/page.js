@@ -5,7 +5,7 @@ import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import CustomDatePicker from '@/components/CustomDatePicker';
-import { getProjectById, updatePaymentStatus, updateGDriveLink, updateGDriveEditedLink, updateProjectFinancials, updateGDriveSessions, deleteProject, getProjects, toggleMultiSelector, unlockClientSelection } from '@/lib/projectService';
+import { getProjectById, updatePaymentStatus, updateGDriveLink, updateGDriveEditedLink, updateProjectFinancials, updateGDriveSessions, deleteProject, getProjects, toggleMultiSelector, unlockClientSelection, updateMaxSelections } from '@/lib/projectService';
 
 export default function AdminClientDetail({ params }) {
   const router = useRouter();
@@ -47,6 +47,33 @@ export default function AdminClientDetail({ params }) {
   const [editPaymentScheme, setEditPaymentScheme] = useState('dp');
   const [togglingMulti, setTogglingMulti] = useState(false);
   const [selectorFilter, setSelectorFilter] = useState('all');
+  const [maxSelectionsInput, setMaxSelectionsInput] = useState('');
+  const [savingMaxSelections, setSavingMaxSelections] = useState(false);
+
+  const handleSaveMaxSelections = async (overrideValue = null) => {
+    if (!project || savingMaxSelections) return;
+    const rawVal = overrideValue !== null ? overrideValue : maxSelectionsInput;
+    const parsed = Math.max(0, Math.floor(Number(rawVal || 0))) || 0;
+    setSavingMaxSelections(true);
+    const res = await updateMaxSelections(id, parsed);
+    setSavingMaxSelections(false);
+    if (res?.success) {
+      setProject((prev) => ({ ...prev, maxSelections: res.maxSelections }));
+      setMaxSelectionsInput(res.maxSelections > 0 ? String(res.maxSelections) : '');
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: res.maxSelections > 0
+          ? `Batas pilihan diatur: maksimal ${res.maxSelections} foto`
+          : 'Batas pilihan dihapus (bebas)',
+        showConfirmButton: false,
+        timer: 2200,
+      });
+    } else {
+      Swal.fire('Gagal', res?.error || 'Tidak dapat menyimpan batas pilihan foto.', 'error');
+    }
+  };
 
   const handleToggleMultiSelector = async () => {
     if (!project || togglingMulti) return;
@@ -90,6 +117,7 @@ export default function AdminClientDetail({ params }) {
       const data = await getProjectById(id);
       if (data) {
         setProject(data);
+        setMaxSelectionsInput(data.maxSelections ? String(data.maxSelections) : '');
         setStatus(data.paymentStatus);
         setEditItems(data.items || [{ name: 'Paket Jasa Fotografi', qty: 1, price: data.paymentAmount || 0 }]);
         setEditClientName(data.clientName || '');
@@ -1023,6 +1051,70 @@ export default function AdminClientDetail({ params }) {
                   {project.isMultiSelector ? 'Aktif' : 'Nonaktif'}
                 </span>
               </label>
+            </div>
+
+            {/* Pembatas & Pengaturan Batas Maksimal Pilihan (Mencolok) */}
+            <div style={{
+              marginTop: '16px',
+              padding: '14px 16px',
+              borderRadius: '10px',
+              backgroundColor: '#fffbeb',
+              border: '2px solid #f59e0b',
+              boxShadow: '0 4px 12px rgba(245, 158, 11, 0.12)'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                <div style={{ fontWeight: '700', fontSize: '0.95rem', color: '#92400e', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  🎯 Batas Maksimal Pilihan Foto
+                </div>
+                <span style={{
+                  fontSize: '0.78rem',
+                  fontWeight: '700',
+                  padding: '4px 10px',
+                  borderRadius: '999px',
+                  backgroundColor: Number(project.maxSelections || 0) > 0 ? '#f59e0b' : '#e5e7eb',
+                  color: Number(project.maxSelections || 0) > 0 ? '#ffffff' : '#374151',
+                }}>
+                  {Number(project.maxSelections || 0) > 0
+                    ? `Maks. ${project.maxSelections} Foto${project.isMultiSelector ? ' / Orang' : ''}`
+                    : 'Tanpa Batas (Bebas)'}
+                </span>
+              </div>
+              <p style={{ fontSize: '0.82rem', color: '#78350f', lineHeight: 1.45, marginBottom: '12px' }}>
+                {project.isMultiSelector
+                  ? 'Mode Multi-Pemilih aktif: batas ini berlaku untuk masing-masing orang (contoh: isi 10 berarti tiap orang boleh pilih maksimal 10 foto). Kosongkan atau isi 0 jika bebas.'
+                  : 'Tentukan batas maksimal foto yang boleh dipilih klien (boleh pilih kurang dari batas, tidak bisa lebih). Kosongkan atau isi 0 jika bebas.'}
+              </p>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <input
+                  type="number"
+                  min="0"
+                  placeholder="Contoh: 20 (0 = bebas)"
+                  value={maxSelectionsInput}
+                  onChange={(e) => setMaxSelectionsInput(e.target.value)}
+                  className="input-field"
+                  style={{ flex: '1 1 160px', backgroundColor: '#ffffff', borderColor: '#f59e0b', fontWeight: '600' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => handleSaveMaxSelections()}
+                  disabled={savingMaxSelections}
+                  className="btn-primary"
+                  style={{ backgroundColor: '#d97706', border: 'none', padding: '10px 18px', minHeight: '44px', whiteSpace: 'nowrap' }}
+                >
+                  {savingMaxSelections ? 'Menyimpan...' : 'Simpan Batas'}
+                </button>
+                {Number(project.maxSelections || 0) > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => handleSaveMaxSelections(0)}
+                    disabled={savingMaxSelections}
+                    className="btn-secondary"
+                    style={{ padding: '10px 14px', minHeight: '44px', whiteSpace: 'nowrap', borderColor: '#fcd34d', color: '#92400e', backgroundColor: '#ffffff' }}
+                  >
+                    Jadikan Bebas
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         ) : (

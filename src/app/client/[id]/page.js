@@ -144,6 +144,7 @@ export default function ClientGallery({ params }) {
   };
 
   const isMultiSelector = Boolean(project?.isMultiSelector);
+  const maxSelections = Number(project?.maxSelections || 0);
   const photoSelections = project?.photoSelections || {};
   const lockedSelectors = project?.lockedSelectors || [];
   const isCurrentSelectorLocked = Boolean(project?.isLocked) || (isMultiSelector && Boolean(selectorName) && lockedSelectors.includes(selectorName));
@@ -204,6 +205,18 @@ export default function ClientGallery({ params }) {
     const isCurrentlySelected = isPhotoSelectedByMe(photoName);
     const willBeSelected = !isCurrentlySelected;
 
+    if (willBeSelected && maxSelections > 0) {
+      const currentCount = (isMultiSelector ? mySelectedPhotos : selectedPhotos).length;
+      if (currentCount >= maxSelections) {
+        Swal.fire(
+          'Selection Limit Reached',
+          `You can select up to ${maxSelections} ${maxSelections === 1 ? 'photo' : 'photos'}${isMultiSelector ? ' per person' : ''}. Unselect another photo first if you want to swap.`,
+          'warning'
+        );
+        return;
+      }
+    }
+
     setSelectedPhotos((prev) =>
       willBeSelected
         ? (prev.includes(photoName) ? prev : [...prev, photoName])
@@ -243,7 +256,9 @@ export default function ClientGallery({ params }) {
           lockedSelectors: res.lockedSelectors || prev.lockedSelectors,
         } : prev));
       }
-      if (res?.owner) {
+      if (res?.code === 'LIMIT_REACHED') {
+        Swal.fire('Selection Limit Reached', res.error, 'warning');
+      } else if (res?.owner) {
         Swal.fire('Already Selected', `This photo was just selected by ${res.owner}.`, 'warning');
       } else if (res?.error) {
         Swal.fire('Info', res.error, 'info');
@@ -378,6 +393,11 @@ export default function ClientGallery({ params }) {
             ? "Kabar gembira! Foto hasil editan kamu sudah siap diunduh." 
             : "Silakan pilih foto-foto yang Anda inginkan untuk diedit."}
         </p>
+        {maxSelections > 0 && (
+          <div style={{ marginTop: '10px', display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '5px 14px', borderRadius: '999px', backgroundColor: '#fffbeb', border: '1px solid #f59e0b', color: '#92400e', fontSize: '0.85rem', fontWeight: '600', marginRight: isMultiSelector && selectorName ? '8px' : '0' }}>
+            🎯 Max Selection: {maxSelections} {maxSelections === 1 ? 'photo' : 'photos'}{isMultiSelector ? ' / person' : ''}
+          </div>
+        )}
         {isMultiSelector && selectorName && (
           <div style={{ marginTop: '12px', display: 'inline-flex', alignItems: 'center', gap: '10px', padding: '6px 14px', borderRadius: '999px', backgroundColor: '#f1f5f9', border: '1px solid #cbd5e1', fontSize: '0.88rem' }}>
             <span style={{ color: '#334155' }}>
@@ -1109,8 +1129,10 @@ export default function ClientGallery({ params }) {
           <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
             {isCurrentSelectorLocked ? 'Selection Locked' : (isMultiSelector && selectorName ? `${selectorName}'s Picks` : 'Selected Photos')}
           </span>
-          <span style={{ fontFamily: 'var(--font-mono), monospace', color: 'var(--primary)', fontSize: '1.15rem', fontWeight: '700' }}>
-            {(isMultiSelector ? mySelectedPhotos : selectedPhotos).length} {(isMultiSelector ? mySelectedPhotos : selectedPhotos).length === 1 ? 'photo' : 'photos'}
+          <span style={{ fontFamily: 'var(--font-mono), monospace', color: maxSelections > 0 && (isMultiSelector ? mySelectedPhotos : selectedPhotos).length >= maxSelections ? '#d97706' : 'var(--primary)', fontSize: '1.15rem', fontWeight: '700' }}>
+            {maxSelections > 0
+              ? `${(isMultiSelector ? mySelectedPhotos : selectedPhotos).length} / ${maxSelections} ${maxSelections === 1 ? 'photo' : 'photos'}`
+              : `${(isMultiSelector ? mySelectedPhotos : selectedPhotos).length} ${(isMultiSelector ? mySelectedPhotos : selectedPhotos).length === 1 ? 'photo' : 'photos'}`}
           </span>
         </div>
         {!isCurrentSelectorLocked && (

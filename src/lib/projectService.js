@@ -100,6 +100,15 @@ export async function toggleMultiSelector(id, isMultiSelector) {
   }
 }
 
+export async function updateMaxSelections(id, maxSelections) {
+  try {
+    return await patchAdminProject(id, 'setMaxSelections', { maxSelections });
+  } catch (error) {
+    console.error('Error updating max selections: ', error);
+    return { success: false, error: error.message };
+  }
+}
+
 export async function updateGDriveLink(id, link) {
   try {
     const data = await patchAdminProject(id, 'gdriveLink', { link });

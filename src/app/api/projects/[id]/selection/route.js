@@ -22,6 +22,7 @@ export async function PATCH(request, { params }) {
       }
 
       const isMultiSelector = Boolean(data.isMultiSelector);
+      const maxSelections = Number(data.maxSelections || 0);
       const currentSelections = { ...(data.photoSelections || {}) };
       const currentLockedSelectors = Array.isArray(data.lockedSelectors) ? [...data.lockedSelectors] : [];
 
@@ -66,6 +67,24 @@ export async function PATCH(request, { params }) {
                   isLocked: false,
                 },
               };
+            }
+            if (maxSelections > 0 && existingOwner !== selectorName) {
+              const myCount = Object.values(currentSelections).filter((owner) => owner === selectorName).length;
+              if (myCount >= maxSelections) {
+                return {
+                  status: 409,
+                  body: {
+                    success: false,
+                    code: 'LIMIT_REACHED',
+                    error: `You have reached the maximum limit of ${maxSelections} photos`,
+                    maxSelections,
+                    selectedPhotos: data.selectedPhotos || [],
+                    photoSelections: currentSelections,
+                    lockedSelectors: currentLockedSelectors,
+                    isLocked: false,
+                  },
+                };
+              }
             }
             currentSelections[photoName] = selectorName;
           } else {
@@ -134,6 +153,21 @@ export async function PATCH(request, { params }) {
           return { status: 400, body: { success: false, error: 'Invalid photoName' } };
         }
         const currentPhotos = Array.isArray(data.selectedPhotos) ? [...data.selectedPhotos] : [];
+        if (isSelected && maxSelections > 0 && !currentPhotos.includes(photoName) && currentPhotos.length >= maxSelections) {
+          return {
+            status: 409,
+            body: {
+              success: false,
+              code: 'LIMIT_REACHED',
+              error: `You have reached the maximum limit of ${maxSelections} photos`,
+              maxSelections,
+              selectedPhotos: currentPhotos,
+              photoSelections: currentSelections,
+              lockedSelectors: currentLockedSelectors,
+              isLocked: false,
+            },
+          };
+        }
         const nextPhotos = isSelected
           ? (currentPhotos.includes(photoName) ? currentPhotos : [...currentPhotos, photoName])
           : currentPhotos.filter((name) => name !== photoName);

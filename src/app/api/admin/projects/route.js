@@ -92,6 +92,7 @@ export async function POST(request) {
         gdriveFolderId: folderId,
         selectedPhotos: [],
         isMultiSelector: Boolean(data.isMultiSelector),
+        maxSelections: Math.max(0, Math.floor(Number(data.maxSelections || 0))) || 0,
         photoSelections: {},
         lockedSelectors: [],
         isLocked: false,

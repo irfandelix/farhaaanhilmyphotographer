@@ -72,6 +72,16 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ success: true });
     }
 
+    if (action === 'setMaxSelections') {
+      const raw = Number(payload?.maxSelections || 0);
+      const maxSelections = Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 0;
+      await docRef.update({
+        maxSelections,
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+      return NextResponse.json({ success: true, maxSelections });
+    }
+
     if (action === 'financials') {
       const data = payload || {};
       const updatePayload = {
