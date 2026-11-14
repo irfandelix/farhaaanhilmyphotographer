@@ -1000,36 +1000,36 @@ export default function AdminClientDetail({ params }) {
                 </Link>
               </div>
             </div>
+
+            {/* Pembatas & Pengaturan Mode Multi-Pemilih */}
+            <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px dashed rgba(22, 101, 52, 0.28)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: '220px' }}>
+                <div style={{ fontWeight: '600', fontSize: '0.92rem', color: '#14532d', marginBottom: '4px' }}>
+                  Mode Multi-Pemilih (Bebas Bentrok)
+                </div>
+                <div style={{ fontSize: '0.82rem', color: '#374151', lineHeight: 1.5 }}>
+                  Aktifkan jika link ini dipakai lebih dari 1 orang secara bersamaan. Setiap orang akan diminta mengisi nama, dan foto yang sudah dipilih tidak dapat dipilih ulang oleh orang lain.
+                </div>
+              </div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', borderRadius: '8px', backgroundColor: 'rgba(255, 255, 255, 0.85)', border: '1px solid rgba(22, 101, 52, 0.2)', cursor: togglingMulti ? 'wait' : 'pointer', userSelect: 'none' }}>
+                <input
+                  type="checkbox"
+                  checked={Boolean(project.isMultiSelector)}
+                  onChange={handleToggleMultiSelector}
+                  disabled={togglingMulti}
+                  style={{ width: '18px', height: '18px', accentColor: '#15803d', cursor: 'pointer' }}
+                />
+                <span style={{ fontWeight: '600', fontSize: '0.88rem', color: project.isMultiSelector ? '#15803d' : '#64748b' }}>
+                  {project.isMultiSelector ? 'Aktif' : 'Nonaktif'}
+                </span>
+              </label>
+            </div>
           </div>
         ) : (
           <div style={{ background: '#fee2e2', color: '#991b1b', padding: '16px', borderRadius: '8px', marginBottom: '24px', fontSize: '0.9rem' }}>
             ⚠️ Anda belum menyimpan Link Google Drive. Link untuk klien belum bisa digunakan.
           </div>
         )}
-
-        {/* Multi-Selector Toggle */}
-        <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '16px', borderRadius: '8px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: '220px' }}>
-            <div style={{ fontWeight: '600', fontSize: '0.95rem', color: '#0f172a', marginBottom: '4px' }}>
-              Mode Multi-Pemilih (Bebas Bentrok)
-            </div>
-            <div style={{ fontSize: '0.82rem', color: '#64748b', lineHeight: 1.4 }}>
-              Aktifkan jika foto dipilih oleh lebih dari 1 orang secara bersamaan. Setiap orang memasukkan namanya sendiri dan foto yang sudah dipilih tidak bisa dipilih ulang oleh orang lain.
-            </div>
-          </div>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: togglingMulti ? 'wait' : 'pointer', userSelect: 'none' }}>
-            <input
-              type="checkbox"
-              checked={Boolean(project.isMultiSelector)}
-              onChange={handleToggleMultiSelector}
-              disabled={togglingMulti}
-              style={{ width: '20px', height: '20px', accentColor: '#0f172a', cursor: 'pointer' }}
-            />
-            <span style={{ fontWeight: '600', fontSize: '0.9rem', color: project.isMultiSelector ? '#15803d' : '#64748b' }}>
-              {project.isMultiSelector ? 'Aktif' : 'Nonaktif'}
-            </span>
-          </label>
-        </div>
 
         {/* Invoice Link Section */}
         <div style={{ background: 'rgba(59, 130, 246, 0.1)', padding: '16px', borderRadius: '8px', marginBottom: '32px' }}>
