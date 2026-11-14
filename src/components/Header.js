@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { cookies } from 'next/headers';
-
 import { ADMIN_COOKIE_NAME, verifyAdminToken } from '@/lib/auth';
+import LogoutButton from '@/components/LogoutButton';
 
 export default async function Header() {
   const cookieStore = await cookies();
@@ -31,6 +31,7 @@ export default async function Header() {
           FARHAAAN<span style={{ color: 'var(--accent)' }}>HILMY</span>
         </span>
       </Link>
+      {isAdmin && <LogoutButton />}
     </header>
   );
 }

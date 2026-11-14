@@ -10,6 +10,8 @@ export default function AdminDashboard() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
 
   const sortProjects = (data) => {
     return [...data].sort((a, b) => {
@@ -138,13 +140,90 @@ export default function AdminDashboard() {
       {loading ? (
         <p>Loading projects...</p>
       ) : projects.length === 0 ? (
-        <div className="glass-panel" style={{ padding: '40px', textAlign: 'center' }}>
-          <p style={{ color: '#6b7280', fontSize: '1.1rem' }}>Belum ada project klien.</p>
+        <div className="studio-card" style={{ padding: '40px', textAlign: 'center' }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>Belum ada project klien.</p>
         </div>
       ) : (
         <>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '28px' }}>
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Cari nama klien atau jenis foto..."
+              aria-label="Cari project klien"
+              className="input-field"
+              style={{ maxWidth: '420px' }}
+            />
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {[
+                { id: 'all', label: 'Semua', count: projects.length },
+                {
+                  id: 'need_selection',
+                  label: 'Belum Pilih Foto',
+                  count: projects.filter(p => !(p.gdriveEditedLink && p.gdriveEditedLink.trim() !== '') && !(p.selectedPhotos && p.selectedPhotos.length > 0) && (p.gdriveLink || (p.sessions && p.sessions.length > 0))).length,
+                },
+                {
+                  id: 'need_edit',
+                  label: 'Siap Diedit',
+                  count: projects.filter(p => !(p.gdriveEditedLink && p.gdriveEditedLink.trim() !== '') && p.selectedPhotos && p.selectedPhotos.length > 0).length,
+                },
+                {
+                  id: 'unpaid',
+                  label: 'Belum Lunas',
+                  count: projects.filter(p => p.paymentStatus !== 'Lunas').length,
+                },
+              ].map((tab) => {
+                const active = statusFilter === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setStatusFilter(tab.id)}
+                    style={{
+                      padding: '8px 14px',
+                      borderRadius: '8px',
+                      fontSize: '0.85rem',
+                      fontWeight: '600',
+                      border: active ? '1px solid var(--primary)' : '1px solid var(--border-color)',
+                      backgroundColor: active ? 'var(--primary)' : 'var(--surface-color)',
+                      color: active ? '#ffffff' : 'var(--text-secondary)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                    }}
+                  >
+                    <span>{tab.label}</span>
+                    <span style={{ fontFamily: 'var(--font-mono), monospace', fontSize: '0.78rem', opacity: active ? 0.9 : 0.75 }}>
+                      {tab.count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {(() => {
             const isFinished = (p) => p.gdriveEditedLink && p.gdriveEditedLink.trim() !== '';
+
+            const normalizedQuery = searchQuery.trim().toLowerCase();
+            const filteredProjects = projects.filter((p) => {
+              if (normalizedQuery) {
+                const nameMatch = (p.clientName || '').toLowerCase().includes(normalizedQuery);
+                const typeMatch = (p.photoType || '').toLowerCase().includes(normalizedQuery);
+                if (!nameMatch && !typeMatch) return false;
+              }
+              if (statusFilter === 'need_selection') {
+                return !isFinished(p) && !(p.selectedPhotos && p.selectedPhotos.length > 0) && (p.gdriveLink || (p.sessions && p.sessions.length > 0));
+              }
+              if (statusFilter === 'need_edit') {
+                return !isFinished(p) && p.selectedPhotos && p.selectedPhotos.length > 0;
+              }
+              if (statusFilter === 'unpaid') {
+                return p.paymentStatus !== 'Lunas';
+              }
+              return true;
+            });
             
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -180,8 +259,8 @@ export default function AdminDashboard() {
               return d.getTime() + timeOffset;
             };
 
-            const sortedProjects = [...projects].sort((a, b) => getSortValue(a) - getSortValue(b));
-            const sortedProjectsDesc = [...projects].sort((a, b) => getSortValue(b) - getSortValue(a));
+            const sortedProjects = [...filteredProjects].sort((a, b) => getSortValue(a) - getSortValue(b));
+            const sortedProjectsDesc = [...filteredProjects].sort((a, b) => getSortValue(b) - getSortValue(a));
 
             const upcomingProjects = sortedProjects.filter(p => !isFinished(p) && parseIndonesianDate(p.shootDate) > today);
             const progressProjects = sortedProjectsDesc.filter(p => !isFinished(p) && parseIndonesianDate(p.shootDate) <= today);
@@ -199,7 +278,27 @@ export default function AdminDashboard() {
               }
 
               if (schedules.length === 1) {
-                return (
+                if (filteredProjects.length === 0) {
+              return (
+                <div className="studio-card" style={{ padding: '40px 24px', textAlign: 'center' }}>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', marginBottom: '16px' }}>
+                    Tidak ada project yang cocok dengan pencarian atau filter ini.
+                  </p>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => {
+                      setSearchQuery('');
+                      setStatusFilter('all');
+                    }}
+                  >
+                    Reset Filter
+                  </button>
+                </div>
+              );
+            }
+
+            return (
                   <>
                     {project.shootTitle ? <span style={{ color: '#374151' }}>{project.shootTitle}: </span> : ''}
                     {project.shootDate} {project.shootTime && `• ${project.shootTime}`}
@@ -252,7 +351,27 @@ export default function AdminDashboard() {
                  resultStrs.push(`${ranges.join(', ')} ${key}`);
               }
               
+              if (filteredProjects.length === 0) {
               return (
+                <div className="studio-card" style={{ padding: '40px 24px', textAlign: 'center' }}>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', marginBottom: '16px' }}>
+                    Tidak ada project yang cocok dengan pencarian atau filter ini.
+                  </p>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => {
+                      setSearchQuery('');
+                      setStatusFilter('all');
+                    }}
+                  >
+                    Reset Filter
+                  </button>
+                </div>
+              );
+            }
+
+            return (
                  <>
                    {project.shootTitle ? <span style={{ color: '#374151' }}>{project.shootTitle} (+{schedules.length - 1}): </span> : ''}
                    {resultStrs.join(' & ')}
@@ -263,7 +382,27 @@ export default function AdminDashboard() {
             const renderProjectCard = (project) => {
               const statusColor = project.paymentStatus === 'Lunas' ? '#dcfce3' : project.paymentStatus === 'DP' ? '#fef3c7' : '#fee2e2';
               const statusTextColor = project.paymentStatus === 'Lunas' ? '#166534' : project.paymentStatus === 'DP' ? '#92400e' : '#991b1b';
+              if (filteredProjects.length === 0) {
               return (
+                <div className="studio-card" style={{ padding: '40px 24px', textAlign: 'center' }}>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', marginBottom: '16px' }}>
+                    Tidak ada project yang cocok dengan pencarian atau filter ini.
+                  </p>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => {
+                      setSearchQuery('');
+                      setStatusFilter('all');
+                    }}
+                  >
+                    Reset Filter
+                  </button>
+                </div>
+              );
+            }
+
+            return (
                 <Link key={project.id} href={`/admin/client/${project.id}`} style={{ display: 'block' }}>
                   <div className="studio-card studio-card-interactive animate-fade-in" style={{ padding: '20px' }}>
                     <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
@@ -290,7 +429,27 @@ export default function AdminDashboard() {
                                 gap: '6px',
                               };
                               if (project.gdriveEditedLink) {
-                                return (
+                                if (filteredProjects.length === 0) {
+              return (
+                <div className="studio-card" style={{ padding: '40px 24px', textAlign: 'center' }}>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', marginBottom: '16px' }}>
+                    Tidak ada project yang cocok dengan pencarian atau filter ini.
+                  </p>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => {
+                      setSearchQuery('');
+                      setStatusFilter('all');
+                    }}
+                  >
+                    Reset Filter
+                  </button>
+                </div>
+              );
+            }
+
+            return (
                                   <span style={{ ...badgeBase, backgroundColor: '#dcfce3', color: '#166534' }}>
                                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12" /></svg>
                                     Selesai (Foto Terkirim)
@@ -298,7 +457,27 @@ export default function AdminDashboard() {
                                 );
                               }
                               if (project.selectedPhotos && project.selectedPhotos.length > 0) {
-                                return (
+                                if (filteredProjects.length === 0) {
+              return (
+                <div className="studio-card" style={{ padding: '40px 24px', textAlign: 'center' }}>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', marginBottom: '16px' }}>
+                    Tidak ada project yang cocok dengan pencarian atau filter ini.
+                  </p>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => {
+                      setSearchQuery('');
+                      setStatusFilter('all');
+                    }}
+                  >
+                    Reset Filter
+                  </button>
+                </div>
+              );
+            }
+
+            return (
                                   <span style={{ ...badgeBase, backgroundColor: '#fef3c7', color: '#92400e' }}>
                                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
                                     Belum Upload Edit
@@ -306,14 +485,54 @@ export default function AdminDashboard() {
                                 );
                               }
                               if (project.gdriveLink || (project.sessions && project.sessions.length > 0)) {
-                                return (
+                                if (filteredProjects.length === 0) {
+              return (
+                <div className="studio-card" style={{ padding: '40px 24px', textAlign: 'center' }}>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', marginBottom: '16px' }}>
+                    Tidak ada project yang cocok dengan pencarian atau filter ini.
+                  </p>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => {
+                      setSearchQuery('');
+                      setStatusFilter('all');
+                    }}
+                  >
+                    Reset Filter
+                  </button>
+                </div>
+              );
+            }
+
+            return (
                                   <span style={{ ...badgeBase, backgroundColor: '#fee2e2', color: '#991b1b' }}>
                                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
                                     Belum Pilih Foto
                                   </span>
                                 );
                               }
-                              return (
+                              if (filteredProjects.length === 0) {
+              return (
+                <div className="studio-card" style={{ padding: '40px 24px', textAlign: 'center' }}>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', marginBottom: '16px' }}>
+                    Tidak ada project yang cocok dengan pencarian atau filter ini.
+                  </p>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => {
+                      setSearchQuery('');
+                      setStatusFilter('all');
+                    }}
+                  >
+                    Reset Filter
+                  </button>
+                </div>
+              );
+            }
+
+            return (
                                 <span style={{ ...badgeBase, backgroundColor: 'var(--surface-muted)', color: 'var(--text-secondary)' }}>
                                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
                                   Belum Upload Original
@@ -348,6 +567,26 @@ export default function AdminDashboard() {
                 </Link>
               );
             };
+
+            if (filteredProjects.length === 0) {
+              return (
+                <div className="studio-card" style={{ padding: '40px 24px', textAlign: 'center' }}>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', marginBottom: '16px' }}>
+                    Tidak ada project yang cocok dengan pencarian atau filter ini.
+                  </p>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => {
+                      setSearchQuery('');
+                      setStatusFilter('all');
+                    }}
+                  >
+                    Reset Filter
+                  </button>
+                </div>
+              );
+            }
 
             return (
               <>

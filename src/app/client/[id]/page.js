@@ -484,7 +484,7 @@ export default function ClientGallery({ params }) {
                           />
                         </div>
                         
-                        <div onClick={() => toggleSelect(photo.name)} style={{ fontSize: '0.9rem', fontWeight: '500', cursor: 'pointer', wordBreak: 'break-all' }}>{photo.name}</div>
+                        <div onClick={() => toggleSelect(photo.name)} style={{ fontSize: '0.9rem', fontWeight: '500', cursor: 'pointer', wordBreak: 'break-all' }}><span style={{ fontFamily: 'var(--font-mono), monospace', fontSize: '0.78rem', color: 'var(--accent-hover)', fontWeight: '600', marginRight: '8px' }}>#{String(index + 1).padStart(2, '0')}</span>{photo.name}</div>
                         <div className="client-list-meta-hide-mobile" style={{ fontSize: '0.85rem', color: '#6b7280' }}>{width} x {height}</div>
                         <div className="client-list-meta-hide-mobile" style={{ fontSize: '0.85rem', color: '#6b7280' }}>{fileSizeMB}</div>
                         <div className="client-list-meta-hide-mobile" style={{ fontSize: '0.85rem', color: '#6b7280' }}>{dateStr}</div>
@@ -494,7 +494,7 @@ export default function ClientGallery({ params }) {
                 </div>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
-                  {(viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos).map((photo) => {
+                  {(viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos).map((photo, index) => {
                     const isSelected = selectedPhotos.includes(photo.name);
                     return (
                       <div 
@@ -512,20 +512,24 @@ export default function ClientGallery({ params }) {
                         }}
                       >
                         {/* Checkbox (Klik untuk memilih cepat) */}
-                        <div 
+                        <button
+                          type="button"
+                          role="checkbox"
+                          aria-checked={isSelected}
+                          aria-label={`Select ${photo.name}`}
                           onClick={() => toggleSelect(photo.name)}
                           style={{
                             position: 'absolute', top: '12px', left: '12px', zIndex: 10,
-                            width: '32px', height: '32px', borderRadius: '50%',
-                            backgroundColor: isSelected ? 'var(--primary)' : 'rgba(255,255,255,0.9)',
-                            border: isSelected ? 'none' : '2px solid #9ca3af',
+                            width: '32px', height: '32px', borderRadius: '50%', padding: 0,
+                            backgroundColor: isSelected ? 'var(--primary)' : 'rgba(255,255,255,0.92)',
+                            border: isSelected ? '1px solid var(--primary)' : '2px solid #9ca3af',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             color: 'white', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                            fontSize: '1.2rem', fontWeight: 'bold'
+                            fontSize: '1.1rem', fontWeight: 'bold'
                           }}
                         >
-                          {isSelected && <span>✓</span>}
-                        </div>
+                          {isSelected && <span aria-hidden="true">✓</span>}
+                        </button>
 
                         <div 
                           onClick={() => setPreviewIndex(currentList.findIndex(p => p.id === photo.id))}
@@ -541,6 +545,7 @@ export default function ClientGallery({ params }) {
                             alt={photo.name} 
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                           />
+                          <span style={{ position: 'absolute', bottom: '8px', left: '8px', background: 'rgba(17, 16, 29, 0.78)', color: '#ffffff', fontFamily: 'var(--font-mono), monospace', fontSize: '0.72rem', fontWeight: '600', padding: '2px 7px', borderRadius: '4px', letterSpacing: '0.03em' }}>#{String(index + 1).padStart(2, '0')}</span>
                         </div>
                         <div 
                           onClick={() => toggleSelect(photo.name)}
@@ -791,36 +796,45 @@ export default function ClientGallery({ params }) {
         </div>
       )}
 
-      {/* Floating Action Bar (Hanya untuk tab RAW) */}
+      {/* Sticky Bottom Action Bar (Hanya untuk tab RAW) */}
       {activeTab === 'raw' && (
       <div style={{
         position: 'fixed',
-        bottom: '24px',
+        bottom: 'max(14px, env(safe-area-inset-bottom))',
         left: '50%',
         transform: 'translateX(-50%)',
-        background: 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(10px)',
-        padding: '12px 20px',
-        borderRadius: '100px',
-        boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
+        background: 'var(--surface-color)',
+        border: '1px solid var(--border-strong)',
+        padding: '10px 16px',
+        borderRadius: '14px',
+        boxShadow: '0 12px 32px rgba(21, 16, 58, 0.18)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        width: 'calc(100% - 32px)',
-        maxWidth: '400px',
+        gap: '12px',
+        width: 'calc(100% - 24px)',
+        maxWidth: '440px',
         zIndex: 100
       }}>
-        <div style={{ fontWeight: '600', fontSize: '0.95rem' }}>
-          Selected: <span style={{ color: 'var(--primary)', fontSize: '1.2rem' }}>{selectedPhotos.length}</span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            {project?.isLocked ? 'Selection Locked' : 'Selected Photos'}
+          </span>
+          <span style={{ fontFamily: 'var(--font-mono), monospace', color: 'var(--primary)', fontSize: '1.15rem', fontWeight: '700' }}>
+            {selectedPhotos.length} {selectedPhotos.length === 1 ? 'photo' : 'photos'}
+          </span>
         </div>
-        <button 
-          onClick={saveSelection} 
-          disabled={saving || selectedPhotos.length === 0}
-          className="btn-primary"
-          style={{ padding: '12px 20px', fontSize: '0.95rem', opacity: (saving || selectedPhotos.length === 0) ? 0.7 : 1 }}
-        >
-          {saving ? 'Saving...' : saved ? 'Saved ✓' : 'Send Selection'}
-        </button>
+        {!project?.isLocked && (
+          <button 
+            type="button"
+            onClick={saveSelection} 
+            disabled={saving || selectedPhotos.length === 0}
+            className="btn-primary"
+            style={{ padding: '10px 18px', fontSize: '0.92rem' }}
+          >
+            {saving ? 'Saving...' : saved ? 'Saved' : 'Send Selection'}
+          </button>
+        )}
       </div>
       )}
 
