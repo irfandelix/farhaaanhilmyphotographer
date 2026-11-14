@@ -5,6 +5,7 @@ import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import CustomDatePicker from '@/components/CustomDatePicker';
+import { AlertIcon, LockIcon, RefreshIcon, TargetIcon, TrashIcon, UnlockIcon } from '@/components/Icons';
 import { getProjectById, updatePaymentStatus, updateGDriveLink, updateGDriveEditedLink, updateProjectFinancials, updateGDriveSessions, deleteProject, getProjects, toggleMultiSelector, unlockClientSelection, updateMaxSelections } from '@/lib/projectService';
 
 export default function AdminClientDetail({ params }) {
@@ -537,7 +538,7 @@ export default function AdminClientDetail({ params }) {
                 className={isEditingFinance ? "btn-primary" : "btn-secondary"}
                 style={{ padding: '6px 12px', fontSize: '0.8rem' }}
               >
-                {isEditingFinance ? 'Simpan' : '✏️ Edit'}
+                {isEditingFinance ? 'Simpan' : 'Edit'}
               </button>
             </div>
 
@@ -802,7 +803,7 @@ export default function AdminClientDetail({ params }) {
                       style={{ padding: '0 12px', height: '44px', minHeight: '44px', color: '#4b5563', display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}
                       title="Reset Jam"
                     >
-                      🔄 Reset
+                      <RefreshIcon size={15} /> Reset
                     </button>
                   </div>
                   </div>
@@ -828,7 +829,7 @@ export default function AdminClientDetail({ params }) {
                           <input type="time" className="input-field" style={{ padding: '8px' }} value={sch.endTime} onChange={(e) => updateSchedule(index, 'endTime', e.target.value)} />
                         </div>
                         <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-                          <button type="button" onClick={() => { updateSchedule(index, 'startTime', ''); updateSchedule(index, 'endTime', ''); }} className="btn-secondary" style={{ padding: '8px', height: '40px', color: '#4b5563' }}>🔄</button>
+                          <button type="button" aria-label="Reset Jam" onClick={() => { updateSchedule(index, 'startTime', ''); updateSchedule(index, 'endTime', ''); }} className="btn-secondary" style={{ padding: '0 12px', height: '44px', minHeight: '44px', minWidth: '44px', color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><RefreshIcon size={15} /></button>
                         </div>
                       </div>
                     </div>
@@ -894,19 +895,19 @@ export default function AdminClientDetail({ params }) {
 
                 {status !== 'Lunas' && (
                   <a href={`/admin/client/${id}/invoice?type=invoice`} target="_blank" rel="noopener noreferrer" style={{ flex: 1 }}>
-                    <button className="btn-primary" style={{ width: '100%', fontSize: '0.85rem', padding: '10px 8px', backgroundColor: '#2563eb' }}>📄 Cetak Invoice (Web)</button>
+                    <button className="btn-primary" style={{ width: '100%', fontSize: '0.85rem', padding: '10px 8px', backgroundColor: 'var(--primary)' }}>Cetak Invoice (Web)</button>
                   </a>
                 )}
                 
                 {status !== 'Lunas' && (
                   <a href={`/admin/client/${id}/invoice?type=receipt_dp`} target="_blank" rel="noopener noreferrer" style={{ flex: 1 }}>
-                    <button className="btn-primary" style={{ width: '100%', fontSize: '0.85rem', padding: '10px 8px', backgroundColor: '#ca8a04' }}>📄 Cetak DP (Web)</button>
+                    <button className="btn-primary" style={{ width: '100%', fontSize: '0.85rem', padding: '10px 8px', backgroundColor: '#c2410c', borderColor: '#c2410c' }}>Cetak DP (Web)</button>
                   </a>
                 )}
                 
                 {status === 'Lunas' && (
                   <a href={`/admin/client/${id}/invoice?type=receipt`} target="_blank" rel="noopener noreferrer" style={{ flex: 1 }}>
-                    <button className="btn-primary" style={{ width: '100%', fontSize: '0.85rem', padding: '10px 8px', backgroundColor: '#059669' }}>📄 Cetak Lunas (Web)</button>
+                    <button className="btn-primary" style={{ width: '100%', fontSize: '0.85rem', padding: '10px 8px', backgroundColor: '#15803d', borderColor: '#15803d' }}>Cetak Lunas (Web)</button>
                   </a>
                 )}
               </div>
@@ -955,10 +956,11 @@ export default function AdminClientDetail({ params }) {
               </div>
               <button 
                 onClick={() => removeSession(index)}
-                style={{ padding: '10px 12px', backgroundColor: '#fee2e2', color: '#b91c1c', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+                style={{ minWidth: '44px', minHeight: '44px', padding: '10px 12px', backgroundColor: '#fee2e2', color: '#b91c1c', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                 title="Hapus Sesi"
+                aria-label="Hapus Sesi"
               >
-                🗑️
+                <TrashIcon size={16} />
               </button>
             </div>
           ))}
@@ -998,10 +1000,11 @@ export default function AdminClientDetail({ params }) {
                     }
                   }}
                   disabled={savingEditedLink}
-                  style={{ padding: '10px 12px', backgroundColor: '#fee2e2', color: '#b91c1c', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+                  style={{ minWidth: '44px', minHeight: '44px', padding: '10px 12px', backgroundColor: '#fee2e2', color: '#b91c1c', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                   title="Hapus Link Hasil Edit"
+                  aria-label="Hapus Link Hasil Edit"
                 >
-                  🗑️
+                  <TrashIcon size={16} />
                 </button>
               )}
             </div>
@@ -1098,28 +1101,29 @@ export default function AdminClientDetail({ params }) {
               marginTop: '16px',
               padding: '14px 16px',
               borderRadius: '10px',
-              backgroundColor: '#fffbeb',
-              border: '2px solid #f59e0b',
-              boxShadow: '0 4px 12px rgba(245, 158, 11, 0.12)'
+              backgroundColor: '#fff7ed',
+              border: '2px solid var(--accent)',
+              boxShadow: '0 4px 12px rgba(249, 115, 22, 0.14)'
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '8px' }}>
-                <div style={{ fontWeight: '700', fontSize: '0.95rem', color: '#92400e', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  🎯 Batas Maksimal Pilihan Foto
+                <div style={{ fontWeight: '700', fontSize: '0.95rem', color: '#9a3412', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <TargetIcon size={17} />
+                  <span>Batas Maksimal Pilihan Foto</span>
                 </div>
                 <span style={{
                   fontSize: '0.78rem',
                   fontWeight: '700',
                   padding: '4px 10px',
                   borderRadius: '999px',
-                  backgroundColor: Number(project.maxSelections || 0) > 0 ? '#f59e0b' : '#e5e7eb',
-                  color: Number(project.maxSelections || 0) > 0 ? '#ffffff' : '#374151',
+                  backgroundColor: Number(project.maxSelections || 0) > 0 ? '#c2410c' : 'var(--surface-muted)',
+                  color: Number(project.maxSelections || 0) > 0 ? '#ffffff' : 'var(--text-primary)',
                 }}>
                   {Number(project.maxSelections || 0) > 0
                     ? `Maks. ${project.maxSelections} Foto${project.isMultiSelector ? ' / Orang' : ''}`
                     : 'Tanpa Batas (Bebas)'}
                 </span>
               </div>
-              <p style={{ fontSize: '0.82rem', color: '#78350f', lineHeight: 1.45, marginBottom: '12px' }}>
+              <p style={{ fontSize: '0.82rem', color: '#7c2d12', lineHeight: 1.45, marginBottom: '12px' }}>
                 {project.isMultiSelector
                   ? 'Mode Multi-Pemilih aktif: batas ini berlaku untuk masing-masing orang (contoh: isi 10 berarti tiap orang boleh pilih maksimal 10 foto). Kosongkan atau isi 0 jika bebas.'
                   : 'Tentukan batas maksimal foto yang boleh dipilih klien (boleh pilih kurang dari batas, tidak bisa lebih). Kosongkan atau isi 0 jika bebas.'}
@@ -1128,18 +1132,19 @@ export default function AdminClientDetail({ params }) {
                 <input
                   type="number"
                   min="0"
+                  aria-label="Batas maksimal pilihan foto"
                   placeholder="Contoh: 20 (0 = bebas)"
                   value={maxSelectionsInput}
                   onChange={(e) => setMaxSelectionsInput(e.target.value)}
                   className="input-field"
-                  style={{ flex: '1 1 160px', backgroundColor: '#ffffff', borderColor: '#f59e0b', fontWeight: '600' }}
+                  style={{ flex: '1 1 160px', backgroundColor: '#ffffff', borderColor: 'var(--accent)', fontWeight: '600' }}
                 />
                 <button
                   type="button"
                   onClick={() => handleSaveMaxSelections()}
                   disabled={savingMaxSelections}
                   className="btn-primary"
-                  style={{ backgroundColor: '#d97706', border: 'none', padding: '10px 18px', minHeight: '44px', whiteSpace: 'nowrap' }}
+                  style={{ backgroundColor: '#c2410c', borderColor: '#c2410c', padding: '10px 18px', minHeight: '44px', whiteSpace: 'nowrap' }}
                 >
                   {savingMaxSelections ? 'Menyimpan...' : 'Simpan Batas'}
                 </button>
@@ -1149,7 +1154,7 @@ export default function AdminClientDetail({ params }) {
                     onClick={() => handleSaveMaxSelections(0)}
                     disabled={savingMaxSelections}
                     className="btn-secondary"
-                    style={{ padding: '10px 14px', minHeight: '44px', whiteSpace: 'nowrap', borderColor: '#fcd34d', color: '#92400e', backgroundColor: '#ffffff' }}
+                    style={{ padding: '10px 14px', minHeight: '44px', whiteSpace: 'nowrap', borderColor: 'var(--accent)', color: '#9a3412', backgroundColor: '#ffffff' }}
                   >
                     Jadikan Bebas
                   </button>
@@ -1159,13 +1164,13 @@ export default function AdminClientDetail({ params }) {
           </div>
         ) : (
           <div style={{ background: '#fee2e2', color: '#991b1b', padding: '16px', borderRadius: '8px', marginBottom: '24px', fontSize: '0.9rem' }}>
-            ⚠️ Anda belum menyimpan Link Google Drive. Link untuk klien belum bisa digunakan.
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><AlertIcon size={16} /> Anda belum menyimpan Link Google Drive. Link untuk klien belum bisa digunakan.</span>
           </div>
         )}
 
         {/* Invoice Link Section */}
-        <div style={{ background: 'rgba(59, 130, 246, 0.1)', padding: '16px', borderRadius: '8px', marginBottom: '32px' }}>
-          <h3 style={{ fontSize: '1.05rem', fontWeight: '600', marginBottom: '4px', color: '#1d4ed8' }}>Link Web Invoice</h3>
+        <div style={{ background: 'rgba(21, 16, 58, 0.06)', border: '1px solid var(--border-color)', padding: '16px', borderRadius: '8px', marginBottom: '32px' }}>
+          <h3 style={{ fontSize: '1.05rem', fontWeight: '600', marginBottom: '4px', color: 'var(--primary)' }}>Link Web Invoice</h3>
           <p style={{ fontSize: '0.85rem', marginBottom: '12px', color: '#4b5563' }}>Salin link ini jika ingin membagikan tagihan/kwitansi secara manual.</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <input 
@@ -1176,7 +1181,7 @@ export default function AdminClientDetail({ params }) {
               style={{ width: '100%', backgroundColor: 'white', fontSize: '0.85rem' }} 
             />
             <div style={{ display: 'flex', gap: '8px' }}>
-              <button className="btn-primary" style={{ flex: 1, backgroundColor: '#2563eb' }} onClick={() => {
+              <button className="btn-primary" style={{ flex: 1 }} onClick={() => {
                 navigator.clipboard.writeText(`${clientLink}/invoice?type=${status === 'Lunas' ? 'receipt' : status === 'DP' ? 'receipt_dp' : 'invoice'}`);
                 Swal.fire('Link Invoice disalin!');
               }}>Copy</button>
@@ -1198,9 +1203,9 @@ export default function AdminClientDetail({ params }) {
                 <button
                   onClick={() => handleUnlockSelector(null)}
                   className="btn-secondary"
-                  style={{ padding: '6px 12px', fontSize: '0.85rem' }}
+                  style={{ padding: '8px 14px', minHeight: '44px', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                 >
-                  🔓 Buka Kunci Pilihan
+                  <UnlockIcon size={15} /> Buka Kunci Pilihan
                 </button>
               )}
             </div>
@@ -1217,14 +1222,15 @@ export default function AdminClientDetail({ params }) {
                 <button
                   onClick={() => setSelectorFilter('all')}
                   style={{
-                    padding: '6px 12px',
+                    padding: '8px 14px',
+                    minHeight: '44px',
                     borderRadius: '999px',
                     fontSize: '0.82rem',
                     fontWeight: '600',
                     cursor: 'pointer',
-                    border: selectorFilter === 'all' ? '1px solid #0f172a' : '1px solid #cbd5e1',
-                    backgroundColor: selectorFilter === 'all' ? '#0f172a' : '#ffffff',
-                    color: selectorFilter === 'all' ? '#ffffff' : '#334155',
+                    border: selectorFilter === 'all' ? '1px solid var(--primary)' : '1px solid var(--border-strong)',
+                    backgroundColor: selectorFilter === 'all' ? 'var(--primary)' : '#ffffff',
+                    color: selectorFilter === 'all' ? '#ffffff' : 'var(--text-primary)',
                   }}
                 >
                   Semua ({project.selectedPhotos ? project.selectedPhotos.length : 0})
@@ -1237,26 +1243,33 @@ export default function AdminClientDetail({ params }) {
                       <button
                         onClick={() => setSelectorFilter(selName)}
                         style={{
-                          padding: '6px 12px',
+                          padding: '8px 14px',
+                          minHeight: '44px',
                           borderRadius: '999px',
                           fontSize: '0.82rem',
                           fontWeight: '600',
                           cursor: 'pointer',
-                          border: isActive ? '1px solid #0f172a' : '1px solid #cbd5e1',
-                          backgroundColor: isActive ? '#0f172a' : '#ffffff',
-                          color: isActive ? '#ffffff' : '#334155',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          border: isActive ? '1px solid var(--primary)' : '1px solid var(--border-strong)',
+                          backgroundColor: isActive ? 'var(--primary)' : '#ffffff',
+                          color: isActive ? '#ffffff' : 'var(--text-primary)',
                         }}
                       >
-                        {selName} ({counts[selName] || 0}){isSelLocked ? ' 🔒' : ''}
+                        <span>{selName} ({counts[selName] || 0})</span>
+                        {isSelLocked && <LockIcon size={13} />}
                       </button>
                       {isSelLocked && (
                         <button
                           onClick={() => handleUnlockSelector(selName)}
                           title={`Buka kunci pilihan ${selName}`}
                           style={{
-                            padding: '4px 8px',
-                            borderRadius: '6px',
-                            fontSize: '0.75rem',
+                            padding: '8px 12px',
+                            minHeight: '44px',
+                            borderRadius: '8px',
+                            fontSize: '0.78rem',
+                            fontWeight: '600',
                             border: '1px solid #fca5a5',
                             backgroundColor: '#fef2f2',
                             color: '#b91c1c',
@@ -1288,11 +1301,11 @@ export default function AdminClientDetail({ params }) {
                     return (
                       <div key={photoName} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', fontSize: '0.9rem', color: '#374151', padding: '8px 12px', backgroundColor: '#ffffff', border: '1px solid #d1d5db', borderRadius: '6px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-                          <span style={{ color: '#9ca3af', width: '24px', flexShrink: 0 }}>{i + 1}.</span>
+                          <span style={{ color: 'var(--text-secondary)', width: '24px', flexShrink: 0 }}>{i + 1}.</span>
                           <span style={{ wordBreak: 'break-all', fontWeight: '500' }}>{photoName}</span>
                         </div>
                         {owner && (
-                          <span style={{ fontSize: '0.72rem', fontWeight: '600', padding: '2px 8px', borderRadius: '999px', backgroundColor: '#e0f2fe', color: '#0369a1', flexShrink: 0 }}>
+                          <span style={{ fontSize: '0.72rem', fontWeight: '600', padding: '2px 8px', borderRadius: '999px', backgroundColor: '#ffedd5', color: '#9a3412', flexShrink: 0 }}>
                             {owner}
                           </span>
                         )}
@@ -1325,7 +1338,7 @@ export default function AdminClientDetail({ params }) {
             onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#fecaca'; }}
             onMouseOut={(e) => { e.currentTarget.style.backgroundColor = '#fee2e2'; }}
           >
-            🗑️ Hapus Project Ini
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><TrashIcon size={16} /> Hapus Project Ini</span>
           </button>
         </div>
       </div>

@@ -48,7 +48,7 @@ export default function InvoiceView({ id }) {
     invoiceTitle = 'TANDA TERIMA';
     invoiceSubtitle = 'Uang Muka (DP)';
     invoiceStatus = 'DP DITERIMA';
-    statusColor = '#ca8a04';
+    statusColor = '#9a3412';
   } else if (type === 'receipt') {
     invoiceTitle = 'TANDA TERIMA';
     invoiceSubtitle = 'Pelunasan';
@@ -128,12 +128,12 @@ export default function InvoiceView({ id }) {
           URL.revokeObjectURL(url);
         }
 
-        if (btn) btn.innerHTML = '📄 Unduh / Bagikan PDF';
+        if (btn) btn.innerHTML = 'Unduh / Bagikan PDF';
       });
     } catch (error) {
       console.error('Error generating PDF:', error);
       Swal.fire('Gagal membuat PDF.');
-      if (btn) btn.innerHTML = '📄 Unduh / Bagikan PDF';
+      if (btn) btn.innerHTML = 'Unduh / Bagikan PDF';
     }
   };
 
@@ -151,10 +151,10 @@ export default function InvoiceView({ id }) {
 
       <div className="no-print" style={{ display: 'flex', gap: '12px', justifyContent: 'center', margin: '24px auto 0', maxWidth: '800px', padding: '0 20px' }}>
         <button onClick={printInvoice} className="btn-secondary" style={{ padding: '12px 24px', flex: 1, maxWidth: '200px' }}>
-          🖨️ Cetak
+          Cetak
         </button>
         <button id="btn-download-pdf" onClick={handleDownloadPDF} className="btn-primary" style={{ padding: '12px 24px', flex: 1, maxWidth: '200px' }}>
-          📄 Unduh / Bagikan PDF
+          Unduh / Bagikan PDF
         </button>
       </div>
 

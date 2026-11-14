@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import NewClientModal from '@/components/NewClientModal';
+import { CalendarIcon } from '@/components/Icons';
 import { getProjects } from '@/lib/projectService';
 import { MONTH_NAMES_ID, parseIndonesianDateMs, parseShootDateTime } from '@/lib/dateUtils';
 
@@ -114,7 +115,7 @@ export default function AdminDashboard() {
       {!loading && upcomingProjects.length > 0 && (
         <div style={{ marginBottom: '32px', backgroundColor: '#fffbeb', border: '1px solid #fef3c7', borderRadius: '12px', padding: '20px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
           <h2 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#92400e', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            🔔 Pengingat Jadwal Pemotretan Terdekat
+            <CalendarIcon size={18} /> Pengingat Jadwal Pemotretan Terdekat
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {upcomingProjects.map(p => (

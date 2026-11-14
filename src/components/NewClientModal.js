@@ -1,7 +1,8 @@
 'use client';
 import Swal from 'sweetalert2';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { RefreshIcon } from '@/components/Icons';
 import { useRouter } from 'next/navigation';
 import { createProject, getProjects } from '@/lib/projectService';
 import CustomDatePicker from '@/components/CustomDatePicker';
@@ -194,6 +195,14 @@ export default function NewClientModal({ onClose, onSuccess }) {
     }
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && onClose) onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   const handleOverlayClick = (e) => {
     if (window.innerWidth > 768) {
       if (onClose) onClose();
@@ -203,7 +212,7 @@ export default function NewClientModal({ onClose, onSuccess }) {
   return (
     <div onClick={handleOverlayClick} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
       <div onClick={(e) => e.stopPropagation()} style={{ backgroundColor: '#ffffff', borderRadius: '16px', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)', padding: '24px 16px', width: '100%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto', position: 'relative' }}>
-        <button onClick={onClose} type="button" style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#6b7280' }}>&times;</button>
+        <button onClick={onClose} type="button" aria-label="Tutup modal" style={{ position: 'absolute', top: '12px', right: '12px', background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--text-secondary)', minWidth: '44px', minHeight: '44px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>&times;</button>
         <h1 style={{ fontSize: 'clamp(1.5rem, 5vw, 1.8rem)', fontWeight: '700', marginBottom: '24px' }}>Tambah Klien Baru</h1>
         
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -300,7 +309,7 @@ export default function NewClientModal({ onClose, onSuccess }) {
               style={{ padding: '0 14px', height: '44px', minHeight: '44px', color: '#4b5563', display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}
               title="Reset Jam"
             >
-              🔄 Reset
+              <RefreshIcon size={15} /> Reset
             </button>
           </div>
 
@@ -326,7 +335,7 @@ export default function NewClientModal({ onClose, onSuccess }) {
                   <label className="form-label" style={{ fontSize: '0.85rem' }}>Selesai</label>
                   <input type="time" className="input-field" value={sch.endTime} onChange={(e) => updateSchedule(index, 'endTime', e.target.value)} />
                 </div>
-                <button type="button" onClick={() => { updateSchedule(index, 'startTime', ''); updateSchedule(index, 'endTime', ''); }} className="btn-secondary" style={{ padding: '0 12px', height: '44px', minHeight: '44px', color: '#4b5563', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>🔄</button>
+                <button type="button" aria-label="Reset Jam" onClick={() => { updateSchedule(index, 'startTime', ''); updateSchedule(index, 'endTime', ''); }} className="btn-secondary" style={{ padding: '0 12px', height: '44px', minHeight: '44px', minWidth: '44px', color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><RefreshIcon size={15} /></button>
               </div>
             </div>
           ))}

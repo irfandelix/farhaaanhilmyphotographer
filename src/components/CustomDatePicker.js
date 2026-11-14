@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { CalendarIcon } from '@/components/Icons';
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -24,6 +25,15 @@ export default function CustomDatePicker({
   style = {}
 }) {
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setIsOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
 
   const parseDateValue = (val) => {
     if (!val || typeof val !== 'string') return null;
@@ -133,8 +143,11 @@ export default function CustomDatePicker({
       />
 
       {/* Trigger Field */}
-      <div
+      <button
+        type="button"
         onClick={handleOpen}
+        aria-haspopup="dialog"
+        aria-expanded={isOpen}
         className={className}
         style={{
           display: 'flex',
@@ -142,14 +155,17 @@ export default function CustomDatePicker({
           justifyContent: 'space-between',
           cursor: 'pointer',
           userSelect: 'none',
-          backgroundColor: '#fff',
-          color: displayValue ? '#111827' : '#9ca3af',
+          backgroundColor: 'var(--surface-color)',
+          color: displayValue ? 'var(--text-primary)' : 'var(--text-secondary)',
+          textAlign: 'left',
           ...style
         }}
       >
         <span>{displayValue || placeholder}</span>
-        <span style={{ fontSize: '1rem', color: '#6b7280', marginLeft: '8px' }}>📅</span>
-      </div>
+        <span style={{ color: 'var(--text-secondary)', marginLeft: '8px', display: 'inline-flex', alignItems: 'center' }}>
+          <CalendarIcon size={16} />
+        </span>
+      </button>
 
       {/* Calendar Modal Popup */}
       {isOpen && (
@@ -225,7 +241,7 @@ export default function CustomDatePicker({
             {/* Weekday Headers */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', textAlign: 'center', marginBottom: '8px' }}>
               {DAY_NAMES.map((dayName) => (
-                <div key={dayName} style={{ fontSize: '0.75rem', fontWeight: '600', color: '#9ca3af', padding: '4px 0' }}>
+                <div key={dayName} style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--text-secondary)', padding: '4px 0' }}>
                   {dayName}
                 </div>
               ))}

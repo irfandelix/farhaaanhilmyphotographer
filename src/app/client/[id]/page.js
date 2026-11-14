@@ -4,6 +4,7 @@ import Swal from 'sweetalert2';
 import { useEffect, useState, use, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { getProjectById, updateSelectedPhotos, subscribeToProject, togglePhotoSelectionDB } from '@/lib/projectService';
+import { CameraIcon, CheckCircleIcon, DownloadIcon, FolderIcon, LockIcon, TargetIcon } from '@/components/Icons';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import Lightbox from "yet-another-react-lightbox";
@@ -26,6 +27,15 @@ export default function ClientGallery({ params }) {
   const [selectorName, setSelectorName] = useState('');
   const [nameInput, setNameInput] = useState('');
   const [showNameModal, setShowNameModal] = useState(false);
+
+  useEffect(() => {
+    if (!showNameModal || !selectorName) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setShowNameModal(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showNameModal, selectorName]);
   
   const [editedPhotos, setEditedPhotos] = useState([]);
   const [activeTab, setActiveTab] = useState('raw'); // 'raw' or 'edited'
@@ -63,7 +73,7 @@ export default function ClientGallery({ params }) {
     async function loadData() {
       const proj = await getProjectById(id);
       if (!proj) {
-        setError('Project tidak ditemukan.');
+        setError('Project not found.');
         setLoading(false);
         return;
       }
@@ -131,7 +141,7 @@ export default function ClientGallery({ params }) {
     if (currentSession && currentSession.folderId) {
       window.open(`https://drive.google.com/drive/folders/${currentSession.folderId}`, '_blank');
     } else {
-      Swal.fire('Error', 'Folder Google Drive tidak ditemukan.', 'error');
+      Swal.fire('Error', 'Google Drive folder not found.', 'error');
     }
   };
 
@@ -139,7 +149,7 @@ export default function ClientGallery({ params }) {
     if (project && project.gdriveEditedFolderId) {
       window.open(`https://drive.google.com/drive/folders/${project.gdriveEditedFolderId}`, '_blank');
     } else {
-      Swal.fire('Error', 'Folder Google Drive untuk foto edit tidak ditemukan.', 'error');
+      Swal.fire('Error', 'Google Drive folder for edited photos not found.', 'error');
     }
   };
 
@@ -387,27 +397,28 @@ export default function ClientGallery({ params }) {
   return (
     <main style={{ padding: '20px 16px', paddingBottom: '120px', maxWidth: '1200px', margin: '0 auto' }}>
       <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-        <h1 style={{ fontSize: 'clamp(1.8rem, 5vw, 2.5rem)', fontWeight: '700', marginBottom: '8px' }}>Hai, {project.clientName}! 👋</h1>
-        <p style={{ color: '#4b5563', fontSize: 'clamp(0.95rem, 3vw, 1.1rem)' }}>
+        <h1 style={{ fontSize: 'clamp(1.8rem, 5vw, 2.5rem)', fontWeight: '700', marginBottom: '8px', color: 'var(--primary)' }}>Hi, {project.clientName}!</h1>
+        <p style={{ color: 'var(--text-secondary)', fontSize: 'clamp(0.95rem, 3vw, 1.1rem)' }}>
           {project.gdriveEditedFolderId 
-            ? "Kabar gembira! Foto hasil editan kamu sudah siap diunduh." 
-            : "Silakan pilih foto-foto yang Anda inginkan untuk diedit."}
+            ? "Great news! Your edited photos are ready to download." 
+            : "Please select the photos you would like us to edit."}
         </p>
         {maxSelections > 0 && (
-          <div style={{ marginTop: '10px', display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '5px 14px', borderRadius: '999px', backgroundColor: '#fffbeb', border: '1px solid #f59e0b', color: '#92400e', fontSize: '0.85rem', fontWeight: '600', marginRight: isMultiSelector && selectorName ? '8px' : '0' }}>
-            🎯 Max Selection: {maxSelections} {maxSelections === 1 ? 'photo' : 'photos'}{isMultiSelector ? ' / person' : ''}
+          <div style={{ marginTop: '10px', display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '999px', backgroundColor: '#fff7ed', border: '1.5px solid var(--accent)', color: '#9a3412', fontSize: '0.85rem', fontWeight: '600', marginRight: isMultiSelector && selectorName ? '8px' : '0' }}>
+            <TargetIcon size={15} />
+            <span>Max Selection: {maxSelections} {maxSelections === 1 ? 'photo' : 'photos'}{isMultiSelector ? ' / person' : ''}</span>
           </div>
         )}
         {isMultiSelector && selectorName && (
-          <div style={{ marginTop: '12px', display: 'inline-flex', alignItems: 'center', gap: '10px', padding: '6px 14px', borderRadius: '999px', backgroundColor: '#f1f5f9', border: '1px solid #cbd5e1', fontSize: '0.88rem' }}>
-            <span style={{ color: '#334155' }}>
+          <div style={{ marginTop: '12px', display: 'inline-flex', alignItems: 'center', gap: '10px', padding: '6px 14px', borderRadius: '999px', backgroundColor: 'var(--surface-muted)', border: '1px solid var(--border-strong)', fontSize: '0.88rem' }}>
+            <span style={{ color: 'var(--text-primary)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
               Selecting as: <strong style={{ color: 'var(--primary)' }}>{selectorName}</strong>
-              {isCurrentSelectorLocked && ' 🔒'}
+              {isCurrentSelectorLocked && <LockIcon size={13} />}
             </span>
             <button
               type="button"
               onClick={() => setShowNameModal(true)}
-              style={{ border: 'none', background: 'white', color: '#0f172a', padding: '3px 10px', borderRadius: '999px', fontSize: '0.78rem', fontWeight: '600', cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.08)' }}
+              style={{ border: '1px solid var(--border-strong)', background: 'var(--surface-color)', color: 'var(--primary)', padding: '6px 12px', minHeight: '34px', borderRadius: '999px', fontSize: '0.78rem', fontWeight: '600', cursor: 'pointer' }}
             >
               Switch
             </button>
@@ -457,7 +468,7 @@ export default function ClientGallery({ params }) {
                           fontSize: '0.85rem', fontWeight: '600', cursor: 'pointer'
                         }}
                       >
-                        {name} ({counts[name] || 0}){lockedSelectors.includes(name) ? ' 🔒' : ''}
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>{name} ({counts[name] || 0}){lockedSelectors.includes(name) && <LockIcon size={12} />}</span>
                       </button>
                     ))}
                   </div>
@@ -504,26 +515,32 @@ export default function ClientGallery({ params }) {
       {project.gdriveEditedFolderId && (
         <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', marginBottom: '32px' }}>
           <button 
+            type="button"
             onClick={() => setActiveTab('raw')}
             style={{
-              padding: '12px 24px', borderRadius: '100px', fontWeight: '600', border: 'none', cursor: 'pointer', transition: 'all 0.2s',
-              backgroundColor: activeTab === 'raw' ? 'var(--primary)' : '#e5e7eb',
-              color: activeTab === 'raw' ? 'white' : '#4b5563',
-              boxShadow: activeTab === 'raw' ? '0 4px 12px rgba(0,0,0,0.1)' : 'none'
+              padding: '12px 22px', minHeight: '44px', borderRadius: '100px', fontWeight: '600', border: '1px solid', cursor: 'pointer', transition: 'all 0.2s',
+              display: 'inline-flex', alignItems: 'center', gap: '8px',
+              backgroundColor: activeTab === 'raw' ? 'var(--primary)' : 'var(--surface-color)',
+              color: activeTab === 'raw' ? '#ffffff' : 'var(--text-primary)',
+              borderColor: activeTab === 'raw' ? 'var(--primary)' : 'var(--border-strong)',
             }}
           >
-            Foto Original 📸
+            <CameraIcon size={16} />
+            <span>Original Photos</span>
           </button>
           <button 
+            type="button"
             onClick={() => setActiveTab('edited')}
             style={{
-              padding: '12px 24px', borderRadius: '100px', fontWeight: '600', border: 'none', cursor: 'pointer', transition: 'all 0.2s',
-              backgroundColor: activeTab === 'edited' ? '#3b82f6' : '#e5e7eb',
-              color: activeTab === 'edited' ? 'white' : '#4b5563',
-              boxShadow: activeTab === 'edited' ? '0 4px 12px rgba(5,150,105,0.3)' : 'none'
+              padding: '12px 22px', minHeight: '44px', borderRadius: '100px', fontWeight: '600', border: '1px solid', cursor: 'pointer', transition: 'all 0.2s',
+              display: 'inline-flex', alignItems: 'center', gap: '8px',
+              backgroundColor: activeTab === 'edited' ? 'var(--primary)' : 'var(--surface-color)',
+              color: activeTab === 'edited' ? '#ffffff' : 'var(--text-primary)',
+              borderColor: activeTab === 'edited' ? 'var(--primary)' : 'var(--border-strong)',
             }}
           >
-            Hasil Edit Final ✨
+            <CheckCircleIcon size={16} />
+            <span>Final Edited</span>
           </button>
         </div>
       )}
@@ -534,9 +551,9 @@ export default function ClientGallery({ params }) {
           {/* Removed tabs, sessions, download to put in toolbar below */}
           
           {loadingPhotos ? (
-            <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>
-              <div style={{ display: 'inline-block', width: '24px', height: '24px', border: '3px solid #e5e7eb', borderTopColor: '#3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '8px' }}></div>
-              <p>Memuat foto sesi...</p>
+            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+              <div style={{ display: 'inline-block', width: '24px', height: '24px', border: '3px solid var(--border-color)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '8px' }}></div>
+              <p>Loading session photos...</p>
               <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
             </div>
           ) : (
@@ -546,35 +563,38 @@ export default function ClientGallery({ params }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button 
+                      type="button"
                       onClick={() => setViewMode('all')}
                       style={{
-                        padding: '6px 14px', borderRadius: '8px', fontWeight: '600', border: '1px solid', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.9rem',
-                        backgroundColor: viewMode === 'all' ? '#111827' : 'white',
-                        color: viewMode === 'all' ? 'white' : '#4b5563',
-                        borderColor: viewMode === 'all' ? '#111827' : '#d1d5db'
+                        padding: '8px 14px', minHeight: '44px', borderRadius: '8px', fontWeight: '600', border: '1px solid', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.9rem',
+                        backgroundColor: viewMode === 'all' ? 'var(--primary)' : 'var(--surface-color)',
+                        color: viewMode === 'all' ? '#ffffff' : 'var(--text-primary)',
+                        borderColor: viewMode === 'all' ? 'var(--primary)' : 'var(--border-strong)'
                       }}
                     >
                       All Photos ({photos.length})
                     </button>
                     <button 
+                      type="button"
                       onClick={() => setViewMode('selected')}
                       style={{
-                        padding: '6px 14px', borderRadius: '8px', fontWeight: '600', border: '1px solid', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.9rem',
-                        backgroundColor: viewMode === 'selected' ? '#111827' : 'white',
-                        color: viewMode === 'selected' ? 'white' : '#4b5563',
-                        borderColor: viewMode === 'selected' ? '#111827' : '#d1d5db'
+                        padding: '8px 14px', minHeight: '44px', borderRadius: '8px', fontWeight: '600', border: '1px solid', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.9rem',
+                        backgroundColor: viewMode === 'selected' ? 'var(--primary)' : 'var(--surface-color)',
+                        color: viewMode === 'selected' ? '#ffffff' : 'var(--text-primary)',
+                        borderColor: viewMode === 'selected' ? 'var(--primary)' : 'var(--border-strong)'
                       }}
                     >
                       {isMultiSelector ? `My Picks (${mySelectedPhotos.length})` : `Selected Photos (${selectedPhotos.length})`}
                     </button>
                     {isMultiSelector && (
                       <button 
+                        type="button"
                         onClick={() => setViewMode('unselected')}
                         style={{
-                          padding: '6px 14px', borderRadius: '8px', fontWeight: '600', border: '1px solid', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.9rem',
-                          backgroundColor: viewMode === 'unselected' ? '#111827' : 'white',
-                          color: viewMode === 'unselected' ? 'white' : '#4b5563',
-                          borderColor: viewMode === 'unselected' ? '#111827' : '#d1d5db'
+                          padding: '8px 14px', minHeight: '44px', borderRadius: '8px', fontWeight: '600', border: '1px solid', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.9rem',
+                          backgroundColor: viewMode === 'unselected' ? 'var(--primary)' : 'var(--surface-color)',
+                          color: viewMode === 'unselected' ? '#ffffff' : 'var(--text-primary)',
+                          borderColor: viewMode === 'unselected' ? 'var(--primary)' : 'var(--border-strong)'
                         }}
                       >
                         Available ({unselectedPhotoObjects.length})
@@ -588,17 +608,18 @@ export default function ClientGallery({ params }) {
                       onClick={handleDownloadRawZip}
                       disabled={downloadingZip}
                       className="btn-primary" 
-                      style={{ padding: '6px 14px', fontSize: '0.9rem', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '8px', border: 'none', color: 'white', cursor: 'pointer', fontWeight: '600' }}
+                      style={{ padding: '8px 14px', minHeight: '44px', fontSize: '0.9rem', backgroundColor: 'var(--primary)', display: 'inline-flex', alignItems: 'center', gap: '6px', borderRadius: '8px', border: 'none', color: '#ffffff', cursor: 'pointer', fontWeight: '600' }}
                       title="Only available for fully paid clients"
                     >
-                      {downloadingZip ? '⏳ Processing...' : '📂 Open Original Photo'}
+                      <FolderIcon size={16} />
+                      <span>{downloadingZip ? 'Processing...' : 'Open Original Photos'}</span>
                     </button>
 
                         {downloadingZip && (
                            <div style={{ display: 'flex', alignItems: 'center', background: '#f3f4f6', borderRadius: '8px', padding: '6px 12px', gap: '12px' }}>
                              <div style={{ display: 'flex', flexDirection: 'column', minWidth: '130px' }}>
                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '0.8rem' }}>
-                                  <span style={{ fontWeight: '600', color: 'black' }}>{downloadProgress}% {downloadState === 'packing' ? '(Mengemas)' : ''}</span>
+                                  <span style={{ fontWeight: '600', color: 'var(--text-primary)' }}>{downloadProgress}% {downloadState === 'packing' ? '(Packing)' : ''}</span>
                                </div>
                                <div style={{ width: '100%', backgroundColor: '#e5e7eb', height: '6px', borderRadius: '3px', overflow: 'hidden' }}>
                                  <div style={{ width: `${downloadProgress}%`, backgroundColor: downloadState === 'paused' ? '#f59e0b' : '#3b82f6', height: '100%', transition: 'width 0.3s' }}></div>
@@ -618,7 +639,7 @@ export default function ClientGallery({ params }) {
                                   }} 
                                   style={{ padding: '4px 8px', backgroundColor: downloadState === 'paused' ? '#10b981' : '#f59e0b', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: '500', fontSize: '0.8rem' }}
                                 >
-                                  {downloadState === 'paused' ? '▶ Lanjut' : '⏸ Jeda'}
+                                  {downloadState === 'paused' ? 'Resume' : 'Pause'}
                                 </button>
                                 <button 
                                   onClick={(e) => {
@@ -628,7 +649,7 @@ export default function ClientGallery({ params }) {
                                   }} 
                                   style={{ padding: '4px 8px', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: '500', fontSize: '0.8rem' }}
                                 >
-                                  ⏹ Batal
+                                  Cancel
                                 </button>
                              </div>
                            </div>
@@ -695,9 +716,9 @@ export default function ClientGallery({ params }) {
               )}
               
               {viewMode === 'selected' && selectedPhotoObjects.length === 0 ? (
-                <div style={{ padding: '60px 20px', textAlign: 'center', backgroundColor: '#f9fafb', borderRadius: '12px', border: '1px dashed #d1d5db' }}>
-                  <p style={{ color: '#6b7280', fontSize: '1.1rem', marginBottom: '8px' }}>No photos selected yet.</p>
-                  <p style={{ color: '#9ca3af', fontSize: '0.9rem' }}>Please return to &quot;All Photos&quot; and check the photos you want.</p>
+                <div style={{ padding: '60px 20px', textAlign: 'center', backgroundColor: 'var(--surface-color)', borderRadius: '12px', border: '1px dashed var(--border-strong)' }}>
+                  <p style={{ color: 'var(--text-primary)', fontSize: '1.1rem', marginBottom: '8px', fontWeight: '600' }}>No photos selected yet.</p>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Please return to &quot;All Photos&quot; and check the photos you want.</p>
                 </div>
               ) : viewMode === 'unselected' && unselectedPhotoObjects.length === 0 ? (
                 <div style={{ padding: '60px 20px', textAlign: 'center', backgroundColor: '#f9fafb', borderRadius: '12px', border: '1px dashed #d1d5db' }}>
@@ -747,37 +768,53 @@ export default function ClientGallery({ params }) {
                           disabled={takenByOther}
                           onClick={() => toggleSelect(photo.name)}
                           style={{
-                            width: '24px', height: '24px', borderRadius: '6px',
-                            backgroundColor: isSelected ? 'var(--primary)' : (takenByOther ? '#e5e7eb' : 'white'),
-                            border: isSelected ? '1px solid var(--primary)' : '2px solid #d1d5db',
+                            width: '44px', height: '44px',
+                            background: 'transparent', border: 'none', padding: 0,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: 'white', cursor: takenByOther ? 'not-allowed' : 'pointer', fontSize: '0.9rem', fontWeight: 'bold', padding: 0,
-                            opacity: takenByOther ? 0.6 : 1
+                            cursor: takenByOther ? 'not-allowed' : 'pointer',
                           }}
                         >
-                          {isSelected && <span aria-hidden="true">✓</span>}
+                          <span style={{
+                            width: '24px', height: '24px', borderRadius: '6px',
+                            backgroundColor: isSelected ? 'var(--primary)' : (takenByOther ? 'var(--surface-muted)' : 'var(--surface-color)'),
+                            border: isSelected ? '1px solid var(--primary)' : '2px solid var(--border-strong)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: '#ffffff', fontSize: '0.9rem', fontWeight: 'bold',
+                            opacity: takenByOther ? 0.6 : 1
+                          }}>
+                            {isSelected && <span aria-hidden="true">✓</span>}
+                          </span>
                         </button>
                         
-                        <div 
+                        <button
+                          type="button"
                           onClick={() => setPreviewIndex(currentList.findIndex(p => p.id === photo.id))}
-                          style={{ width: '60px', height: '40px', background: '#e5e7eb', cursor: 'zoom-in', borderRadius: '4px', overflow: 'hidden', opacity: takenByOther ? 0.6 : 1 }}
+                          aria-label={`Preview ${photo.name}`}
+                          style={{ width: '60px', height: '40px', background: 'var(--surface-muted)', cursor: 'zoom-in', borderRadius: '4px', overflow: 'hidden', border: 'none', padding: 0, opacity: takenByOther ? 0.6 : 1 }}
                         >
                           <img 
                             src={photo.thumbnailLink ? photo.thumbnailLink.replace('=s220', '=w100') : ''}
-                            alt={photo.name} 
+                            alt={photo.name}
+                            loading="lazy"
+                            decoding="async"
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                           />
-                        </div>
+                        </button>
                         
-                        <div onClick={() => !takenByOther && toggleSelect(photo.name)} style={{ fontSize: '0.9rem', fontWeight: '500', cursor: takenByOther ? 'default' : 'pointer', wordBreak: 'break-all' }}>
-                          <span style={{ fontFamily: 'var(--font-mono), monospace', fontSize: '0.78rem', color: 'var(--accent-hover)', fontWeight: '600', marginRight: '8px' }}>#{String(index + 1).padStart(2, '0')}</span>
+                        <button
+                          type="button"
+                          disabled={takenByOther}
+                          onClick={() => toggleSelect(photo.name)}
+                          style={{ fontSize: '0.9rem', fontWeight: '500', cursor: takenByOther ? 'not-allowed' : 'pointer', wordBreak: 'break-all', background: 'none', border: 'none', padding: 0, textAlign: 'left', color: 'var(--text-primary)' }}
+                        >
+                          <span style={{ fontFamily: 'var(--font-mono), monospace', fontSize: '0.78rem', color: '#c2410c', fontWeight: '600', marginRight: '8px' }}>#{String(index + 1).padStart(2, '0')}</span>
                           {photo.name}
                           {takenByOther && (
-                            <span style={{ marginLeft: '8px', fontSize: '0.72rem', fontWeight: '600', padding: '2px 8px', borderRadius: '999px', backgroundColor: '#fef3c7', color: '#92400e' }}>
+                            <span style={{ marginLeft: '8px', fontSize: '0.72rem', fontWeight: '600', padding: '2px 8px', borderRadius: '999px', backgroundColor: '#ffedd5', color: '#9a3412' }}>
                               By {owner}
                             </span>
                           )}
-                        </div>
+                        </button>
                         <div className="client-list-meta-hide-mobile" style={{ fontSize: '0.85rem', color: '#6b7280' }}>{width} x {height}</div>
                         <div className="client-list-meta-hide-mobile" style={{ fontSize: '0.85rem', color: '#6b7280' }}>{fileSizeMB}</div>
                         <div className="client-list-meta-hide-mobile" style={{ fontSize: '0.85rem', color: '#6b7280' }}>{dateStr}</div>
@@ -807,7 +844,7 @@ export default function ClientGallery({ params }) {
                           position: 'relative'
                         }}
                       >
-                        {/* Checkbox (Klik untuk memilih cepat) */}
+                        {/* Checkbox (44x44 touch target) */}
                         <button
                           type="button"
                           role="checkbox"
@@ -816,22 +853,29 @@ export default function ClientGallery({ params }) {
                           disabled={takenByOther}
                           onClick={() => toggleSelect(photo.name)}
                           style={{
-                            position: 'absolute', top: '12px', left: '12px', zIndex: 10,
-                            width: '32px', height: '32px', borderRadius: '50%', padding: 0,
-                            backgroundColor: isSelected ? 'var(--primary)' : (takenByOther ? '#e5e7eb' : 'rgba(255,255,255,0.92)'),
-                            border: isSelected ? '1px solid var(--primary)' : '2px solid #9ca3af',
+                            position: 'absolute', top: '4px', left: '4px', zIndex: 10,
+                            width: '44px', height: '44px', padding: 0,
+                            background: 'transparent', border: 'none',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: 'white', cursor: takenByOther ? 'not-allowed' : 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                            fontSize: '1.1rem', fontWeight: 'bold'
+                            cursor: takenByOther ? 'not-allowed' : 'pointer',
                           }}
                         >
-                          {isSelected && <span aria-hidden="true">✓</span>}
+                          <span style={{
+                            width: '30px', height: '30px', borderRadius: '50%',
+                            backgroundColor: isSelected ? 'var(--primary)' : (takenByOther ? 'var(--surface-muted)' : 'rgba(255,255,255,0.94)'),
+                            border: isSelected ? '1px solid var(--primary)' : '2px solid var(--border-strong)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: '#ffffff', boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
+                            fontSize: '1rem', fontWeight: 'bold'
+                          }}>
+                            {isSelected && <span aria-hidden="true">✓</span>}
+                          </span>
                         </button>
 
                         {takenByOther && (
                           <span style={{
                             position: 'absolute', top: '12px', right: '10px', zIndex: 10,
-                            backgroundColor: 'rgba(254, 243, 199, 0.95)', color: '#92400e',
+                            backgroundColor: '#ffedd5', color: '#9a3412',
                             fontSize: '0.7rem', fontWeight: '700', padding: '3px 8px',
                             borderRadius: '999px', boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
                             maxWidth: '90px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
@@ -840,10 +884,12 @@ export default function ClientGallery({ params }) {
                           </span>
                         )}
 
-                        <div 
+                        <button
+                          type="button"
                           onClick={() => setPreviewIndex(currentList.findIndex(p => p.id === photo.id))}
-                          style={{ height: '160px', width: '100%', position: 'relative', background: '#e5e7eb', cursor: 'zoom-in' }}
-                          title="Klik untuk perbesar"
+                          aria-label={`Enlarge ${photo.name}`}
+                          style={{ height: '160px', width: '100%', position: 'relative', background: 'var(--surface-muted)', cursor: 'zoom-in', border: 'none', padding: 0, display: 'block' }}
+                          title="Click to enlarge"
                         >
                           <img 
                             src={photo.thumbnailLink ? photo.thumbnailLink.replace('=s220', '=w600') : ''}
@@ -851,17 +897,21 @@ export default function ClientGallery({ params }) {
                               e.target.onerror = null; 
                               e.target.src = `https://drive.google.com/thumbnail?id=${photo.id}&sz=w600`; 
                             }}
-                            alt={photo.name} 
+                            alt={photo.name}
+                            loading="lazy"
+                            decoding="async"
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                           />
-                          <span style={{ position: 'absolute', bottom: '8px', left: '8px', background: 'rgba(17, 16, 29, 0.78)', color: '#ffffff', fontFamily: 'var(--font-mono), monospace', fontSize: '0.72rem', fontWeight: '600', padding: '2px 7px', borderRadius: '4px', letterSpacing: '0.03em' }}>#{String(index + 1).padStart(2, '0')}</span>
-                        </div>
-                        <div 
-                          onClick={() => !takenByOther && toggleSelect(photo.name)}
-                          style={{ padding: '12px', textAlign: 'center', fontSize: '0.9rem', fontWeight: '500', wordBreak: 'break-all', cursor: takenByOther ? 'default' : 'pointer' }}
+                          <span style={{ position: 'absolute', bottom: '8px', left: '8px', background: 'rgba(17, 16, 29, 0.82)', color: '#ffffff', fontFamily: 'var(--font-mono), monospace', fontSize: '0.72rem', fontWeight: '600', padding: '2px 7px', borderRadius: '4px', letterSpacing: '0.03em' }}>#{String(index + 1).padStart(2, '0')}</span>
+                        </button>
+                        <button
+                          type="button"
+                          disabled={takenByOther}
+                          onClick={() => toggleSelect(photo.name)}
+                          style={{ padding: '12px', textAlign: 'center', fontSize: '0.9rem', fontWeight: '500', wordBreak: 'break-all', cursor: takenByOther ? 'not-allowed' : 'pointer', background: 'none', border: 'none', width: '100%', color: 'var(--text-primary)' }}
                         >
-                {photo.name}
-              </div>
+                          {photo.name}
+                        </button>
             </div>
           )
         })}
@@ -883,16 +933,17 @@ export default function ClientGallery({ params }) {
                 onClick={handleDownloadZip}
                 disabled={downloadingZip}
                 className="btn-primary" 
-                style={{ padding: '6px 14px', fontSize: '0.9rem', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '8px', border: 'none', color: 'white', cursor: 'pointer', fontWeight: '600' }}
+                style={{ padding: '8px 14px', minHeight: '44px', fontSize: '0.9rem', backgroundColor: 'var(--primary)', display: 'inline-flex', alignItems: 'center', gap: '6px', borderRadius: '8px', border: 'none', color: '#ffffff', cursor: 'pointer', fontWeight: '600' }}
               >
-                {downloadingZip ? '⏳ Processing...' : '📂 Open Edited Photo'}
+                <FolderIcon size={16} />
+                <span>{downloadingZip ? 'Processing...' : 'Open Edited Photos'}</span>
               </button>
 
                         {downloadingZip && (
                            <div style={{ display: 'flex', alignItems: 'center', background: '#f3f4f6', borderRadius: '8px', padding: '6px 12px', gap: '12px' }}>
                              <div style={{ display: 'flex', flexDirection: 'column', minWidth: '130px' }}>
                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '0.8rem' }}>
-                                  <span style={{ fontWeight: '600', color: 'black' }}>{downloadProgress}% {downloadState === 'packing' ? '(Mengemas)' : ''}</span>
+                                  <span style={{ fontWeight: '600', color: 'var(--text-primary)' }}>{downloadProgress}% {downloadState === 'packing' ? '(Packing)' : ''}</span>
                                </div>
                                <div style={{ width: '100%', backgroundColor: '#e5e7eb', height: '6px', borderRadius: '3px', overflow: 'hidden' }}>
                                  <div style={{ width: `${downloadProgress}%`, backgroundColor: downloadState === 'paused' ? '#f59e0b' : '#3b82f6', height: '100%', transition: 'width 0.3s' }}></div>
@@ -912,7 +963,7 @@ export default function ClientGallery({ params }) {
                                   }} 
                                   style={{ padding: '4px 8px', backgroundColor: downloadState === 'paused' ? '#10b981' : '#f59e0b', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: '500', fontSize: '0.8rem' }}
                                 >
-                                  {downloadState === 'paused' ? '▶ Lanjut' : '⏸ Jeda'}
+                                  {downloadState === 'paused' ? 'Resume' : 'Pause'}
                                 </button>
                                 <button 
                                   onClick={(e) => {
@@ -922,7 +973,7 @@ export default function ClientGallery({ params }) {
                                   }} 
                                   style={{ padding: '4px 8px', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: '500', fontSize: '0.8rem' }}
                                 >
-                                  ⏹ Batal
+                                  Cancel
                                 </button>
                              </div>
                            </div>
@@ -948,14 +999,15 @@ export default function ClientGallery({ params }) {
                 </button>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <label style={{ fontSize: '0.9rem', color: '#4b5563', fontWeight: '500' }}>Urutkan:</label>
+                <label htmlFor="edited-sort-select" style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: '500' }}>Sort by:</label>
                 <select 
+                  id="edited-sort-select"
                   value={sortOrder} 
                   onChange={(e) => setSortOrder(e.target.value)}
-                  style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #d1d5db', background: 'white', color: '#111827', fontSize: '0.9rem', cursor: 'pointer' }}
+                  style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-strong)', background: 'var(--surface-color)', color: 'var(--text-primary)', fontSize: '0.9rem', cursor: 'pointer' }}
                 >
-                  <option value="name">Nama (A-Z)</option>
-                  <option value="time">Waktu Diunggah</option>
+                  <option value="name">Name (A-Z)</option>
+                  <option value="time">Upload Time</option>
                 </select>
               </div>
             </div>
@@ -1005,6 +1057,8 @@ export default function ClientGallery({ params }) {
                           e.target.onerror = null; 
                           e.target.src = `https://drive.google.com/thumbnail?id=${photo.id}&sz=w200`; 
                         }}
+                        loading="lazy"
+                        decoding="async"
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                         alt={photo.name} 
                       />
@@ -1032,8 +1086,8 @@ export default function ClientGallery({ params }) {
                         target="_blank" rel="noopener noreferrer"
                         style={{ textDecoration: 'none' }}
                       >
-                        <button style={{ width: '100%', padding: '6px 12px', background: '#e0e7ff', color: '#4f46e5', border: 'none', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '0.8rem' }}>
-                          ⬇️ Unduh
+                        <button type="button" style={{ width: '100%', minHeight: '40px', padding: '6px 12px', background: '#ffedd5', color: '#9a3412', border: '1px solid var(--accent)', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                          <DownloadIcon size={14} /> Download
                         </button>
                       </a>
                     </div>
@@ -1057,10 +1111,12 @@ export default function ClientGallery({ params }) {
                     backgroundColor: 'var(--glass-bg)'
                   }}
                 >
-                  <div 
+                  <button
+                    type="button"
                     onClick={() => setPreviewIndex(currentList.findIndex(p => p.id === photo.id))}
-                    style={{ height: '160px', width: '100%', position: 'relative', background: '#e5e7eb', cursor: 'zoom-in' }}
-                    title="Klik untuk perbesar"
+                    aria-label={`Enlarge ${photo.name}`}
+                    style={{ height: '160px', width: '100%', position: 'relative', background: 'var(--surface-muted)', cursor: 'zoom-in', border: 'none', padding: 0, display: 'block' }}
+                    title="Click to enlarge"
                   >
                     <img 
                       src={photo.thumbnailLink ? photo.thumbnailLink.replace('=s220', '=w600') : ''}
@@ -1068,10 +1124,12 @@ export default function ClientGallery({ params }) {
                         e.target.onerror = null; 
                         e.target.src = `https://drive.google.com/thumbnail?id=${photo.id}&sz=w600`; 
                       }}
-                      alt={photo.name} 
+                      alt={photo.name}
+                      loading="lazy"
+                      decoding="async"
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                     />
-                  </div>
+                  </button>
                   <div style={{ padding: '12px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <div style={{ fontSize: '0.85rem', fontWeight: '500', wordBreak: 'break-all', color: '#4b5563' }}>
                       {photo.name}
@@ -1081,8 +1139,8 @@ export default function ClientGallery({ params }) {
                       target="_blank" rel="noopener noreferrer"
                       style={{ width: '100%', display: 'block', textDecoration: 'none' }}
                     >
-                      <button style={{ width: '100%', padding: '6px', background: '#e0e7ff', color: '#4f46e5', border: 'none', borderRadius: '4px', fontWeight: '600', cursor: 'pointer', fontSize: '0.85rem' }}>
-                        ⬇️ Download
+                      <button type="button" style={{ width: '100%', minHeight: '44px', padding: '8px', background: '#ffedd5', color: '#9a3412', border: '1px solid var(--accent)', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                        <DownloadIcon size={14} /> Download
                       </button>
                     </a>
                   </div>
@@ -1095,13 +1153,13 @@ export default function ClientGallery({ params }) {
 
       {activeTab === 'raw' && photos.length === 0 && (
         <div style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
-          Belum ada foto yang ditemukan di folder original ini.
+          No photos found in this original folder yet.
         </div>
       )}
       
       {activeTab === 'edited' && editedPhotos.length === 0 && (
         <div style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
-          Belum ada foto hasil editan di folder ini.
+          No edited photos in this folder yet.
         </div>
       )}
 
@@ -1234,7 +1292,7 @@ export default function ClientGallery({ params }) {
                               textAlign: 'center'
                             }}
                           >
-                            {isSelected ? 'Selected (Batal)' : 'Select Photo'}
+                            {isSelected ? 'Selected (Cancel)' : 'Select Photo'}
                           </button>
                         )
                       )}
@@ -1248,21 +1306,23 @@ export default function ClientGallery({ params }) {
                             padding: '8px 16px',
                             fontSize: '0.9rem',
                             fontWeight: '600',
-                            backgroundColor: '#3b82f6',
+                            backgroundColor: 'var(--primary)',
                             boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                            border: 'none',
-                            color: 'white',
+                            border: '1px solid rgba(255,255,255,0.25)',
+                            color: '#ffffff',
                             borderRadius: '100px',
                             cursor: 'pointer',
                             textDecoration: 'none',
-                            display: 'flex',
+                            display: 'inline-flex',
                             alignItems: 'center',
                             justifyContent: 'center',
+                            gap: '6px',
                             pointerEvents: 'auto',
-                            minWidth: '120px'
+                            minWidth: '120px',
+                            minHeight: '44px'
                           }}
                         >
-                          Unduh
+                          <DownloadIcon size={15} /> Download
                         </a>
                       )}
                     </div>
