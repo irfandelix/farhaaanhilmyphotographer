@@ -1,4 +1,7 @@
 :root {
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-sans: 'DM Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
   --primary: #15103a;
   --primary-hover: #0f0b29;
   --accent: #f97316;
