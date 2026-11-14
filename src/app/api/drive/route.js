@@ -1,24 +1,28 @@
 import { NextResponse } from 'next/server';
 
+const FOLDER_ID_REGEX = /^[a-zA-Z0-9_-]{10,128}$/;
+
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const folderId = searchParams.get('folderId');
-  
+
   if (!folderId) {
     return NextResponse.json({ error: 'Folder ID required' }, { status: 400 });
   }
 
-  const apiKey = process.env.NEXT_PUBLIC_GDRIVE_API_KEY || ''; // We use NEXT_PUBLIC just in case, but usually better as private if only used in API route
+  if (!FOLDER_ID_REGEX.test(folderId)) {
+    return NextResponse.json({ error: 'Invalid Folder ID format' }, { status: 400 });
+  }
+
+  const apiKey = process.env.GDRIVE_API_KEY || process.env.NEXT_PUBLIC_GDRIVE_API_KEY || '';
   if (!apiKey) {
     return NextResponse.json({ error: 'API Key not configured' }, { status: 500 });
   }
 
   try {
-    // Fetch files from Google Drive API
-    // We only fetch image types
     const query = `'${folderId}' in parents and mimeType contains 'image/' and trashed = false`;
     const baseUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=nextPageToken,files(id,name,thumbnailLink,createdTime,size,imageMediaMetadata)&pageSize=1000&key=${apiKey}`;
-    
+
     let allFiles = [];
     let pageToken = null;
 

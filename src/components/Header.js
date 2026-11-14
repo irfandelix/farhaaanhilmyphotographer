@@ -2,9 +2,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { cookies } from 'next/headers';
 
+import { ADMIN_COOKIE_NAME, verifyAdminToken } from '@/lib/auth';
+
 export default async function Header() {
   const cookieStore = await cookies();
-  const isAdmin = cookieStore.get('admin_token')?.value === 'authenticated';
+  const token = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
+  const isAdmin = await verifyAdminToken(token);
   const targetHref = isAdmin ? "/admin" : "/";
 
   return (

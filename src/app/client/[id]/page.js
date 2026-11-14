@@ -43,6 +43,19 @@ export default function ClientGallery({ params }) {
   const abortControllerRef = useRef(null);
   const pauseDownloadRef = useRef(false);
 
+  const fetchSessionPhotos = async (folderId) => {
+    setLoadingPhotos(true);
+    setPhotos([]);
+    try {
+      const res = await fetch(`/api/drive?folderId=${folderId}`);
+      const data = await res.json();
+      if (!data.error) setPhotos(data.files || []);
+    } catch (err) {
+      console.error("Gagal mengambil foto sesi:", err);
+    }
+    setLoadingPhotos(false);
+  };
+
   useEffect(() => {
     async function loadData() {
       const proj = await getProjectById(id);
@@ -95,18 +108,6 @@ export default function ClientGallery({ params }) {
     return () => unsubscribe();
   }, [id]);
 
-  const fetchSessionPhotos = async (folderId) => {
-    setLoadingPhotos(true);
-    setPhotos([]);
-    try {
-      const res = await fetch(`/api/drive?folderId=${folderId}`);
-      const data = await res.json();
-      if (!data.error) setPhotos(data.files || []);
-    } catch (err) {
-      console.error("Gagal mengambil foto sesi:", err);
-    }
-    setLoadingPhotos(false);
-  };
 
   const handleSessionChange = (sessionId) => {
     setActiveSessionId(sessionId);

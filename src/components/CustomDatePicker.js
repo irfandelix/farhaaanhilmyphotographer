@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -40,14 +40,6 @@ export default function CustomDatePicker({
   const now = new Date();
   const [viewYear, setViewYear] = useState(parsed ? parsed.year : now.getFullYear());
   const [viewMonth, setViewMonth] = useState(parsed ? parsed.month : now.getMonth());
-
-  useEffect(() => {
-    const p = parseDateValue(value);
-    if (p) {
-      setViewYear(p.year);
-      setViewMonth(p.month);
-    }
-  }, [value]);
 
   const handleOpen = () => {
     const p = parseDateValue(value);

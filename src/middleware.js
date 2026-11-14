@@ -1,18 +1,16 @@
 import { NextResponse } from 'next/server';
+import { ADMIN_COOKIE_NAME, verifyAdminToken } from '@/lib/auth';
 
-export function middleware(req) {
-  // Cek apakah ada cookie sesi admin
-  const authToken = req.cookies.get('admin_token')?.value;
+export async function middleware(req) {
+  const authToken = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
 
-  if (authToken === 'authenticated') {
+  if (await verifyAdminToken(authToken)) {
     return NextResponse.next();
   }
-  
-  // Jika tidak ada atau salah, kembalikan ke halaman depan (login)
+
   return NextResponse.redirect(new URL('/', req.url));
 }
 
-// Hanya jalankan middleware ini pada halaman yang berawalan /admin
 export const config = {
   matcher: ['/admin/:path*'],
 };

@@ -10,9 +10,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
 
-  const fetchProjects = async () => {
-    setLoading(true);
-    const data = await getProjects();
+  const sortProjects = (data) => {
     const parseShootDateTime = (dateStr, timeStr) => {
       if (!dateStr) return 0;
       const monthMap = {
@@ -39,17 +37,32 @@ export default function AdminDashboard() {
       return d.getTime();
     };
 
-    const sortedData = [...data].sort((a, b) => {
+    return [...data].sort((a, b) => {
       const timeA = parseShootDateTime(a.shootDate, a.shootTime) || (a.createdAt?.seconds * 1000) || 0;
       const timeB = parseShootDateTime(b.shootDate, b.shootTime) || (b.createdAt?.seconds * 1000) || 0;
       return timeB - timeA;
     });
-    setProjects(sortedData);
+  };
+
+  const fetchProjects = async () => {
+    setLoading(true);
+    const data = await getProjects();
+    setProjects(sortProjects(data));
     setLoading(false);
   };
 
   useEffect(() => {
-    fetchProjects();
+    let active = true;
+    async function init() {
+      const data = await getProjects();
+      if (!active) return;
+      setProjects(sortProjects(data));
+      setLoading(false);
+    }
+    init();
+    return () => {
+      active = false;
+    };
   }, []);
 
   const getUpcomingProjects = (projects) => {
