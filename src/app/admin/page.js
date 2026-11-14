@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import NewClientModal from '@/components/NewClientModal';
 import { getProjects } from '@/lib/projectService';
+import { MONTH_NAMES_ID, parseIndonesianDateMs, parseShootDateTime } from '@/lib/dateUtils';
 
 export default function AdminDashboard() {
   const [projects, setProjects] = useState([]);
@@ -11,32 +12,6 @@ export default function AdminDashboard() {
   const [showModal, setShowModal] = useState(false);
 
   const sortProjects = (data) => {
-    const parseShootDateTime = (dateStr, timeStr) => {
-      if (!dateStr) return 0;
-      const monthMap = {
-        'januari': 'January', 'februari': 'February', 'maret': 'March', 'april': 'April',
-        'mei': 'May', 'juni': 'June', 'juli': 'July', 'agustus': 'August',
-        'september': 'September', 'oktober': 'October', 'november': 'November', 'desember': 'December'
-      };
-      let parsedDateStr = dateStr.toLowerCase();
-      Object.keys(monthMap).forEach(idMonth => {
-        parsedDateStr = parsedDateStr.replace(new RegExp(idMonth, "g"), monthMap[idMonth]);
-      });
-      
-      if (timeStr) {
-        let cleanTime = timeStr.replace(/WIB|WITA|WIT/gi, '').trim();
-        // If range (e.g. "9.00-10.00"), take the first one
-        cleanTime = cleanTime.split('-')[0].trim();
-        // Replace dot with colon for valid JS Date parsing
-        cleanTime = cleanTime.replace(/\./g, ':');
-        parsedDateStr += ` ${cleanTime}`;
-      }
-      
-      const d = new Date(parsedDateStr);
-      if (isNaN(d.getTime())) return 0;
-      return d.getTime();
-    };
-
     return [...data].sort((a, b) => {
       const timeA = parseShootDateTime(a.shootDate, a.shootTime) || (a.createdAt?.seconds * 1000) || 0;
       const timeB = parseShootDateTime(b.shootDate, b.shootTime) || (b.createdAt?.seconds * 1000) || 0;
@@ -69,30 +44,12 @@ export default function AdminDashboard() {
     const today = new Date();
     today.setHours(0,0,0,0);
     
-    const monthNames = ["januari", "februari", "maret", "april", "mei", "juni", "juli", "agustus", "september", "oktober", "november", "desember"];
-    const currentMonth = monthNames[today.getMonth()];
-    const nextMonth = monthNames[(today.getMonth() + 1) % 12];
-    
-    const monthMap = {
-      'januari': 'January', 'februari': 'February', 'maret': 'March', 'april': 'April',
-      'mei': 'May', 'juni': 'June', 'juli': 'July', 'agustus': 'August',
-      'september': 'September', 'oktober': 'October', 'november': 'November', 'desember': 'December'
-    };
-
-    const parseDateToMs = (dateStr) => {
-      if (!dateStr) return 9999999999999;
-      let parsedDateStr = dateStr;
-      Object.keys(monthMap).forEach(idMonth => {
-        const regex = new RegExp(idMonth, "gi");
-        parsedDateStr = parsedDateStr.replace(regex, monthMap[idMonth]);
-      });
-      const d = new Date(parsedDateStr);
-      return isNaN(d.getTime()) ? 9999999999999 : d.getTime();
-    };
+    const currentMonth = MONTH_NAMES_ID[today.getMonth()];
+    const nextMonth = MONTH_NAMES_ID[(today.getMonth() + 1) % 12];
 
     const isUpcoming = (dateStr) => {
       if (!dateStr) return false;
-      const t = parseDateToMs(dateStr);
+      const t = parseIndonesianDateMs(dateStr);
       if (t !== 9999999999999) {
         const diffDays = Math.ceil((t - today.getTime()) / (1000 * 60 * 60 * 24));
         return diffDays >= -2 && diffDays <= 14; 

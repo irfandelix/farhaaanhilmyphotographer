@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getProjectById } from '@/lib/projectService';
+import { getAdminDb, serializeProjectDoc } from '@/lib/firebaseAdmin';
 import PizZip from 'pizzip';
 import Docxtemplater from 'docxtemplater';
 import fs from 'fs';
@@ -16,10 +16,12 @@ export async function GET(request) {
     }
 
     // 1. Ambil data klien dari database
-    const project = await getProjectById(id);
-    if (!project) {
+    const db = getAdminDb();
+    const docSnap = await db.collection('projects').doc(id).get();
+    if (!docSnap.exists) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
+    const project = serializeProjectDoc(docSnap);
 
     // 2. Format angka menjadi Rupiah yang rapi (contoh: 1.500.000)
     const formatRp = (num) => {
@@ -100,11 +102,16 @@ export async function GET(request) {
     if (type === 'receipt') prefix = 'Tanda_Terima';
     if (type === 'receipt_dp') prefix = 'Tanda_Terima_DP';
     
+    const safeClientName = (project.clientName || 'Client')
+      .trim()
+      .replace(/[^a-zA-Z0-9_-]+/g, '_')
+      .replace(/^_+|_+$/g, '') || 'Client';
+
     return new NextResponse(buf, {
       status: 200,
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'Content-Disposition': `attachment; filename="${prefix}_${project.clientName.replace(/\s+/g, '_')}.docx"`
+        'Content-Disposition': `attachment; filename="${prefix}_${safeClientName}.docx"`
       }
     });
 

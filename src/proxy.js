@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { ADMIN_COOKIE_NAME, verifyAdminToken } from '@/lib/auth';
 
-export async function middleware(req) {
+export async function proxy(req) {
   const authToken = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
 
   if (await verifyAdminToken(authToken)) {
