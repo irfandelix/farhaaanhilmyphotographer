@@ -24,18 +24,17 @@ export default function LogoutButton() {
       onClick={handleLogout}
       disabled={loading}
       style={{
-        position: 'absolute',
-        right: '20px',
         background: 'rgba(255, 255, 255, 0.1)',
         color: '#ffffff',
         border: '1px solid rgba(255, 255, 255, 0.22)',
         borderRadius: '8px',
-        padding: '7px 14px',
-        fontSize: '0.85rem',
+        padding: '7px 12px',
+        fontSize: '0.82rem',
         fontWeight: '600',
         display: 'inline-flex',
         alignItems: 'center',
         gap: '6px',
+        flexShrink: 0,
         transition: 'background-color 0.2s ease',
       }}
     >
