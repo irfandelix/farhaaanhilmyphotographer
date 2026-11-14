@@ -1,5 +1,5 @@
 :root {
-  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-display: 'Outfit', system-ui, -apple-system, sans-serif;
   --font-sans: 'DM Sans', system-ui, -apple-system, sans-serif;
   --font-mono: 'IBM Plex Mono', monospace;
   --primary: #15103a;

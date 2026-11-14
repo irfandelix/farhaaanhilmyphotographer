@@ -74,15 +74,19 @@ export default function Home() {
           <div>
             <h1
               style={{
-                fontFamily: 'var(--font-display), Georgia, serif',
-                fontSize: 'clamp(2.25rem, 4vw, 3.1rem)',
-                fontWeight: '700',
-                lineHeight: 1.05,
+                fontFamily: 'var(--font-display)',
+                fontSize: 'clamp(1.65rem, 2.8vw, 2.2rem)',
+                fontWeight: '800',
+                lineHeight: 1.15,
                 letterSpacing: '-0.02em',
                 marginBottom: '16px',
+                overflowWrap: 'break-word',
               }}
             >
-              FARHAAANHILMY Studio
+              FARHAAAN<span style={{ color: 'var(--accent)' }}>HILMY</span>
+              <span style={{ display: 'block', fontWeight: '600', fontSize: '0.72em', color: '#d8d5ea', marginTop: '4px', letterSpacing: '0.02em' }}>
+                Studio
+              </span>
             </h1>
             <p
               style={{
