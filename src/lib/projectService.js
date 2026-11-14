@@ -66,27 +66,36 @@ export const updateProjectFinancials = async (id, data) => {
   }
 };
 
-export async function updateSelectedPhotos(id, selectedPhotos, isLocked = true) {
+export async function updateSelectedPhotos(id, selectedPhotos, isLocked = true, selectorName = null) {
   try {
     const res = await fetch(`/api/projects/${encodeURIComponent(id)}/selection`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mode: 'save', selectedPhotos, isLocked }),
+      body: JSON.stringify({ mode: 'save', selectedPhotos, isLocked, selectorName }),
     });
-    const data = await res.json();
-    return !!data.success;
+    return await res.json();
   } catch (error) {
     console.error('Error updating photos: ', error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function unlockClientSelection(id, selectorName = null) {
+  try {
+    const data = await patchAdminProject(id, 'unlock', selectorName ? { selectorName } : {});
+    return !!data.success;
+  } catch (error) {
+    console.error('Error unlocking: ', error);
     return false;
   }
 }
 
-export async function unlockClientSelection(id) {
+export async function toggleMultiSelector(id, isMultiSelector) {
   try {
-    const data = await patchAdminProject(id, 'unlock', {});
+    const data = await patchAdminProject(id, 'toggleMultiSelector', { isMultiSelector });
     return !!data.success;
   } catch (error) {
-    console.error('Error unlocking: ', error);
+    console.error('Error toggling multi-selector: ', error);
     return false;
   }
 }
@@ -134,18 +143,22 @@ export async function deleteProject(id) {
   }
 }
 
-export function subscribeToProject(id, callback) {
+export function subscribeToProject(id, callback, intervalMs = 15000) {
   let active = true;
 
   const sync = async () => {
     if (!active) return;
+    if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
     const project = await getProjectById(id);
     if (active) callback(project);
   };
 
-  const intervalId = setInterval(sync, 10000);
+  const intervalId = setInterval(sync, intervalMs);
   if (typeof window !== 'undefined') {
     window.addEventListener('focus', sync);
+  }
+  if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', sync);
   }
 
   return () => {
@@ -154,20 +167,22 @@ export function subscribeToProject(id, callback) {
     if (typeof window !== 'undefined') {
       window.removeEventListener('focus', sync);
     }
+    if (typeof document !== 'undefined') {
+      document.removeEventListener('visibilitychange', sync);
+    }
   };
 }
 
-export async function togglePhotoSelectionDB(id, photoName, isSelected) {
+export async function togglePhotoSelectionDB(id, photoName, isSelected, selectorName = null) {
   try {
     const res = await fetch(`/api/projects/${encodeURIComponent(id)}/selection`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mode: 'toggle', photoName, isSelected }),
+      body: JSON.stringify({ mode: 'toggle', photoName, isSelected, selectorName }),
     });
-    const data = await res.json();
-    return !!data.success;
+    return await res.json();
   } catch (error) {
     console.error('Error toggling photo selection: ', error);
-    return false;
+    return { success: false, error: error.message };
   }
 }

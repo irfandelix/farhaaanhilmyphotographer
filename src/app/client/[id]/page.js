@@ -23,6 +23,9 @@ export default function ClientGallery({ params }) {
   const [viewMode, setViewMode] = useState('all'); // 'all' or 'selected'
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [selectorName, setSelectorName] = useState('');
+  const [nameInput, setNameInput] = useState('');
+  const [showNameModal, setShowNameModal] = useState(false);
   
   const [editedPhotos, setEditedPhotos] = useState([]);
   const [activeTab, setActiveTab] = useState('raw'); // 'raw' or 'edited'
@@ -66,6 +69,12 @@ export default function ClientGallery({ params }) {
       }
       setProject(proj);
       setSelectedPhotos(proj.selectedPhotos || []);
+      if (typeof window !== 'undefined') {
+        const savedSelector = window.localStorage.getItem(`selector_${id}`);
+        if (savedSelector) {
+          setSelectorName(savedSelector);
+        }
+      }
 
       let loadedSessions = [];
       if (proj.sessions && proj.sessions.length > 0) {
@@ -134,46 +143,175 @@ export default function ClientGallery({ params }) {
     }
   };
 
+  const isMultiSelector = Boolean(project?.isMultiSelector);
+  const photoSelections = project?.photoSelections || {};
+  const lockedSelectors = project?.lockedSelectors || [];
+  const isCurrentSelectorLocked = Boolean(project?.isLocked) || (isMultiSelector && Boolean(selectorName) && lockedSelectors.includes(selectorName));
+  const mySelectedPhotos = isMultiSelector
+    ? selectedPhotos.filter((name) => photoSelections[name] === selectorName)
+    : selectedPhotos;
+
+  const getPhotoOwner = (photoName) => (isMultiSelector ? (photoSelections[photoName] || null) : null);
+  const isOwnedByOther = (photoName) => {
+    const owner = getPhotoOwner(photoName);
+    return Boolean(owner && owner !== selectorName);
+  };
+  const isPhotoSelectedByMe = (photoName) => {
+    if (isMultiSelector) {
+      return photoSelections[photoName] === selectorName;
+    }
+    return selectedPhotos.includes(photoName);
+  };
+
+  const handleConfirmSelectorName = (chosenName) => {
+    const trimmed = (chosenName || '').trim();
+    if (!trimmed) return;
+    setSelectorName(trimmed);
+    setNameInput('');
+    setShowNameModal(false);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(`selector_${id}`, trimmed);
+    }
+  };
+
   const toggleSelect = async (photoName) => {
-    if (project?.isLocked) return;
-    
+    if (isCurrentSelectorLocked) {
+      Swal.fire('Selection Locked', 'Your selection has been submitted and locked.', 'info');
+      return;
+    }
+
+    if (isMultiSelector && !selectorName) {
+      setShowNameModal(true);
+      return;
+    }
+
+    if (isMultiSelector) {
+      const owner = photoSelections[photoName];
+      if (owner && owner !== selectorName) {
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'warning',
+          title: `Already selected by ${owner}`,
+          showConfirmButton: false,
+          timer: 2000,
+        });
+        return;
+      }
+    }
+
     // Optimistic UI Update
-    const isCurrentlySelected = selectedPhotos.includes(photoName);
+    const isCurrentlySelected = isPhotoSelectedByMe(photoName);
     const willBeSelected = !isCurrentlySelected;
-    
-    setSelectedPhotos(prev => 
+
+    setSelectedPhotos((prev) =>
       willBeSelected
-        ? [...prev, photoName]
-        : prev.filter(p => p !== photoName)
+        ? (prev.includes(photoName) ? prev : [...prev, photoName])
+        : prev.filter((p) => p !== photoName)
     );
+    if (isMultiSelector) {
+      setProject((prev) => {
+        if (!prev) return prev;
+        const nextSelections = { ...(prev.photoSelections || {}) };
+        if (willBeSelected) {
+          nextSelections[photoName] = selectorName;
+        } else {
+          delete nextSelections[photoName];
+        }
+        return { ...prev, photoSelections: nextSelections };
+      });
+    }
     setSaved(false);
 
     // Sync to Firestore immediately
-    await togglePhotoSelectionDB(id, photoName, willBeSelected);
+    const res = await togglePhotoSelectionDB(id, photoName, willBeSelected, isMultiSelector ? selectorName : null);
+    if (!res || !res.success) {
+      if (res?.selectedPhotos) {
+        setSelectedPhotos(res.selectedPhotos);
+      } else {
+        setSelectedPhotos((prev) =>
+          isCurrentlySelected
+            ? (prev.includes(photoName) ? prev : [...prev, photoName])
+            : prev.filter((p) => p !== photoName)
+        );
+      }
+      if (res?.photoSelections) {
+        setProject((prev) => (prev ? {
+          ...prev,
+          photoSelections: res.photoSelections,
+          selectedPhotos: res.selectedPhotos || prev.selectedPhotos,
+          lockedSelectors: res.lockedSelectors || prev.lockedSelectors,
+        } : prev));
+      }
+      if (res?.owner) {
+        Swal.fire('Already Selected', `This photo was just selected by ${res.owner}.`, 'warning');
+      } else if (res?.error) {
+        Swal.fire('Info', res.error, 'info');
+      }
+      return;
+    }
+
+    if (res.selectedPhotos) {
+      setSelectedPhotos(res.selectedPhotos);
+      setProject((prev) => (prev ? {
+        ...prev,
+        selectedPhotos: res.selectedPhotos,
+        photoSelections: res.photoSelections || prev.photoSelections,
+        lockedSelectors: res.lockedSelectors || prev.lockedSelectors,
+      } : prev));
+    }
   };
 
   const saveSelection = async () => {
-    if (selectedPhotos.length === 0) {
+    const photosToSubmit = isMultiSelector ? mySelectedPhotos : selectedPhotos;
+    if (photosToSubmit.length === 0) {
       Swal.fire('Select Photo', "You haven't selected any photos yet.", 'info');
       return;
     }
 
-    const result1 = await Swal.fire({ title: 'Finish Selection?', text: "Are you sure you have finished selecting photos? If so, please confirm with the photographer.", icon: 'question', showCancelButton: true, confirmButtonText: 'Yes, Finish', cancelButtonText: 'Not yet' });
+    const result1 = await Swal.fire({
+      title: 'Finish Selection?',
+      text: isMultiSelector
+        ? `Submit and lock your ${photosToSubmit.length} selected photos as ${selectorName}? Other people can still continue selecting.`
+        : "Are you sure you have finished selecting photos? If so, please confirm with the photographer.",
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, Finish',
+      cancelButtonText: 'Not yet',
+    });
     if (!result1.isConfirmed) {
       return;
     }
-    
+
+    setSaving(true);
+    const res = await updateSelectedPhotos(id, photosToSubmit, true, isMultiSelector ? selectorName : null);
+    setSaving(false);
+
+    if (!res || !res.success) {
+      Swal.fire('Error', res?.error || 'Failed to save selection.', 'error');
+      return;
+    }
+
+    setProject((prev) => (prev ? {
+      ...prev,
+      isLocked: res.isLocked !== undefined ? res.isLocked : prev.isLocked,
+      lockedSelectors: res.lockedSelectors || prev.lockedSelectors,
+      selectedPhotos: res.selectedPhotos || prev.selectedPhotos,
+      photoSelections: res.photoSelections || prev.photoSelections,
+    } : prev));
     setSaved(true);
+
     // Construct WhatsApp URL
-    const waNumber = "6281234567890"; // In real app, this should come from project or admin settings
-    let message = `Hello, I am ${project.clientName}!\nI have finished selecting ${selectedPhotos.length} photos to be edited:\n\n`;
-    [...selectedPhotos].sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).forEach((photo, idx) => {
+    const waNumber = "6281234567890";
+    const who = isMultiSelector ? `${selectorName} (${project.clientName})` : project.clientName;
+    let message = `Hello, I am ${who}!\nI have finished selecting ${photosToSubmit.length} photos to be edited:\n\n`;
+    [...photosToSubmit].sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).forEach((photo, idx) => {
       message += `${idx + 1}. ${photo}\n`;
     });
     message += `\nPlease process them soon. Thank you!`;
-    
+
     const waLink = `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`;
-    
+
     const result2 = await Swal.fire({ text: "System is synced! Do you want to send a confirmation message to the photographer via WhatsApp now?", icon: 'success', showCancelButton: true, confirmButtonText: 'Open WhatsApp', cancelButtonText: 'Later' });
     if (result2.isConfirmed) {
       window.open(waLink, '_blank');
@@ -218,8 +356,14 @@ export default function ClientGallery({ params }) {
 
   const sortedPhotos = getSortedPhotos();
   const sortedEditedPhotos = getSortedEditedPhotos();
-  const selectedPhotoObjects = sortedPhotos.filter(p => selectedPhotos.includes(p.name));
-  const currentList = activeTab === 'edited' ? sortedEditedPhotos : (viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos);
+  const selectedPhotoObjects = sortedPhotos.filter((p) => isPhotoSelectedByMe(p.name));
+  const unselectedPhotoObjects = sortedPhotos.filter((p) => !selectedPhotos.includes(p.name));
+  const activeRawList = viewMode === 'selected'
+    ? selectedPhotoObjects
+    : viewMode === 'unselected'
+      ? unselectedPhotoObjects
+      : sortedPhotos;
+  const currentList = activeTab === 'edited' ? sortedEditedPhotos : activeRawList;
 
   if (loading) return <main style={{ padding: '40px', textAlign: 'center' }}>Loading Gallery...</main>;
   if (error) return <main style={{ padding: '40px', textAlign: 'center', color: '#991b1b' }}>{error}</main>;
@@ -234,7 +378,107 @@ export default function ClientGallery({ params }) {
             ? "Kabar gembira! Foto hasil editan kamu sudah siap diunduh." 
             : "Silakan pilih foto-foto yang Anda inginkan untuk diedit."}
         </p>
+        {isMultiSelector && selectorName && (
+          <div style={{ marginTop: '12px', display: 'inline-flex', alignItems: 'center', gap: '10px', padding: '6px 14px', borderRadius: '999px', backgroundColor: '#f1f5f9', border: '1px solid #cbd5e1', fontSize: '0.88rem' }}>
+            <span style={{ color: '#334155' }}>
+              Selecting as: <strong style={{ color: 'var(--primary)' }}>{selectorName}</strong>
+              {isCurrentSelectorLocked && ' 🔒'}
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowNameModal(true)}
+              style={{ border: 'none', background: 'white', color: '#0f172a', padding: '3px 10px', borderRadius: '999px', fontSize: '0.78rem', fontWeight: '600', cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.08)' }}
+            >
+              Switch
+            </button>
+          </div>
+        )}
       </div>
+
+      {/* Multi-Selector Name Entry Modal */}
+      {isMultiSelector && (!selectorName || showNameModal) && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 1000, backgroundColor: 'rgba(15, 23, 42, 0.65)',
+          backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px'
+        }}>
+          <div style={{
+            backgroundColor: 'white', borderRadius: '16px', padding: '24px', width: '100%', maxWidth: '420px',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.25)'
+          }}>
+            <h2 style={{ fontSize: '1.3rem', fontWeight: '700', marginBottom: '6px', color: '#0f172a' }}>
+              Who is selecting photos?
+            </h2>
+            <p style={{ fontSize: '0.88rem', color: '#64748b', marginBottom: '16px', lineHeight: 1.45 }}>
+              Enter your name so your photo picks are saved under your name and won&apos;t overlap with others.
+            </p>
+
+            {(() => {
+              const counts = {};
+              Object.values(photoSelections).forEach((n) => {
+                counts[n] = (counts[n] || 0) + 1;
+              });
+              const existingNames = Array.from(new Set([...Object.keys(counts), ...lockedSelectors]));
+              if (existingNames.length === 0) return null;
+              return (
+                <div style={{ marginBottom: '16px' }}>
+                  <div style={{ fontSize: '0.78rem', fontWeight: '600', color: '#475569', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Continue as:
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {existingNames.map((name) => (
+                      <button
+                        key={name}
+                        type="button"
+                        onClick={() => handleConfirmSelectorName(name)}
+                        style={{
+                          padding: '6px 12px', borderRadius: '999px', border: '1px solid #cbd5e1',
+                          backgroundColor: name === selectorName ? '#0f172a' : '#f8fafc',
+                          color: name === selectorName ? 'white' : '#0f172a',
+                          fontSize: '0.85rem', fontWeight: '600', cursor: 'pointer'
+                        }}
+                      >
+                        {name} ({counts[name] || 0}){lockedSelectors.includes(name) ? ' 🔒' : ''}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+
+            <form onSubmit={(e) => { e.preventDefault(); handleConfirmSelectorName(nameInput); }} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <input
+                type="text"
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value)}
+                placeholder="Enter your name (e.g. Budi)"
+                autoFocus
+                className="input-field"
+                style={{ width: '100%', padding: '10px 12px', fontSize: '0.95rem' }}
+              />
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {selectorName && (
+                  <button
+                    type="button"
+                    onClick={() => setShowNameModal(false)}
+                    className="btn-secondary"
+                    style={{ flex: 1 }}
+                  >
+                    Cancel
+                  </button>
+                )}
+                <button
+                  type="submit"
+                  disabled={!nameInput.trim()}
+                  className="btn-primary"
+                  style={{ flex: 2 }}
+                >
+                  Start Selecting
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Tabs */}
       {project.gdriveEditedFolderId && (
@@ -301,8 +545,21 @@ export default function ClientGallery({ params }) {
                         borderColor: viewMode === 'selected' ? '#111827' : '#d1d5db'
                       }}
                     >
-                      Selected Photos ({selectedPhotos.length})
+                      {isMultiSelector ? `My Picks (${mySelectedPhotos.length})` : `Selected Photos (${selectedPhotos.length})`}
                     </button>
+                    {isMultiSelector && (
+                      <button 
+                        onClick={() => setViewMode('unselected')}
+                        style={{
+                          padding: '6px 14px', borderRadius: '8px', fontWeight: '600', border: '1px solid', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.9rem',
+                          backgroundColor: viewMode === 'unselected' ? '#111827' : 'white',
+                          color: viewMode === 'unselected' ? 'white' : '#4b5563',
+                          borderColor: viewMode === 'unselected' ? '#111827' : '#d1d5db'
+                        }}
+                      >
+                        Available ({unselectedPhotoObjects.length})
+                      </button>
+                    )}
                   </div>
                   
                   {project.paymentStatus === 'Lunas' && sessions.length > 0 && viewMode === 'all' && (
@@ -422,6 +679,10 @@ export default function ClientGallery({ params }) {
                   <p style={{ color: '#6b7280', fontSize: '1.1rem', marginBottom: '8px' }}>No photos selected yet.</p>
                   <p style={{ color: '#9ca3af', fontSize: '0.9rem' }}>Please return to &quot;All Photos&quot; and check the photos you want.</p>
                 </div>
+              ) : viewMode === 'unselected' && unselectedPhotoObjects.length === 0 ? (
+                <div style={{ padding: '60px 20px', textAlign: 'center', backgroundColor: '#f9fafb', borderRadius: '12px', border: '1px dashed #d1d5db' }}>
+                  <p style={{ color: '#6b7280', fontSize: '1.1rem', marginBottom: '8px' }}>All photos have been selected.</p>
+                </div>
               ) : viewFormat === 'list' ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <div className="client-list-header">
@@ -432,8 +693,10 @@ export default function ClientGallery({ params }) {
                     <div>Size</div>
                     <div>Date Uploaded</div>
                   </div>
-                  {(viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos).map((photo, index) => {
-                    const isSelected = selectedPhotos.includes(photo.name);
+                  {activeRawList.map((photo, index) => {
+                    const isSelected = isPhotoSelectedByMe(photo.name);
+                    const owner = getPhotoOwner(photo.name);
+                    const takenByOther = isOwnedByOther(photo.name);
                     const fileSizeBytes = parseInt(photo.size || '0');
                     const fileSizeMB = (fileSizeBytes / (1024 * 1024)).toFixed(2) + ' MB';
                     const width = photo.imageMediaMetadata?.width || '?';
@@ -461,13 +724,15 @@ export default function ClientGallery({ params }) {
                           role="checkbox"
                           aria-checked={isSelected}
                           aria-label={`Select ${photo.name}`}
+                          disabled={takenByOther}
                           onClick={() => toggleSelect(photo.name)}
                           style={{
                             width: '24px', height: '24px', borderRadius: '6px',
-                            backgroundColor: isSelected ? 'var(--primary)' : 'white',
+                            backgroundColor: isSelected ? 'var(--primary)' : (takenByOther ? '#e5e7eb' : 'white'),
                             border: isSelected ? '1px solid var(--primary)' : '2px solid #d1d5db',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: 'white', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 'bold', padding: 0
+                            color: 'white', cursor: takenByOther ? 'not-allowed' : 'pointer', fontSize: '0.9rem', fontWeight: 'bold', padding: 0,
+                            opacity: takenByOther ? 0.6 : 1
                           }}
                         >
                           {isSelected && <span aria-hidden="true">✓</span>}
@@ -475,7 +740,7 @@ export default function ClientGallery({ params }) {
                         
                         <div 
                           onClick={() => setPreviewIndex(currentList.findIndex(p => p.id === photo.id))}
-                          style={{ width: '60px', height: '40px', background: '#e5e7eb', cursor: 'zoom-in', borderRadius: '4px', overflow: 'hidden' }}
+                          style={{ width: '60px', height: '40px', background: '#e5e7eb', cursor: 'zoom-in', borderRadius: '4px', overflow: 'hidden', opacity: takenByOther ? 0.6 : 1 }}
                         >
                           <img 
                             src={photo.thumbnailLink ? photo.thumbnailLink.replace('=s220', '=w100') : ''}
@@ -484,7 +749,15 @@ export default function ClientGallery({ params }) {
                           />
                         </div>
                         
-                        <div onClick={() => toggleSelect(photo.name)} style={{ fontSize: '0.9rem', fontWeight: '500', cursor: 'pointer', wordBreak: 'break-all' }}><span style={{ fontFamily: 'var(--font-mono), monospace', fontSize: '0.78rem', color: 'var(--accent-hover)', fontWeight: '600', marginRight: '8px' }}>#{String(index + 1).padStart(2, '0')}</span>{photo.name}</div>
+                        <div onClick={() => !takenByOther && toggleSelect(photo.name)} style={{ fontSize: '0.9rem', fontWeight: '500', cursor: takenByOther ? 'default' : 'pointer', wordBreak: 'break-all' }}>
+                          <span style={{ fontFamily: 'var(--font-mono), monospace', fontSize: '0.78rem', color: 'var(--accent-hover)', fontWeight: '600', marginRight: '8px' }}>#{String(index + 1).padStart(2, '0')}</span>
+                          {photo.name}
+                          {takenByOther && (
+                            <span style={{ marginLeft: '8px', fontSize: '0.72rem', fontWeight: '600', padding: '2px 8px', borderRadius: '999px', backgroundColor: '#fef3c7', color: '#92400e' }}>
+                              By {owner}
+                            </span>
+                          )}
+                        </div>
                         <div className="client-list-meta-hide-mobile" style={{ fontSize: '0.85rem', color: '#6b7280' }}>{width} x {height}</div>
                         <div className="client-list-meta-hide-mobile" style={{ fontSize: '0.85rem', color: '#6b7280' }}>{fileSizeMB}</div>
                         <div className="client-list-meta-hide-mobile" style={{ fontSize: '0.85rem', color: '#6b7280' }}>{dateStr}</div>
@@ -494,8 +767,10 @@ export default function ClientGallery({ params }) {
                 </div>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
-                  {(viewMode === 'selected' ? selectedPhotoObjects : sortedPhotos).map((photo, index) => {
-                    const isSelected = selectedPhotos.includes(photo.name);
+                  {activeRawList.map((photo, index) => {
+                    const isSelected = isPhotoSelectedByMe(photo.name);
+                    const owner = getPhotoOwner(photo.name);
+                    const takenByOther = isOwnedByOther(photo.name);
                     return (
                       <div 
                         key={photo.id}
@@ -504,8 +779,9 @@ export default function ClientGallery({ params }) {
                           overflow: 'hidden',
                           transition: 'all 0.2s',
                           transform: isSelected ? 'scale(0.95)' : 'scale(1)',
-                          border: isSelected ? '3px solid var(--primary)' : '1px solid var(--glass-border)',
+                          border: isSelected ? '3px solid var(--primary)' : (takenByOther ? '1px solid #fcd34d' : '1px solid var(--glass-border)'),
                           backgroundColor: isSelected ? 'rgba(21, 16, 58, 0.04)' : 'var(--glass-bg)',
+                          opacity: takenByOther ? 0.72 : 1,
                           display: 'flex',
                           flexDirection: 'column',
                           position: 'relative'
@@ -517,19 +793,32 @@ export default function ClientGallery({ params }) {
                           role="checkbox"
                           aria-checked={isSelected}
                           aria-label={`Select ${photo.name}`}
+                          disabled={takenByOther}
                           onClick={() => toggleSelect(photo.name)}
                           style={{
                             position: 'absolute', top: '12px', left: '12px', zIndex: 10,
                             width: '32px', height: '32px', borderRadius: '50%', padding: 0,
-                            backgroundColor: isSelected ? 'var(--primary)' : 'rgba(255,255,255,0.92)',
+                            backgroundColor: isSelected ? 'var(--primary)' : (takenByOther ? '#e5e7eb' : 'rgba(255,255,255,0.92)'),
                             border: isSelected ? '1px solid var(--primary)' : '2px solid #9ca3af',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: 'white', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                            color: 'white', cursor: takenByOther ? 'not-allowed' : 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
                             fontSize: '1.1rem', fontWeight: 'bold'
                           }}
                         >
                           {isSelected && <span aria-hidden="true">✓</span>}
                         </button>
+
+                        {takenByOther && (
+                          <span style={{
+                            position: 'absolute', top: '12px', right: '10px', zIndex: 10,
+                            backgroundColor: 'rgba(254, 243, 199, 0.95)', color: '#92400e',
+                            fontSize: '0.7rem', fontWeight: '700', padding: '3px 8px',
+                            borderRadius: '999px', boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
+                            maxWidth: '90px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+                          }}>
+                            By {owner}
+                          </span>
+                        )}
 
                         <div 
                           onClick={() => setPreviewIndex(currentList.findIndex(p => p.id === photo.id))}
@@ -548,8 +837,8 @@ export default function ClientGallery({ params }) {
                           <span style={{ position: 'absolute', bottom: '8px', left: '8px', background: 'rgba(17, 16, 29, 0.78)', color: '#ffffff', fontFamily: 'var(--font-mono), monospace', fontSize: '0.72rem', fontWeight: '600', padding: '2px 7px', borderRadius: '4px', letterSpacing: '0.03em' }}>#{String(index + 1).padStart(2, '0')}</span>
                         </div>
                         <div 
-                          onClick={() => toggleSelect(photo.name)}
-                          style={{ padding: '12px', textAlign: 'center', fontSize: '0.9rem', fontWeight: '500', wordBreak: 'break-all', cursor: 'pointer' }}
+                          onClick={() => !takenByOther && toggleSelect(photo.name)}
+                          style={{ padding: '12px', textAlign: 'center', fontSize: '0.9rem', fontWeight: '500', wordBreak: 'break-all', cursor: takenByOther ? 'default' : 'pointer' }}
                         >
                 {photo.name}
               </div>
@@ -818,17 +1107,17 @@ export default function ClientGallery({ params }) {
       }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
           <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            {project?.isLocked ? 'Selection Locked' : 'Selected Photos'}
+            {isCurrentSelectorLocked ? 'Selection Locked' : (isMultiSelector && selectorName ? `${selectorName}'s Picks` : 'Selected Photos')}
           </span>
           <span style={{ fontFamily: 'var(--font-mono), monospace', color: 'var(--primary)', fontSize: '1.15rem', fontWeight: '700' }}>
-            {selectedPhotos.length} {selectedPhotos.length === 1 ? 'photo' : 'photos'}
+            {(isMultiSelector ? mySelectedPhotos : selectedPhotos).length} {(isMultiSelector ? mySelectedPhotos : selectedPhotos).length === 1 ? 'photo' : 'photos'}
           </span>
         </div>
-        {!project?.isLocked && (
+        {!isCurrentSelectorLocked && (
           <button 
             type="button"
             onClick={saveSelection} 
-            disabled={saving || selectedPhotos.length === 0}
+            disabled={saving || (isMultiSelector ? mySelectedPhotos : selectedPhotos).length === 0}
             className="btn-primary"
             style={{ padding: '10px 18px', fontSize: '0.92rem' }}
           >
@@ -871,7 +1160,9 @@ export default function ClientGallery({ params }) {
                 slideFooter: ({ slide }) => {
                   if (!slide || !slide.photo) return null;
                   const currentPhoto = slide.photo;
-                  const isSelected = selectedPhotos.includes(currentPhoto.name);
+                  const isSelected = isPhotoSelectedByMe(currentPhoto.name);
+                  const owner = getPhotoOwner(currentPhoto.name);
+                  const takenByOther = isOwnedByOther(currentPhoto.name);
                   
                   return (
                     <div style={{
@@ -887,28 +1178,43 @@ export default function ClientGallery({ params }) {
                       pointerEvents: 'none' // Allow swipe through the gap
                     }}>
                       {activeTab === 'raw' && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleSelect(currentPhoto.name);
-                          }}
-                          style={{
+                        takenByOther ? (
+                          <span style={{
                             padding: '8px 16px',
                             fontSize: '0.9rem',
                             fontWeight: '600',
-                            backgroundColor: isSelected ? '#ef4444' : 'var(--primary)',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                            border: 'none',
-                            color: 'white',
+                            backgroundColor: '#fef3c7',
+                            color: '#92400e',
                             borderRadius: '100px',
-                            cursor: 'pointer',
-                            pointerEvents: 'auto',
-                            minWidth: '120px',
-                            textAlign: 'center'
-                          }}
-                        >
-                          {isSelected ? 'Selected (Batal)' : 'Select Photo'}
-                        </button>
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                            pointerEvents: 'auto'
+                          }}>
+                            Selected by {owner}
+                          </span>
+                        ) : (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleSelect(currentPhoto.name);
+                            }}
+                            style={{
+                              padding: '8px 16px',
+                              fontSize: '0.9rem',
+                              fontWeight: '600',
+                              backgroundColor: isSelected ? '#ef4444' : 'var(--primary)',
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                              border: 'none',
+                              color: 'white',
+                              borderRadius: '100px',
+                              cursor: 'pointer',
+                              pointerEvents: 'auto',
+                              minWidth: '120px',
+                              textAlign: 'center'
+                            }}
+                          >
+                            {isSelected ? 'Selected (Batal)' : 'Select Photo'}
+                          </button>
+                        )
                       )}
                       
                       {project?.paymentStatus === 'Lunas' && (

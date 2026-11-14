@@ -50,7 +50,25 @@ export async function PATCH(request, { params }) {
     }
 
     if (action === 'unlock') {
-      await docRef.update({ isLocked: false });
+      if (payload?.selectorName) {
+        await docRef.update({
+          isLocked: false,
+          lockedSelectors: FieldValue.arrayRemove(payload.selectorName),
+        });
+      } else {
+        await docRef.update({
+          isLocked: false,
+          lockedSelectors: [],
+        });
+      }
+      return NextResponse.json({ success: true });
+    }
+
+    if (action === 'toggleMultiSelector') {
+      await docRef.update({
+        isMultiSelector: Boolean(payload?.isMultiSelector),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
       return NextResponse.json({ success: true });
     }
 

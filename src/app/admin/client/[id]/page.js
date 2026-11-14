@@ -5,7 +5,7 @@ import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import CustomDatePicker from '@/components/CustomDatePicker';
-import { getProjectById, updatePaymentStatus, updateGDriveLink, updateGDriveEditedLink, updateProjectFinancials, updateGDriveSessions, deleteProject, getProjects } from '@/lib/projectService';
+import { getProjectById, updatePaymentStatus, updateGDriveLink, updateGDriveEditedLink, updateProjectFinancials, updateGDriveSessions, deleteProject, getProjects, toggleMultiSelector, unlockClientSelection } from '@/lib/projectService';
 
 export default function AdminClientDetail({ params }) {
   const router = useRouter();
@@ -45,6 +45,45 @@ export default function AdminClientDetail({ params }) {
   const [editLunasAmount, setEditLunasAmount] = useState('');
   const [editLunasDate, setEditLunasDate] = useState('');
   const [editPaymentScheme, setEditPaymentScheme] = useState('dp');
+  const [togglingMulti, setTogglingMulti] = useState(false);
+  const [selectorFilter, setSelectorFilter] = useState('all');
+
+  const handleToggleMultiSelector = async () => {
+    if (!project || togglingMulti) return;
+    const nextVal = !project.isMultiSelector;
+    setTogglingMulti(true);
+    const ok = await toggleMultiSelector(id, nextVal);
+    setTogglingMulti(false);
+    if (ok) {
+      setProject((prev) => ({ ...prev, isMultiSelector: nextVal }));
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: nextVal ? 'Mode Multi-Pemilih diaktifkan' : 'Mode Multi-Pemilih dimatikan',
+        showConfirmButton: false,
+        timer: 2000,
+      });
+    } else {
+      Swal.fire('Gagal', 'Tidak dapat mengubah mode multi-pemilih.', 'error');
+    }
+  };
+
+  const handleUnlockSelector = async (selectorName = null) => {
+    const ok = await unlockClientSelection(id, selectorName);
+    if (ok) {
+      setProject((prev) => ({
+        ...prev,
+        isLocked: false,
+        lockedSelectors: selectorName
+          ? (prev.lockedSelectors || []).filter((n) => n !== selectorName)
+          : [],
+      }));
+      Swal.fire('Berhasil', selectorName ? `Pilihan ${selectorName} dibuka kembali.` : 'Pilihan foto dibuka kembali.', 'success');
+    } else {
+      Swal.fire('Gagal', 'Tidak dapat membuka kunci pilihan.', 'error');
+    }
+  };
 
   useEffect(() => {
     async function fetchProject() {
@@ -968,6 +1007,30 @@ export default function AdminClientDetail({ params }) {
           </div>
         )}
 
+        {/* Multi-Selector Toggle */}
+        <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '16px', borderRadius: '8px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: '220px' }}>
+            <div style={{ fontWeight: '600', fontSize: '0.95rem', color: '#0f172a', marginBottom: '4px' }}>
+              Mode Multi-Pemilih (Bebas Bentrok)
+            </div>
+            <div style={{ fontSize: '0.82rem', color: '#64748b', lineHeight: 1.4 }}>
+              Aktifkan jika foto dipilih oleh lebih dari 1 orang secara bersamaan. Setiap orang memasukkan namanya sendiri dan foto yang sudah dipilih tidak bisa dipilih ulang oleh orang lain.
+            </div>
+          </div>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: togglingMulti ? 'wait' : 'pointer', userSelect: 'none' }}>
+            <input
+              type="checkbox"
+              checked={Boolean(project.isMultiSelector)}
+              onChange={handleToggleMultiSelector}
+              disabled={togglingMulti}
+              style={{ width: '20px', height: '20px', accentColor: '#0f172a', cursor: 'pointer' }}
+            />
+            <span style={{ fontWeight: '600', fontSize: '0.9rem', color: project.isMultiSelector ? '#15803d' : '#64748b' }}>
+              {project.isMultiSelector ? 'Aktif' : 'Nonaktif'}
+            </span>
+          </label>
+        </div>
+
         {/* Invoice Link Section */}
         <div style={{ background: 'rgba(59, 130, 246, 0.1)', padding: '16px', borderRadius: '8px', marginBottom: '32px' }}>
           <h3 style={{ fontSize: '1.05rem', fontWeight: '600', marginBottom: '4px', color: '#1d4ed8' }}>Link Web Invoice</h3>
@@ -999,19 +1062,111 @@ export default function AdminClientDetail({ params }) {
             </h2>
             
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {project.isLocked && (
+                <button
+                  onClick={() => handleUnlockSelector(null)}
+                  className="btn-secondary"
+                  style={{ padding: '6px 12px', fontSize: '0.85rem' }}
+                >
+                  🔓 Buka Kunci Pilihan
+                </button>
+              )}
             </div>
           </div>
+          {project.isMultiSelector && project.photoSelections && Object.keys(project.photoSelections).length > 0 && (() => {
+            const counts = {};
+            Object.values(project.photoSelections).forEach((name) => {
+              counts[name] = (counts[name] || 0) + 1;
+            });
+            const lockedList = project.lockedSelectors || [];
+            const allSelectors = Array.from(new Set([...Object.keys(counts), ...lockedList]));
+            return (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}>
+                <button
+                  onClick={() => setSelectorFilter('all')}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: '999px',
+                    fontSize: '0.82rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    border: selectorFilter === 'all' ? '1px solid #0f172a' : '1px solid #cbd5e1',
+                    backgroundColor: selectorFilter === 'all' ? '#0f172a' : '#ffffff',
+                    color: selectorFilter === 'all' ? '#ffffff' : '#334155',
+                  }}
+                >
+                  Semua ({project.selectedPhotos ? project.selectedPhotos.length : 0})
+                </button>
+                {allSelectors.map((selName) => {
+                  const isSelLocked = lockedList.includes(selName);
+                  const isActive = selectorFilter === selName;
+                  return (
+                    <div key={selName} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <button
+                        onClick={() => setSelectorFilter(selName)}
+                        style={{
+                          padding: '6px 12px',
+                          borderRadius: '999px',
+                          fontSize: '0.82rem',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          border: isActive ? '1px solid #0f172a' : '1px solid #cbd5e1',
+                          backgroundColor: isActive ? '#0f172a' : '#ffffff',
+                          color: isActive ? '#ffffff' : '#334155',
+                        }}
+                      >
+                        {selName} ({counts[selName] || 0}){isSelLocked ? ' 🔒' : ''}
+                      </button>
+                      {isSelLocked && (
+                        <button
+                          onClick={() => handleUnlockSelector(selName)}
+                          title={`Buka kunci pilihan ${selName}`}
+                          style={{
+                            padding: '4px 8px',
+                            borderRadius: '6px',
+                            fontSize: '0.75rem',
+                            border: '1px solid #fca5a5',
+                            backgroundColor: '#fef2f2',
+                            color: '#b91c1c',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          Buka
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
           {(!project.selectedPhotos || project.selectedPhotos.length === 0) ? (
             <p style={{ color: '#6b7280' }}>Klien belum memilih foto.</p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', backgroundColor: '#f9fafb', padding: '16px', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
-                {[...project.selectedPhotos].sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).map((photoName, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: '#374151', padding: '8px 12px', backgroundColor: '#ffffff', border: '1px solid #d1d5db', borderRadius: '6px' }}>
-                    <span style={{ color: '#9ca3af', width: '24px' }}>{i + 1}.</span>
-                    <span style={{ wordBreak: 'break-all', fontWeight: '500' }}>{photoName}</span>
-                  </div>
-                ))}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '12px' }}>
+                {[...project.selectedPhotos]
+                  .filter((photoName) => {
+                    if (!project.isMultiSelector || selectorFilter === 'all') return true;
+                    return project.photoSelections?.[photoName] === selectorFilter;
+                  })
+                  .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+                  .map((photoName, i) => {
+                    const owner = project.isMultiSelector ? project.photoSelections?.[photoName] : null;
+                    return (
+                      <div key={photoName} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', fontSize: '0.9rem', color: '#374151', padding: '8px 12px', backgroundColor: '#ffffff', border: '1px solid #d1d5db', borderRadius: '6px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                          <span style={{ color: '#9ca3af', width: '24px', flexShrink: 0 }}>{i + 1}.</span>
+                          <span style={{ wordBreak: 'break-all', fontWeight: '500' }}>{photoName}</span>
+                        </div>
+                        {owner && (
+                          <span style={{ fontSize: '0.72rem', fontWeight: '600', padding: '2px 8px', borderRadius: '999px', backgroundColor: '#e0f2fe', color: '#0369a1', flexShrink: 0 }}>
+                            {owner}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
               </div>
             </div>
           )}
