@@ -1,38 +1,11 @@
-import Link from 'next/link';
-import Image from 'next/image';
 import { cookies } from 'next/headers';
 import { ADMIN_COOKIE_NAME, verifyAdminToken } from '@/lib/auth';
-import LogoutButton from '@/components/LogoutButton';
+import HeaderClient from '@/components/HeaderClient';
 
 export default async function Header() {
   const cookieStore = await cookies();
   const token = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
   const isAdmin = await verifyAdminToken(token);
-  const targetHref = isAdmin ? "/admin" : "/";
 
-  return (
-    <header className="no-print" style={{
-      backgroundColor: 'var(--primary)',
-      padding: '14px 16px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: isAdmin ? 'space-between' : 'center',
-      gap: '12px',
-      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-      position: 'sticky',
-      top: 0,
-      zIndex: 50,
-      borderBottom: '4px solid var(--accent)'
-    }}>
-      <Link href={targetHref} style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', minWidth: 0 }}>
-        <div style={{ background: 'white', borderRadius: '8px', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <Image src="/logo.png" alt="Logo" width={32} height={32} style={{ borderRadius: '4px' }} />
-        </div>
-        <span style={{ fontSize: 'clamp(1rem, 4vw, 1.4rem)', fontWeight: '800', color: 'white', letterSpacing: '1px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          FARHAAAN<span style={{ color: 'var(--accent)' }}>HILMY</span>
-        </span>
-      </Link>
-      {isAdmin && <LogoutButton />}
-    </header>
-  );
+  return <HeaderClient isAdmin={isAdmin} />;
 }
