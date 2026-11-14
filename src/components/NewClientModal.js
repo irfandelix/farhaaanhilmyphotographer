@@ -284,12 +284,12 @@ export default function NewClientModal({ onClose, onSuccess }) {
             <CustomDatePicker required name="shootDate" className="input-field" value={formData.shootDate} onChange={handleChange} />
           </div>
           
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end' }}>
-            <div className="form-group" style={{ flex: 1 }}>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end', marginBottom: '20px' }}>
+            <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
               <label className="form-label">Jam Mulai</label>
               <input required type="time" name="startTime" className="input-field" value={formData.startTime} onChange={handleChange} />
             </div>
-            <div className="form-group" style={{ flex: 1 }}>
+            <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
               <label className="form-label">Jam Selesai</label>
               <input type="time" name="endTime" className="input-field" value={formData.endTime} onChange={handleChange} />
             </div>
@@ -297,7 +297,7 @@ export default function NewClientModal({ onClose, onSuccess }) {
               type="button" 
               onClick={() => setFormData({...formData, startTime: '', endTime: ''})} 
               className="btn-secondary" 
-              style={{ padding: '10px', height: '42px', color: '#4b5563' }}
+              style={{ padding: '0 14px', height: '44px', minHeight: '44px', color: '#4b5563', display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}
               title="Reset Jam"
             >
               🔄 Reset
@@ -317,7 +317,7 @@ export default function NewClientModal({ onClose, onSuccess }) {
                 <CustomDatePicker required className="input-field" value={sch.shootDate} onChange={(e) => updateSchedule(index, 'shootDate', e.target.value)} />
               </div>
               
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end' }}>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end', marginBottom: '20px' }}>
                 <div style={{ flex: 1 }}>
                   <label className="form-label" style={{ fontSize: '0.85rem' }}>Mulai</label>
                   <input required type="time" className="input-field" value={sch.startTime} onChange={(e) => updateSchedule(index, 'startTime', e.target.value)} />
@@ -326,7 +326,7 @@ export default function NewClientModal({ onClose, onSuccess }) {
                   <label className="form-label" style={{ fontSize: '0.85rem' }}>Selesai</label>
                   <input type="time" className="input-field" value={sch.endTime} onChange={(e) => updateSchedule(index, 'endTime', e.target.value)} />
                 </div>
-                <button type="button" onClick={() => { updateSchedule(index, 'startTime', ''); updateSchedule(index, 'endTime', ''); }} className="btn-secondary" style={{ padding: '10px', height: '42px', color: '#4b5563' }}>🔄</button>
+                <button type="button" onClick={() => { updateSchedule(index, 'startTime', ''); updateSchedule(index, 'endTime', ''); }} className="btn-secondary" style={{ padding: '0 12px', height: '44px', minHeight: '44px', color: '#4b5563', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>🔄</button>
               </div>
             </div>
           ))}

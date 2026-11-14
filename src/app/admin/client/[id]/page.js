@@ -771,7 +771,7 @@ export default function AdminClientDetail({ params }) {
                       type="button" 
                       onClick={() => { setEditStartTime(''); setEditEndTime(''); }}
                       className="btn-secondary"
-                      style={{ padding: '8px', height: '40px', color: '#4b5563' }}
+                      style={{ padding: '0 12px', height: '44px', minHeight: '44px', color: '#4b5563', display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}
                       title="Reset Jam"
                     >
                       🔄 Reset
