@@ -109,6 +109,15 @@ export async function updateMaxSelections(id, maxSelections) {
   }
 }
 
+export async function resetProjectSelections(id, selectorName = null) {
+  try {
+    return await patchAdminProject(id, 'resetSelections', selectorName ? { selectorName } : {});
+  } catch (error) {
+    console.error('Error resetting project selections: ', error);
+    return { success: false, error: error.message };
+  }
+}
+
 export async function updateGDriveLink(id, link) {
   try {
     const data = await patchAdminProject(id, 'gdriveLink', { link });

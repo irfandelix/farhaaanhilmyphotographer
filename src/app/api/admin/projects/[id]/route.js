@@ -82,6 +82,59 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ success: true, maxSelections });
     }
 
+    if (action === 'resetSelections') {
+      const selectorName = typeof payload?.selectorName === 'string' ? payload.selectorName.trim() : '';
+      if (selectorName) {
+        const result = await db.runTransaction(async (transaction) => {
+          const snap = await transaction.get(docRef);
+          if (!snap.exists) {
+            return null;
+          }
+          const data = snap.data();
+          const currentSelections = { ...(data.photoSelections || {}) };
+          Object.keys(currentSelections).forEach((photoName) => {
+            if (currentSelections[photoName] === selectorName) {
+              delete currentSelections[photoName];
+            }
+          });
+          const nextSelectedPhotos = Object.keys(currentSelections);
+          const nextLockedSelectors = (Array.isArray(data.lockedSelectors) ? data.lockedSelectors : []).filter(
+            (n) => n !== selectorName
+          );
+          transaction.update(docRef, {
+            photoSelections: currentSelections,
+            selectedPhotos: nextSelectedPhotos,
+            lockedSelectors: nextLockedSelectors,
+            isLocked: false,
+            updatedAt: FieldValue.serverTimestamp(),
+          });
+          return {
+            selectedPhotos: nextSelectedPhotos,
+            photoSelections: currentSelections,
+            lockedSelectors: nextLockedSelectors,
+          };
+        });
+        if (!result) {
+          return NextResponse.json({ success: false, error: 'Project tidak ditemukan' }, { status: 404 });
+        }
+        return NextResponse.json({ success: true, ...result });
+      }
+
+      await docRef.update({
+        selectedPhotos: [],
+        photoSelections: {},
+        lockedSelectors: [],
+        isLocked: false,
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+      return NextResponse.json({
+        success: true,
+        selectedPhotos: [],
+        photoSelections: {},
+        lockedSelectors: [],
+      });
+    }
+
     if (action === 'financials') {
       const data = payload || {};
       const updatePayload = {

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import CustomDatePicker from '@/components/CustomDatePicker';
 import { AlertIcon, LockIcon, RefreshIcon, TargetIcon, TrashIcon, UnlockIcon } from '@/components/Icons';
-import { getProjectById, updatePaymentStatus, updateGDriveLink, updateGDriveEditedLink, updateProjectFinancials, updateGDriveSessions, deleteProject, getProjects, toggleMultiSelector, unlockClientSelection, updateMaxSelections } from '@/lib/projectService';
+import { getProjectById, updatePaymentStatus, updateGDriveLink, updateGDriveEditedLink, updateProjectFinancials, updateGDriveSessions, deleteProject, getProjects, toggleMultiSelector, unlockClientSelection, updateMaxSelections, resetProjectSelections } from '@/lib/projectService';
 
 export default function AdminClientDetail({ params }) {
   const router = useRouter();
@@ -50,6 +50,55 @@ export default function AdminClientDetail({ params }) {
   const [selectorFilter, setSelectorFilter] = useState('all');
   const [maxSelectionsInput, setMaxSelectionsInput] = useState('');
   const [savingMaxSelections, setSavingMaxSelections] = useState(false);
+  const [resettingSelections, setResettingSelections] = useState(false);
+
+  const handleResetSelections = async (selectorName = null) => {
+    if (!project || resettingSelections) return;
+    const targetCount = selectorName
+      ? Object.values(project.photoSelections || {}).filter((n) => n === selectorName).length
+      : (project.selectedPhotos ? project.selectedPhotos.length : 0);
+
+    const confirm = await Swal.fire({
+      title: selectorName ? `Reset Pilihan ${selectorName}?` : 'Reset Semua Pilihan Foto?',
+      text: selectorName
+        ? `Sebanyak ${targetCount} foto yang dipilih oleh ${selectorName} akan dihapus dan kuncinya dibuka agar bisa memilih ulang.`
+        : `Sebanyak ${targetCount} foto terpilih akan dikosongkan dan kunci pilihan dibuka agar klien bisa memilih ulang dari awal.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#b91c1c',
+      cancelButtonColor: '#47465a',
+      confirmButtonText: 'Ya, Reset Pilihan',
+      cancelButtonText: 'Batal',
+    });
+
+    if (!confirm.isConfirmed) return;
+
+    setResettingSelections(true);
+    const res = await resetProjectSelections(id, selectorName);
+    setResettingSelections(false);
+
+    if (res?.success) {
+      setProject((prev) => ({
+        ...prev,
+        selectedPhotos: res.selectedPhotos || [],
+        photoSelections: res.photoSelections || {},
+        lockedSelectors: res.lockedSelectors || [],
+        isLocked: false,
+      }));
+      if (selectorName && selectorFilter === selectorName) {
+        setSelectorFilter('all');
+      }
+      Swal.fire(
+        'Pilihan Direset',
+        selectorName
+          ? `Pilihan milik ${selectorName} berhasil dikosongkan.`
+          : 'Semua pilihan foto berhasil dikosongkan.',
+        'success'
+      );
+    } else {
+      Swal.fire('Gagal', res?.error || 'Tidak dapat mereset pilihan foto.', 'error');
+    }
+  };
 
   const handleSaveMaxSelections = async (overrideValue = null) => {
     if (!project || savingMaxSelections) return;
@@ -1201,12 +1250,63 @@ export default function AdminClientDetail({ params }) {
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               {project.isLocked && (
                 <button
+                  type="button"
                   onClick={() => handleUnlockSelector(null)}
                   className="btn-secondary"
                   style={{ padding: '8px 14px', minHeight: '44px', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                 >
                   <UnlockIcon size={15} /> Buka Kunci Pilihan
                 </button>
+              )}
+              {project.selectedPhotos && project.selectedPhotos.length > 0 && (
+                <>
+                  {project.isMultiSelector && selectorFilter !== 'all' && (
+                    <button
+                      type="button"
+                      onClick={() => handleResetSelections(selectorFilter)}
+                      disabled={resettingSelections}
+                      style={{
+                        padding: '8px 14px',
+                        minHeight: '44px',
+                        fontSize: '0.85rem',
+                        fontWeight: '600',
+                        borderRadius: '8px',
+                        border: '1px solid #fca5a5',
+                        backgroundColor: '#fef2f2',
+                        color: '#b91c1c',
+                        cursor: resettingSelections ? 'wait' : 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                      }}
+                    >
+                      <RefreshIcon size={15} />
+                      <span>{resettingSelections ? 'Mereset...' : `Reset Pilihan ${selectorFilter}`}</span>
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleResetSelections(null)}
+                    disabled={resettingSelections}
+                    style={{
+                      padding: '8px 14px',
+                      minHeight: '44px',
+                      fontSize: '0.85rem',
+                      fontWeight: '600',
+                      borderRadius: '8px',
+                      border: '1px solid #f87171',
+                      backgroundColor: '#fee2e2',
+                      color: '#b91c1c',
+                      cursor: resettingSelections ? 'wait' : 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                    }}
+                  >
+                    <RefreshIcon size={15} />
+                    <span>{resettingSelections ? 'Mereset...' : (project.isMultiSelector && selectorFilter !== 'all' ? 'Reset Semua' : 'Reset Pilihan')}</span>
+                  </button>
+                </>
               )}
             </div>
           </div>
