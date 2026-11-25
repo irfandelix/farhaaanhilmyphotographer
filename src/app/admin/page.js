@@ -98,7 +98,7 @@ export default function AdminDashboard() {
       }
     });
 
-    upcomingList.sort((a, b) => parseDateToMs(a.scheduleDate) - parseDateToMs(b.scheduleDate));
+    upcomingList.sort((a, b) => parseIndonesianDateMs(a.scheduleDate) - parseIndonesianDateMs(b.scheduleDate));
     return upcomingList;
   };
 
