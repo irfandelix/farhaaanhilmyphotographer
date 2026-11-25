@@ -154,70 +154,6 @@ export default function ClientGallery({ params }) {
     }
   };
 
-  const handleDownloadSelectedZip = async () => {
-    if (downloadingZip) return;
-    const targets = selectedPhotoObjects;
-    if (!targets || targets.length === 0) {
-      Swal.fire('No Photos Selected', 'Please select at least one photo first.', 'info');
-      return;
-    }
-
-    cancelDownloadRef.current = false;
-    pauseDownloadRef.current = false;
-    setDownloadingZip(true);
-    setDownloadProgress(0);
-    setDownloadState('downloading');
-
-    try {
-      const zip = new JSZip();
-      let completed = 0;
-
-      for (const photo of targets) {
-        while (pauseDownloadRef.current && !cancelDownloadRef.current) {
-          await new Promise((r) => setTimeout(r, 200));
-        }
-        if (cancelDownloadRef.current) {
-          setDownloadingZip(false);
-          setDownloadState('idle');
-          return;
-        }
-
-        const controller = new AbortController();
-        abortControllerRef.current = controller;
-
-        const directUrl = `https://drive.google.com/uc?export=download&id=${photo.id}`;
-        let res = await fetch(`/api/proxy?url=${encodeURIComponent(directUrl)}`, { signal: controller.signal });
-        if (!res.ok) {
-          const fallbackUrl = `https://drive.google.com/thumbnail?id=${photo.id}&sz=w2048`;
-          res = await fetch(`/api/proxy?url=${encodeURIComponent(fallbackUrl)}`, { signal: controller.signal });
-        }
-        if (res.ok) {
-          const blob = await res.blob();
-          zip.file(photo.name, blob);
-        }
-
-        completed += 1;
-        setDownloadProgress(Math.round((completed / targets.length) * 90));
-      }
-
-      setDownloadState('packing');
-      const contentBlob = await zip.generateAsync({ type: 'blob' }, (meta) => {
-        setDownloadProgress(90 + Math.round(meta.percent * 0.1));
-      });
-      const safeName = (project?.clientName || 'Selected').replace(/[^a-zA-Z0-9_-]/g, '_');
-      saveAs(contentBlob, `${safeName}_Selected_Photos.zip`);
-    } catch (err) {
-      if (err?.name !== 'AbortError') {
-        console.error('Error downloading selected photos:', err);
-        Swal.fire('Download Failed', 'Some photos could not be downloaded. Please try again.', 'error');
-      }
-    } finally {
-      abortControllerRef.current = null;
-      setDownloadingZip(false);
-      setDownloadProgress(0);
-      setDownloadState('idle');
-    }
-  };
 
   const isMultiSelector = Boolean(project?.isMultiSelector);
   const maxSelections = Number(project?.maxSelections || 0);
@@ -675,34 +611,19 @@ export default function ClientGallery({ params }) {
                     )}
                   </div>
                   
-                  {project.paymentStatus === 'Lunas' && (sessions.length > 0 || selectedPhotoObjects.length > 0) && (
+                  {project.paymentStatus === 'Lunas' && sessions.length > 0 && viewMode === 'all' && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                      {sessions.length > 0 && viewMode === 'all' && (
-                        <button 
-                          type="button"
-                          onClick={handleDownloadRawZip}
-                          disabled={downloadingZip}
-                          className="btn-primary" 
-                          style={{ padding: '8px 14px', minHeight: '44px', fontSize: '0.9rem', backgroundColor: 'var(--primary)', display: 'inline-flex', alignItems: 'center', gap: '6px', borderRadius: '8px', border: 'none', color: '#ffffff', cursor: 'pointer', fontWeight: '600' }}
-                          title="Only available for fully paid clients"
-                        >
-                          <FolderIcon size={16} />
-                          <span>Open Original Photos</span>
-                        </button>
-                      )}
-                      {selectedPhotoObjects.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={handleDownloadSelectedZip}
-                          disabled={downloadingZip}
-                          className="btn-primary"
-                          style={{ padding: '8px 14px', minHeight: '44px', fontSize: '0.9rem', backgroundColor: '#c2410c', borderColor: '#c2410c', display: 'inline-flex', alignItems: 'center', gap: '6px', borderRadius: '8px', color: '#ffffff', cursor: downloadingZip ? 'wait' : 'pointer', fontWeight: '600' }}
-                          title="Download all your selected photos as a ZIP file"
-                        >
-                          <DownloadIcon size={16} />
-                          <span>{downloadingZip ? 'Downloading...' : `Download Selected (${selectedPhotoObjects.length})`}</span>
-                        </button>
-                      )}
+<button 
+                      type="button"
+                      onClick={handleDownloadRawZip}
+                      disabled={downloadingZip}
+                      className="btn-primary" 
+                      style={{ padding: '8px 14px', minHeight: '44px', fontSize: '0.9rem', backgroundColor: 'var(--primary)', display: 'inline-flex', alignItems: 'center', gap: '6px', borderRadius: '8px', border: 'none', color: '#ffffff', cursor: 'pointer', fontWeight: '600' }}
+                      title="Only available for fully paid clients"
+                    >
+                      <FolderIcon size={16} />
+                      <span>{downloadingZip ? 'Processing...' : 'Open Original Photos'}</span>
+                    </button>
 
                         {downloadingZip && (
                            <div style={{ display: 'flex', alignItems: 'center', background: '#f3f4f6', borderRadius: '8px', padding: '6px 12px', gap: '12px' }}>
